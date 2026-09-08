@@ -18,7 +18,9 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false){
  if(s.proof){q=s.proof.questions[s.proof.index];item=c.byId[q.sourceId];}
  else{
   const current=activeConcept(s,c);const selected=selectPractice(s,c,current,s.daily.date,canListen);item=selected.item;retryId=selected.retryId;
-  if(!s.progress[item.concept].taught)return {teachingConcept:item.concept};
+  // V5.1.3 question-only baseline: learning state remains, but visible teaching/vocabulary interruption screens are bypassed in the engine rather than auto-clicked in the UI.
+  if(!s.progress[item.concept].taught)teachConcept(s,item.concept,c);
+  markWordsTaught(s,item,s.daily.date);
   q=makeExercise(item,selected.kind,c,{phase:selected.phase});
  }
  q.retryId=retryId||null;s.pending=q;expose(s,item,q.phase);
