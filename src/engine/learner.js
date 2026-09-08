@@ -1,10 +1,11 @@
 import {uid,dayKey,addDays,normalize} from './util.js';
 import {selectPractice,selectProof} from './scheduler.js';
 import {makeExercise} from './exercises.js';
+import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
 export const DAY_SIZE=20;
 export function blankProgress(){return {status:'learning',taught:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
-export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,settings:{listening:false},migration:null};}
+export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,settings:{listening:false},migration:null};}
 export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date)s.daily={date,count:0};return s.daily;}
 export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
@@ -13,7 +14,12 @@ export function teachConcept(s,id,content){const c=content.conceptById[id];if(!u
 export function expose(s,item,reason){if(s.exposures.some(x=>x.nl===normalize(item.nl)))return;s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason});}
 export function markWordsTaught(s,item,date){for(const w of item.vocabulary){s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};s.words[w.id].taughtAt=date;}}
 export function prepareQuestion(s,c,now=new Date(),canListen=false){
- ensureDay(s,now);if(s.daily.count>=DAY_SIZE)return null;if(s.pending)return s.pending;
+ ensureDay(s,now);if(s.daily.count>=DAY_SIZE)return null;if(s.pending){
+  if(s.pending.presentationVersion!==515&&['practice','maintenance'].includes(s.pending.phase)){
+   const old=s.pending;s.pending={...makeExercise(c.byId[old.sourceId],old.kind,c,{phase:old.phase,direction:old.direction,seed:old.id}),id:old.id,assisted:old.assisted,retryId:old.retryId};
+  }
+  return s.pending;
+ }
  let q,item,retryId;
  if(s.proof){q=s.proof.questions[s.proof.index];item=c.byId[q.sourceId];}
  else{
@@ -61,25 +67,26 @@ export function submit(s,c,questionId,raw,now=new Date()){
  const item=c.byId[q.sourceId],p=s.progress[q.concept];
  const knownWords=new Set(c.sentences.flatMap(x=>normalize(x.nl).split(' ')));
  const a=assess(q,raw,{assisted:q.assisted,knownWords});
- const rec={...a,id:uid(),learnerId:s.learnerId,deviceId:s.deviceId,occurredAt:now.toISOString(),date:s.daily.date,questionId:q.id,sourceId:q.sourceId,concept:q.concept,phase:q.phase,kind:q.kind,direction:q.direction,prompt:q.prompt,answer:raw,expected:q.answer,verb:item.verb,words:item.vocabulary.map(w=>w.id)};
- s.attempts.push(rec);s.daily.count++;s.pending=null;
- p.weakness=Math.max(0,Math.min(12,p.weakness+(a.grammar===true?-1:2)));
+ const wordEvidence=recallEvidence(q,item,a);
+ const rec={...a,wordEvidence,id:uid(),learnerId:s.learnerId,deviceId:s.deviceId,occurredAt:now.toISOString(),date:s.daily.date,questionId:q.id,sourceId:q.sourceId,concept:q.concept,phase:q.phase,kind:q.kind,direction:q.direction,prompt:q.prompt,answer:raw,expected:q.answer,correctSentence:item.nl,englishMeaning:item.en,verb:item.verb,words:item.vocabulary.map(w=>w.id)};
+ s.attempts.push(rec);recordRecall(s,q,wordEvidence);s.daily.count++;s.pending=null;
+ p.weakness=Math.max(0,Math.min(12,p.weakness+(a.grammar===true?-1:a.grammar===false?2:0)));
  if(q.phase==='practice'){
   p.practiceAttempts++;
   if(a.grammar===true){if(['choice','correct-sentence','listening'].includes(q.kind))p.recognised++;if(['wordbank','gap','form'].includes(q.kind))p.constructed++;if(a.independent)p.independent++;if(p.remedial)p.remedial--;}
   if(p.practiceAttempts>=c.conceptById[q.concept].minPractice&&!p.remedial&&!p.retentionDue&&!p.masteredAt)p.status='proof-ready';
  }
  if(q.phase==='maintenance'){
-  if(a.grammar!==true){p.status='reinforcement';p.nextMaintenance=dayKey(now);}
-  else if(p.weakness<=1){p.status='mastered';p.nextMaintenance=addDays(dayKey(now),7);}
+  if(a.grammar===false){p.status='reinforcement';p.nextMaintenance=dayKey(now);}
+  else if(a.grammar===true&&p.weakness<=1){p.status='mastered';p.nextMaintenance=addDays(dayKey(now),7);}
  }
  for(const w of item.vocabulary){
-  const v=s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};v.attempts++;v.lastSeen=dayKey(now);v.weakness=Math.max(0,Math.min(10,v.weakness+(a.spelling===false||!a.vocabulary?1:-.5)));if(a.spelling===false)v.spellingErrors++;if(q.assisted||a.errorType==='vocabulary')v.recallErrors++;
+  const v=s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};v.attempts++;v.lastSeen=dayKey(now);const failed=wordEvidence.failed.includes(normalize(w.nl));const recalled=wordEvidence.successful.includes(normalize(w.nl));v.weakness=Math.max(0,Math.min(10,v.weakness+(failed?1:recalled?-.5:0)));if(failed)v.spellingErrors++;if(q.assisted||failed)v.recallErrors++;
  }
  if(q.retryId)s.retries=s.retries.filter(x=>x.id!==q.retryId);
  if(['practice','maintenance'].includes(q.phase)&&(a.grammar!==true||a.spelling===false||q.assisted))s.retries.push({id:uid(),concept:q.concept,verb:item.verb,sourceId:item.id,after:s.attempts.length+2,date:dayKey(now)});
  if(s.proof){s.proof.attemptIds.push(rec.id);s.proof.index++;if(s.proof.index===s.proof.questions.length)finishProof(s,now);}
  s.revision++;return rec;
 }
-export function useHelp(s){if(!s.pending||!['practice','maintenance'].includes(s.pending.phase))throw Error('Word help is unavailable during proof.');s.pending.assisted=true;}
+export function useHelp(s){if(!s.pending||!['practice','maintenance'].includes(s.pending.phase))throw Error('Word help is unavailable during proof.');s.pending.assisted=true;s.revision++;}
 export function statistics(attempts){const spelled=attempts.filter(x=>x.spelling!==null);return {total:attempts.length,grammar:attempts.filter(x=>x.grammar===true).length,spelling:spelled.filter(x=>x.spelling).length,spellingTotal:spelled.length,independent:attempts.filter(x=>x.independent).length,recall:attempts.filter(x=>x.vocabulary).length};}
