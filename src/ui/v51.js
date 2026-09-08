@@ -4,62 +4,11 @@ const SUPABASE_URL='https://dntitlrtvkgisxwqjxch.supabase.co';
 const SUPABASE_KEY='sb_publishable_0QmYB4lwmjfJLkY3pH5dCQ_EVKC47Lb';
 const STORAGE_KEY='dutch_sentence_trainer_v5';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-let syncing=false,lastRevision=-1,lastSessionMode=null,skipTimer=null;
+let syncing=false,lastRevision=-1;
 
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localState=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch{return null}};
 const setStatus=t=>{const f=document.querySelector('#offline-status');if(f)f.textContent=t};
-
-function diffWordHtml(actual,expected){
- const a=String(actual),e=String(expected);let p=0;while(p<a.length&&p<e.length&&a[p]===e[p])p++;
- let s=0;while(s<a.length-p&&s<e.length-p&&a[a.length-1-s]===e[e.length-1-s])s++;
- const left=escapeHtml(a.slice(0,p)),mid=a.slice(p,a.length-s),right=escapeHtml(a.slice(a.length-s));
- if(!mid&&e.length>a.length)return `${left}<mark class="problem-char" aria-label="missing letter">_</mark>${right}`;
- return `${left}<mark class="problem-char">${escapeHtml(mid||a[p]||'')}</mark>${right}`;
-}
-
-function enhanceCorrection(){
- const type=document.querySelector('.q-type');if(!type||type.textContent.trim()!=='Correct the Dutch sentence')return;
- const prompt=document.querySelector('.question-card .prompt');if(!prompt||prompt.dataset.v512==='1')return;
- const q=localState()?.pending;if(!q?.answer||!q?.prompt)return;
- const a=q.prompt.split(/\s+/),e=q.answer.split(/\s+/);let i=a.findIndex((w,n)=>w!==e[n]);
- if(i<0)return;const parts=a.map((w,n)=>n===i?diffWordHtml(w,e[n]||''):escapeHtml(w));
- prompt.innerHTML=parts.join(' ');prompt.dataset.v512='1';
-}
-
-function skipLearningInterruptions(){
- clearTimeout(skipTimer);
- const direction=document.querySelector('.direction');if(!direction)return;
- const text=direction.textContent.trim();
- if(text.startsWith('Teach')&&document.querySelector('#learned')){
-   const heading=document.querySelector('.question-card h2');
-   const concept=heading?.textContent?.match(/^\s*([A-Z]\d+)\b/)?.[1];
-   const taught=concept&&localState()?.progress?.[concept]?.taught;
-   if(taught){skipTimer=setTimeout(()=>document.querySelector('#learned')?.click(),30);}
-   else{skipTimer=setTimeout(skipLearningInterruptions,100);}
-   return;
- }
- if(text.includes('Vocabulary reminder')&&document.querySelector('#words-learned')){
-   skipTimer=setTimeout(()=>document.querySelector('#words-learned')?.click(),50);
- }
-}
-
-function restrictWordHelp(){
- const help=document.querySelector('#help-area');if(!help)return;
- const kind=localState()?.pending?.kind;
- const useful=new Set(['typed','wordbank']);
- help.hidden=!useful.has(kind);
-}
-
-function updateSessionChrome(){
- const active=!!document.querySelector('.session');
- if(active!==lastSessionMode){document.body.classList.toggle('session-active',active);lastSessionMode=active;}
- if(active){
-   const footer=document.querySelector('footer');if(footer)footer.setAttribute('aria-hidden','true');
- }else{
-   const footer=document.querySelector('footer');if(footer)footer.removeAttribute('aria-hidden');
- }
-}
 
 function injectSyncPanel(){
  const settings=document.querySelector('.settings-row')?.parentElement;if(!settings||document.querySelector('#v51-sync'))return;
@@ -83,7 +32,7 @@ async function renderSyncPanel(){
 
 async function pushAttempts(user,state){
  const rows=(state.attempts||[]).filter(a=>/^[0-9a-f-]{36}$/i.test(a.id||'')).map(a=>({
-   id:a.id,user_id:user.id,attempted_at:a.occurredAt||new Date().toISOString(),day:a.date,concept_id:a.concept,direction:a.direction,exercise_type:a.kind,phase:a.phase,source_id:a.sourceId||null,answer:String(a.answer??''),correct_answer:String(a.expected??''),grammar_correct:a.grammar===true,spelling_correct:a.spelling==null?null:!!a.spelling,error_types:a.errorType?[String(a.errorType)]:[],used_help:!!a.assisted
+   id:a.id,user_id:user.id,attempted_at:a.occurredAt||new Date().toISOString(),day:a.date,concept_id:a.concept,direction:a.direction,exercise_type:a.kind,phase:a.phase,source_id:a.sourceId||null,answer:String(a.answer??''),correct_answer:String(a.expected??''),grammar_correct:a.grammar===true,spelling_correct:a.spelling==null?null:!!a.spelling,error_types:[...(a.errorType?[String(a.errorType)]:[]),...(a.capitalization===false?['capitalization']:[])],used_help:!!a.assisted
  }));
  if(!rows.length)return;
  const {error}=await supabase.from('trainer_attempts').upsert(rows,{onConflict:'id',ignoreDuplicates:true});if(error)throw error;
@@ -113,10 +62,6 @@ async function syncNow(manual=false){
 }
 
 function enhance(){
- updateSessionChrome();
- enhanceCorrection();
- restrictWordHelp();
- skipLearningInterruptions();
  injectSyncPanel();
 }
 

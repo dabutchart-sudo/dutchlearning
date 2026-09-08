@@ -1,3 +1,4 @@
+import {spellingBlocked} from './word-recall.js';
 import {hash,normalize} from './util.js';
 export function itemPriority(item,state){
  const recent=state.exposures.slice(-20);let weight=10 + item.vocabulary.filter(w=>w.mature).length * .3;
@@ -22,9 +23,16 @@ export function selectPractice(state,content,current,date,canListen){
  if(due&&state.progress[due.concept].taught){concept=due.concept;phase=state.progress[concept].masteredAt?'maintenance':'practice';}
  let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
  if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length)pool=focused;}
+ let kind=phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen);
+ const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
+ if(eligible.length)pool=eligible;
+ else {
+  const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
+  if(alternatives.length)pool=alternatives;else kind='wordbank';
+ }
  const item=[...pool].sort((a,b)=>itemPriority(b,state)-itemPriority(a,state))[0];
  if(!item)throw Error('No practice content available');
- return {item,kind:phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen),phase,retryId:due?.id};
+ return {item,kind,phase,retryId:due?.id};
 }
 export function selectProof(state,content,concept,count){
  const seen=new Set(state.exposures.map(x=>x.nl));
