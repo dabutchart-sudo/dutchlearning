@@ -1,5 +1,5 @@
 // Generated from the complete asset set. Cache is scoped to this GitHub Pages path.
-const CACHE="dutch-v5.1.1-20260908"+'-'+self.registration.scope;
+const CACHE="dutch-v5.1.2-20260908"+'-'+self.registration.scope;
 const ASSETS=["./","./index.html","./manifest.webmanifest","./src/content/foundation-a1.json","./src/content/packs.json","./src/content/registry.js","./src/content/vocabulary.json","./src/engine/exercises.js","./src/engine/integrations.js","./src/engine/learner.js","./src/engine/persistence.js","./src/engine/scheduler.js","./src/engine/scoring.js","./src/engine/util.js","./src/ui/app.js","./src/ui/speech.js","./src/ui/styles.css","./src/ui/v51.css","./src/ui/v51.js","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('dutch-v5')&&k.endsWith(self.registration.scope)&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
