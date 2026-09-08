@@ -20,11 +20,11 @@ function diffWordHtml(actual,expected){
 
 function enhanceCorrection(){
  const type=document.querySelector('.q-type');if(!type||type.textContent.trim()!=='Correct the Dutch sentence')return;
- const prompt=document.querySelector('.question-card .prompt');if(!prompt||prompt.dataset.v511==='1')return;
+ const prompt=document.querySelector('.question-card .prompt');if(!prompt||prompt.dataset.v512==='1')return;
  const q=localState()?.pending;if(!q?.answer||!q?.prompt)return;
  const a=q.prompt.split(/\s+/),e=q.answer.split(/\s+/);let i=a.findIndex((w,n)=>w!==e[n]);
  if(i<0)return;const parts=a.map((w,n)=>n===i?diffWordHtml(w,e[n]||''):escapeHtml(w));
- prompt.innerHTML=parts.join(' ');prompt.dataset.v511='1';
+ prompt.innerHTML=parts.join(' ');prompt.dataset.v512='1';
 }
 
 function skipLearningInterruptions(){
@@ -32,7 +32,12 @@ function skipLearningInterruptions(){
  const direction=document.querySelector('.direction');if(!direction)return;
  const text=direction.textContent.trim();
  if(text.startsWith('Teach')&&document.querySelector('#learned')){
-   skipTimer=setTimeout(()=>document.querySelector('#learned')?.click(),80);return;
+   const heading=document.querySelector('.question-card h2');
+   const concept=heading?.textContent?.match(/^\s*([A-Z]\d+)\b/)?.[1];
+   const taught=concept&&localState()?.progress?.[concept]?.taught;
+   if(taught){skipTimer=setTimeout(()=>document.querySelector('#learned')?.click(),30);}
+   else{skipTimer=setTimeout(skipLearningInterruptions,100);}
+   return;
  }
  if(text.includes('Vocabulary reminder')&&document.querySelector('#words-learned')){
    skipTimer=setTimeout(()=>document.querySelector('#words-learned')?.click(),50);
