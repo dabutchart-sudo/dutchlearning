@@ -23,10 +23,12 @@ The standalone Flashcards application is being absorbed into Dutch Learning. Thi
 
 The first regression tests lock the most important migration behaviours: preservation of SRS fields, the strict new-card ceiling, no extra new cards after daily completion, the existing >21-day mastered definition, and retention excluding new-card introductions.
 
-## Next implementation slice
+## Read-only parity preview
 
-1. Connect the adapter to the existing Supabase cards/review-history data using the same authenticated account model as the current Flashcards app.
-2. Build a read-only Flashcards screen inside Dutch Learning and compare its due counts/reporting with the standalone app.
-3. Only after parity is demonstrated, move review writes/SRS queue execution into Dutch Learning.
-4. Add the rotating sentence bank and OpenAI-backed generation through a server-side function.
-5. Introduce supported English-to-Dutch production per word using shared evidence.
+The Dutch Learning navigation now includes a Flashcards preview. It reads the existing `cards` and `reviewhistory` tables but deliberately exposes no write operation.
+
+During this temporary migration stage it reuses the public Supabase browser configuration already deployed by the standalone Flashcards PWA. This avoids duplicating configuration while the old app remains authoritative. Before that app is retired, Dutch Learning will own this configuration directly.
+
+The preview shows reviews due, new cards available after the current retention/review-load governor, today's completed reviews, 30-day retention, mastered/active/suspended/total counts, trouble words, and the existing persisted done-for-today lock.
+
+The next checkpoint is live parity: compare those figures with the standalone Flashcards app using the same dataset. Only after they agree should rating controls and Supabase review writes be enabled in Dutch Learning.
