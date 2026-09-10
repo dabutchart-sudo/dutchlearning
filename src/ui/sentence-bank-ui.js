@@ -1,5 +1,5 @@
 import {chooseSentence} from '../engine/sentence-bank.js';
-import {cachedSentenceBank,generateSentenceBanks,inspectSentenceBanks,sentenceGenerationUser,signInForSentenceGeneration,signOutSentenceGeneration} from './sentence-bank-client.js';
+import {cachedSentenceBank,clearSentenceGenerationReturn,generateSentenceBanks,inspectSentenceBanks,sentenceGenerationReturnRequested,sentenceGenerationUser,signInForSentenceGeneration,signOutSentenceGeneration} from './sentence-bank-client.js';
 
 const content=document.getElementById('content');
 const recentIds=[];
@@ -11,6 +11,7 @@ let panelMessage='';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=s=>String(s??'').replace(/\s*\(.*?\)\s*$/,'').trim().toLocaleLowerCase('nl-NL');
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 async function fetchCards(){
  if(cards)return cards;
@@ -56,7 +57,27 @@ async function rotateReviewSentence(){
  }
 }
 
+async function restoreAfterSentenceSignIn(){
+ if(!sentenceGenerationReturnRequested())return;
+ let user=null;
+ for(let attempt=0;attempt<20&&!user;attempt++){
+  try{user=await sentenceGenerationUser();}catch{}
+  if(!user)await wait(100);
+ }
+ if(!user)return;
+ clearSentenceGenerationReturn();
+ const tab=document.getElementById('flashcards-preview-tab');
+ if(!tab)return;
+ tab.click();
+ for(let attempt=0;attempt<30;attempt++){
+  const panel=document.getElementById('sentence-bank-panel');
+  if(panel){panelMessage='Signed in. Sentence generation is ready.';await renderPanel();panel.scrollIntoView({block:'nearest'});return;}
+  await wait(100);
+ }
+}
+
 let scheduled=false;
 const refresh=()=>{if(scheduled)return;scheduled=true;queueMicrotask(async()=>{scheduled=false;try{if(document.querySelector('.flashcards-preview')&&!document.getElementById('sentence-bank-panel'))await renderPanel();if(document.querySelector('.flashcard-review-card'))await rotateReviewSentence();}catch{}});};
 new MutationObserver(refresh).observe(content,{childList:true,subtree:true});
 document.getElementById('flashcards-preview-tab')?.addEventListener('click',()=>setTimeout(refresh,0));
+setTimeout(()=>restoreAfterSentenceSignIn().catch(()=>{}),0);
