@@ -2,6 +2,8 @@ import {mergeSentenceBank,sentenceBankNeedsRefresh} from '../engine/sentence-ban
 
 const AUTH_STORAGE_KEY='dutch_sentence_auth';
 const CACHE_PREFIX='dutch_sentence_bank_v1:';
+const SIGNIN_RETURN_KEY='sentence_signin_return';
+const SIGNIN_RETURN_PARAM='sentence_auth_return';
 let clientPromise=null;
 
 async function config(){
@@ -51,10 +53,28 @@ export async function sentenceGenerationUser(){
  if(error)throw error;return data.session?.user||null;
 }
 
+export function sentenceGenerationReturnRequested(){
+ const query=new URLSearchParams(location.search);
+ return sessionStorage.getItem(SIGNIN_RETURN_KEY)==='flashcards'||query.get(SIGNIN_RETURN_PARAM)==='flashcards';
+}
+
+export function clearSentenceGenerationReturn(){
+ sessionStorage.removeItem(SIGNIN_RETURN_KEY);
+ const url=new URL(location.href);
+ if(url.searchParams.has(SIGNIN_RETURN_PARAM)){
+  url.searchParams.delete(SIGNIN_RETURN_PARAM);
+  history.replaceState(history.state,'',url.pathname+(url.search?url.search:'')+(url.hash||''));
+ }
+}
+
 export async function signInForSentenceGeneration(){
  const {client}=await generationClient();
- sessionStorage.setItem('sentence_signin_return','1');
- const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}});
+ sessionStorage.setItem(SIGNIN_RETURN_KEY,'flashcards');
+ const returnUrl=new URL(location.href);
+ returnUrl.search='';
+ returnUrl.hash='';
+ returnUrl.searchParams.set(SIGNIN_RETURN_PARAM,'flashcards');
+ const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:returnUrl.toString()}});
  if(error)throw error;
 }
 
