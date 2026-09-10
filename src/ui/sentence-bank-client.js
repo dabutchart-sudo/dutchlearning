@@ -28,6 +28,23 @@ function readCache(url){
 }
 function writeCache(url,cache){localStorage.setItem(cacheKey(url),JSON.stringify(cache));}
 function validPair(pair){return pair&&typeof pair.nl==='string'&&pair.nl.trim()&&typeof pair.en==='string'&&pair.en.trim();}
+async function functionFailureMessage(error){
+ const response=error?.context;
+ let status='';let detail='';
+ if(response&&typeof response.status!=='undefined')status=`HTTP ${response.status}${response.statusText?` ${response.statusText}`:''}`;
+ if(response&&typeof response.clone==='function'){
+  try{
+   const raw=await response.clone().text();
+   if(raw){
+    try{const parsed=JSON.parse(raw);detail=parsed.error||parsed.message||parsed.msg||raw;}
+    catch{detail=raw;}
+   }
+  }catch{}
+ }
+ if(!detail&&error?.message)detail=error.message;
+ const parts=[status,detail].filter(Boolean);
+ return parts.length?`Sentence generation failed: ${parts.join(' — ')}`:'Sentence generation failed with no server details.';
+}
 
 export async function sentenceGenerationUser(){
  const {client}=await generationClient(),{data,error}=await client.auth.getSession();
@@ -62,7 +79,7 @@ export async function generateSentenceBanks(cards,{force=false}={}){
  for(const card of cards){const stored=Array.isArray(cache[String(card.id)]?.sentences)?cache[String(card.id)].sentences:[],bank=mergeSentenceBank(card,stored,[]);if(force||sentenceBankNeedsRefresh(bank))wanted.push(Number(card.id));}
  const ids=wanted.slice(0,5);if(!ids.length)return {generated:0,requested:0,cards:[],readyAfter:0};
  const {data,error}=await client.functions.invoke('generate-sentences',{body:{ids}});
- if(error){let message='Sentence generation failed.';try{message=(await error.context.json()).error||message;}catch{}throw new Error(message);}
+ if(error)throw new Error(await functionFailureMessage(error));
  if(!data||!Array.isArray(data.cards))throw new Error('Sentence generator returned an invalid response.');
  if(data.cards.length!==ids.length)throw new Error(`Sentence generator returned ${data.cards.length} of ${ids.length} requested cards.`);
  const returnedIds=data.cards.map(r=>Number(r.id));
