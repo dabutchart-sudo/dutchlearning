@@ -122,7 +122,7 @@ test('new Good graduates to two days and sets first seen', () => {
 test('review Again resets to one day, reduces ease and increments lapses', () => {
   const result=applyFlashcardRating(card({interval:30,ease:2.4,lapses:2}), 'again', {today:'2026-09-10'});
   assert.equal(result.card.interval,1);
-  assert.equal(result.card.ease,2.2);
+  assert.ok(Math.abs(result.card.ease-2.2)<Number.EPSILON*4);
   assert.equal(result.card.lapses,3);
   assert.equal(result.card.due_date,'2026-09-11');
   assert.equal(result.requeue,true);
