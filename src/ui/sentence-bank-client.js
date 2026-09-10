@@ -27,6 +27,7 @@ function readCache(url){
  try{const parsed=JSON.parse(localStorage.getItem(cacheKey(url))||'{}');return parsed&&typeof parsed==='object'?parsed:{};}catch{return{};}
 }
 function writeCache(url,cache){localStorage.setItem(cacheKey(url),JSON.stringify(cache));}
+function validPair(pair){return pair&&typeof pair.nl==='string'&&pair.nl.trim()&&typeof pair.en==='string'&&pair.en.trim();}
 
 export async function sentenceGenerationUser(){
  const {client}=await generationClient(),{data,error}=await client.auth.getSession();
@@ -59,11 +60,24 @@ export async function generateSentenceBanks(cards,{force=false}={}){
  if(sessionError)throw sessionError;if(!sessionData.session)throw new Error('Sign in with Google before generating sentence examples.');
  const cache=readCache(url),wanted=[];
  for(const card of cards){const stored=Array.isArray(cache[String(card.id)]?.sentences)?cache[String(card.id)].sentences:[],bank=mergeSentenceBank(card,stored,[]);if(force||sentenceBankNeedsRefresh(bank))wanted.push(Number(card.id));}
- const ids=wanted.slice(0,5);if(!ids.length)return {generated:0,requested:0,cards:[]};
+ const ids=wanted.slice(0,5);if(!ids.length)return {generated:0,requested:0,cards:[],readyAfter:0};
  const {data,error}=await client.functions.invoke('generate-sentences',{body:{ids}});
  if(error){let message='Sentence generation failed.';try{message=(await error.context.json()).error||message;}catch{}throw new Error(message);}
  if(!data||!Array.isArray(data.cards))throw new Error('Sentence generator returned an invalid response.');
+ if(data.cards.length!==ids.length)throw new Error(`Sentence generator returned ${data.cards.length} of ${ids.length} requested cards.`);
+ const returnedIds=data.cards.map(r=>Number(r.id));
+ if(new Set(returnedIds).size!==ids.length||returnedIds.some(id=>!ids.includes(id)))throw new Error('Sentence generator returned unexpected card IDs.');
  const byId=new Map(cards.map(c=>[Number(c.id),c])),updated=[];
- for(const result of data.cards){const id=Number(result.id),card=byId.get(id);if(!card||!ids.includes(id)||!Array.isArray(result.sentences))continue;const sentences=mergeSentenceBank(card,cache[String(id)]?.sentences||[],result.sentences);cache[String(id)]={sentences,updatedAt:new Date().toISOString()};updated.push({id,sentences});}
- writeCache(url,cache);return {generated:updated.length,requested:ids.length,cards:updated};
+ for(const result of data.cards){
+  const id=Number(result.id),card=byId.get(id);
+  if(!card)throw new Error(`Generated card ${id} was not found locally.`);
+  if(!Array.isArray(result.sentences)||result.sentences.length!==5||result.sentences.some(p=>!validPair(p)))throw new Error(`Sentence generator returned invalid examples for card ${id}.`);
+  const sentences=mergeSentenceBank(card,cache[String(id)]?.sentences||[],result.sentences);
+  if(sentenceBankNeedsRefresh(sentences))throw new Error(`Generated examples for card ${id} did not create a complete sentence bank.`);
+  cache[String(id)]={sentences,updatedAt:new Date().toISOString()};updated.push({id,sentences});
+ }
+ writeCache(url,cache);
+ const verified=readCache(url),readyAfter=ids.filter(id=>Array.isArray(verified[String(id)]?.sentences)&&!sentenceBankNeedsRefresh(mergeSentenceBank(byId.get(id),verified[String(id)].sentences,[]))).length;
+ if(readyAfter!==ids.length)throw new Error(`Sentence banks were generated but only ${readyAfter} of ${ids.length} were saved successfully.`);
+ return {generated:updated.length,requested:ids.length,cards:updated,readyAfter};
 }
