@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import { PRODUCTION_STAGE, normalizeFlashcardCard, unifiedVocabularyRecord, remainingNewCards, isMasteredFlashcard, reviewRetention, flashcardSummary, buildFlashcardQueue, applyFlashcardRating } from '../src/engine/flashcards.js';
 
 const card = overrides => ({
@@ -134,4 +135,10 @@ test('review Good uses current ease and guarantees growth', () => {
   assert.equal(result.card.interval,28);
   assert.equal(result.card.ease,2.5);
   assert.equal(result.card.due_date,'2026-10-08');
+});
+
+test('front screen displays the package version', () => {
+  const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.ok(html.includes(`V${pkg.version}`),`Expected front screen to show V${pkg.version}`);
 });
