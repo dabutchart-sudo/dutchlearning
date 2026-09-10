@@ -47,6 +47,12 @@ export async function cachedSentenceBank(card){
  return mergeSentenceBank(card,stored,[]);
 }
 
+export async function inspectSentenceBanks(cards=[]){
+ const {url}=await generationClient(),cache=readCache(url);
+ const records=cards.map(card=>{const stored=Array.isArray(cache[String(card.id)]?.sentences)?cache[String(card.id)].sentences:[],sentences=mergeSentenceBank(card,stored,[]);return {cardId:String(card.id),sentences,count:sentences.length,needsRefresh:sentenceBankNeedsRefresh(sentences)};});
+ return {records,ready:records.filter(r=>!r.needsRefresh).length,needsRefresh:records.filter(r=>r.needsRefresh).length,total:records.length};
+}
+
 export async function generateSentenceBanks(cards,{force=false}={}){
  const {client,url}=await generationClient();
  const {data:sessionData,error:sessionError}=await client.auth.getSession();
