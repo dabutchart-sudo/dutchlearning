@@ -19,16 +19,28 @@ The standalone Flashcards application is being absorbed into Dutch Learning. Thi
 
 `src/engine/flashcards.js` introduces a shared vocabulary view that normalizes rows from the existing `cards` table without changing their SRS values. It also combines those rows with Sentence Trainer word evidence in a separate `evidence` object.
 
-`src/engine/integrations.js` now defines explicit adapter boundaries for flashcard persistence and server-side sentence generation. No credentials or network clients are introduced by this phase.
+`src/engine/integrations.js` defines explicit adapter boundaries for flashcard persistence and server-side sentence generation. Provider credentials remain outside the deterministic learning engine.
 
 The first regression tests lock the most important migration behaviours: preservation of SRS fields, the strict new-card ceiling, no extra new cards after daily completion, the existing >21-day mastered definition, and retention excluding new-card introductions.
 
-## Read-only parity preview
+## Live Flashcard migration
 
-The Dutch Learning navigation now includes a Flashcards preview. It reads the existing `cards` and `reviewhistory` tables but deliberately exposes no write operation.
+The Dutch Learning navigation now includes a Flashcards destination using the existing `cards` and `reviewhistory` data. It preserves the full daily SRS batch, live Again/Hard/Good/Easy writes, requeue behaviour and the persisted done-for-today lock.
 
-During this temporary migration stage it reuses the public Supabase browser configuration already deployed by the standalone Flashcards PWA. This avoids duplicating configuration while the old app remains authoritative. Before that app is retired, Dutch Learning will own this configuration directly.
+During this temporary migration stage it reuses the public Supabase browser configuration already deployed by the standalone Flashcards PWA. This avoids duplicating configuration while the old app remains available. Before the standalone app is retired, Dutch Learning will own this configuration directly.
 
-The preview shows reviews due, new cards available after the current retention/review-load governor, today's completed reviews, 30-day retention, mastered/active/suspended/total counts, trouble words, and the existing persisted done-for-today lock.
+The current dashboard shows due/new counts, today's completed reviews, 30-day retention, mastered/active/suspended/total counts, trouble words and English-to-Dutch readiness.
 
-The next checkpoint is live parity: compare those figures with the standalone Flashcards app using the same dataset. Only after they agree should rating controls and Supabase review writes be enabled in Dutch Learning.
+## English-to-Dutch production bridge
+
+Mature cards are staged conservatively through recognition, supported production, guided production, independent production and contextual production. Production practice is a separate optional mini-session capped at five meaningful questions per day. It writes learner evidence only and never changes Flashcard SRS intervals or due dates.
+
+Supported words use multiple choice. Guided multi-word phrases use shuffled word tiles. Guided single words use partial-spelling recall rather than a one-tile giveaway. Meaningless legacy attempts from the V5.1.8 prototype are excluded from the daily allowance and learning evidence.
+
+## Contextual sentence-bank groundwork
+
+V5.1.12 adds `src/engine/sentence-bank.js` as the deterministic cache/rotation layer for contextual examples. A card's current Dutch/English example remains the fallback, generated and cached examples are deduplicated, banks are capped at ten examples, and rotation avoids recently shown sentence IDs where alternatives exist.
+
+The engine requests refresh when a bank contains fewer than five examples. Dated generated banks can also become refresh candidates after 30 days. This layer does not call an AI provider itself; generation remains behind `SentenceGeneratorAdapter` and an authenticated server-side function.
+
+The next sentence-bank checkpoint is to connect the existing authenticated `generate-sentences` Edge Function to this cache boundary, then surface varied examples without making an API call every time a card appears.
