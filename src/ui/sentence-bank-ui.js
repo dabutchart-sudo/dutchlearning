@@ -49,14 +49,14 @@ async function rotateReviewSentence(){
    currentCard=matched;const bank=await cachedSentenceBank(matched);currentPair=chooseSentence(bank,{recentIds,random:Math.random});
    if(currentPair){recentIds.push(String(currentPair.id));while(recentIds.length>8)recentIds.shift();}
   }
-  if(currentPair)sentence.textContent=currentPair.nl;
+  if(currentPair&&sentence.textContent!==currentPair.nl)sentence.textContent=currentPair.nl;
  }else{
   const matched=currentCard&&clean(currentCard.english)===text?currentCard:list.find(c=>clean(c.english)===text);
-  if(matched&&currentPair)sentence.textContent=currentPair.en;
+  if(matched&&currentPair&&sentence.textContent!==currentPair.en)sentence.textContent=currentPair.en;
  }
 }
 
 let scheduled=false;
-const refresh=()=>{if(scheduled)return;scheduled=true;queueMicrotask(async()=>{scheduled=false;try{if(document.querySelector('.flashcards-preview'))await renderPanel();if(document.querySelector('.flashcard-review-card'))await rotateReviewSentence();}catch{}});};
+const refresh=()=>{if(scheduled)return;scheduled=true;queueMicrotask(async()=>{scheduled=false;try{if(document.querySelector('.flashcards-preview')&&!document.getElementById('sentence-bank-panel'))await renderPanel();if(document.querySelector('.flashcard-review-card'))await rotateReviewSentence();}catch{}});};
 new MutationObserver(refresh).observe(content,{childList:true,subtree:true});
 document.getElementById('flashcards-preview-tab')?.addEventListener('click',()=>setTimeout(refresh,0));
