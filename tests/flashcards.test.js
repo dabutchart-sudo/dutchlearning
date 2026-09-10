@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PRODUCTION_STAGE, normalizeFlashcardCard, unifiedVocabularyRecord, remainingNewCards, isMasteredFlashcard, reviewRetention, flashcardSummary } from '../src/engine/flashcards.js';
+import { PRODUCTION_STAGE, normalizeFlashcardCard, unifiedVocabularyRecord, remainingNewCards, isMasteredFlashcard, reviewRetention, flashcardSummary, buildFlashcardQueue, applyFlashcardRating } from '../src/engine/flashcards.js';
 
 const card = overrides => ({
   id: 42,
@@ -85,4 +85,53 @@ test('summary preserves dedicated flashcard reporting measures', () => {
   assert.equal(result.suspended, 1);
   assert.equal(result.mastered, 1);
   assert.equal(result.retention.rate, 0.5);
+});
+
+test('queue contains all due reviews plus only the allowed earliest new cards', () => {
+  const queue=buildFlashcardQueue([
+    card({id:1,due_date:'2026-09-10'}),
+    card({id:2,due_date:'2026-09-11'}),
+    card({id:10,type:'new',due_date:null}),
+    card({id:4,type:'new',due_date:null}),
+    card({id:5,type:'new',due_date:null,suspended:true})
+  ],{today:'2026-09-10',newLimit:1,random:()=>0.5});
+  assert.deepEqual(queue.map(x=>x.id),[1,4]);
+});
+
+test('new Again stays new and requeues with the same parity fields', () => {
+  const result=applyFlashcardRating(card({type:'new',interval:0,ease:2.5,reps:0,lapses:0,first_seen:null}), 'again', {today:'2026-09-10',nowIso:'2026-09-10T14:00:00.000Z'});
+  assert.equal(result.card.type,'new');
+  assert.equal(result.card.interval,0);
+  assert.equal(result.card.ease,2.5);
+  assert.equal(result.card.reps,1);
+  assert.equal(result.card.first_seen,null);
+  assert.equal(result.requeue,true);
+  assert.equal(result.history.review_type,'new');
+});
+
+test('new Good graduates to two days and sets first seen', () => {
+  const result=applyFlashcardRating(card({type:'new',interval:0,ease:2.5,reps:0,lapses:0,first_seen:null}), 'good', {today:'2026-09-10'});
+  assert.equal(result.card.type,'review');
+  assert.equal(result.card.interval,2);
+  assert.equal(result.card.ease,2.5);
+  assert.equal(result.card.first_seen,'2026-09-10');
+  assert.equal(result.card.due_date,'2026-09-12');
+  assert.equal(result.requeue,false);
+});
+
+test('review Again resets to one day, reduces ease and increments lapses', () => {
+  const result=applyFlashcardRating(card({interval:30,ease:2.4,lapses:2}), 'again', {today:'2026-09-10'});
+  assert.equal(result.card.interval,1);
+  assert.equal(result.card.ease,2.2);
+  assert.equal(result.card.lapses,3);
+  assert.equal(result.card.due_date,'2026-09-11');
+  assert.equal(result.requeue,true);
+  assert.equal(result.history.review_type,'review');
+});
+
+test('review Good uses current ease and guarantees growth', () => {
+  const result=applyFlashcardRating(card({interval:10,ease:2.5}), 'good', {today:'2026-09-10'});
+  assert.equal(result.card.interval,28);
+  assert.equal(result.card.ease,2.5);
+  assert.equal(result.card.due_date,'2026-10-08');
 });
