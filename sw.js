@@ -1,4 +1,5 @@
 // Generated from the complete asset set. Cache is scoped to this GitHub Pages path.
+// Migrated from v5.1.5; current build is v5.1.6.
 const CACHE="dutch-v5.1.6-20260910"+'-'+self.registration.scope;
 const ASSETS=["./","./index.html","./manifest.webmanifest","./src/content/foundation-a1.json","./src/content/packs.json","./src/content/registry.js","./src/content/vocabulary.json","./src/engine/exercises.js","./src/engine/flashcards.js","./src/engine/integrations.js","./src/engine/learner.js","./src/engine/persistence.js","./src/engine/scheduler.js","./src/engine/scoring.js","./src/engine/util.js","./src/engine/word-recall.js","./src/ui/peek.js","./src/ui/app.js","./src/ui/flashcards-preview.js","./src/ui/flashcards-preview.css","./src/ui/speech.js","./src/ui/styles.css","./src/ui/v51.css","./src/ui/v51.js","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));});
