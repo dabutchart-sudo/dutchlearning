@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import { PRODUCTION_STAGE, normalizeFlashcardCard, unifiedVocabularyRecord, remainingNewCards, isMasteredFlashcard, reviewRetention, flashcardSummary, buildFlashcardQueue, applyFlashcardRating } from '../src/engine/flashcards.js';
+import { PRODUCTION_STAGE, normalizeFlashcardCard, unifiedVocabularyRecord, learnerEvidenceForCard, productionStageForCard, productionReadiness, remainingNewCards, isMasteredFlashcard, reviewRetention, flashcardSummary, buildFlashcardQueue, applyFlashcardRating } from '../src/engine/flashcards.js';
 
 const card = overrides => ({
   id: 42,
@@ -44,6 +44,43 @@ test('combines flashcard and learner evidence without overwriting either source'
   assert.equal(result.evidence.weakness, 3);
   assert.equal(result.evidence.spellingErrors, 4);
   assert.equal(result.evidence.productionStage, 'guided-production');
+});
+
+test('derives Sentence Trainer evidence for matching card ids', () => {
+  const state={
+    words:{'card:42':{taughtAt:'2026-09-01',weakness:1,attempts:3,spellingErrors:1,recallErrors:1}},
+    attempts:[
+      {words:['card:42'],independent:true,grammar:true,spelling:true,assisted:false},
+      {words:['card:42'],independent:false,grammar:true,spelling:true,assisted:true},
+      {words:['card:7'],independent:true,grammar:true,spelling:true,assisted:false}
+    ]
+  };
+  const evidence=learnerEvidenceForCard(state,42);
+  assert.equal(evidence.taughtAt,'2026-09-01');
+  assert.equal(evidence.attempts,3);
+  assert.equal(evidence.independentSuccesses,1);
+  assert.equal(evidence.supportedEncounters,1);
+  assert.equal(evidence.spellingErrors,1);
+});
+
+test('production stages progress conservatively from recognition to contextual use', () => {
+  assert.equal(productionStageForCard(card({type:'new',interval:0}),{}),PRODUCTION_STAGE.RECOGNITION);
+  assert.equal(productionStageForCard(card({interval:10}),{}),PRODUCTION_STAGE.SUPPORTED);
+  assert.equal(productionStageForCard(card({interval:30}),{}),PRODUCTION_STAGE.GUIDED);
+  assert.equal(productionStageForCard(card({interval:30}),{independentSuccesses:2,weakness:0}),PRODUCTION_STAGE.INDEPENDENT);
+  assert.equal(productionStageForCard(card({interval:100}),{independentSuccesses:5,weakness:1}),PRODUCTION_STAGE.CONTEXTUAL);
+  assert.equal(productionStageForCard(card({interval:100}),{independentSuccesses:5,weakness:4}),PRODUCTION_STAGE.SUPPORTED);
+});
+
+test('production readiness counts active cards without changing SRS data', () => {
+  const cards=[card({id:1,type:'new',interval:0}),card({id:2,interval:10}),card({id:3,interval:30}),card({id:4,interval:100,suspended:true})];
+  const state={words:{'card:3':{attempts:2,weakness:0}},attempts:[{words:['card:3'],independent:true,grammar:true,spelling:true},{words:['card:3'],independent:true,grammar:true,spelling:true}]};
+  const result=productionReadiness(cards,state);
+  assert.equal(result.records.length,3);
+  assert.equal(result.counts[PRODUCTION_STAGE.RECOGNITION],1);
+  assert.equal(result.counts[PRODUCTION_STAGE.SUPPORTED],1);
+  assert.equal(result.counts[PRODUCTION_STAGE.INDEPENDENT],1);
+  assert.equal(cards[2].interval,30);
 });
 
 test('configured new-card setting remains a hard ceiling', () => {
