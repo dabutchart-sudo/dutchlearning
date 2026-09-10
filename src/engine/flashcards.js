@@ -58,6 +58,48 @@ export function unifiedVocabularyRecord(cardRow, wordEvidence = {}) {
   };
 }
 
+export function learnerEvidenceForCard(state = {}, cardId) {
+  const key=`card:${String(cardId)}`;
+  const stored=state.words?.[key]||{};
+  const attempts=(state.attempts||[]).filter(attempt=>Array.isArray(attempt?.words)&&attempt.words.includes(key));
+  const independentSuccesses=attempts.filter(attempt=>attempt.independent===true&&attempt.grammar===true&&attempt.spelling!==false).length;
+  const supportedEncounters=attempts.filter(attempt=>attempt.assisted===true).length;
+  return {
+    taughtAt:stored.taughtAt??null,
+    weakness:Math.max(0,finiteNumber(stored.weakness)),
+    attempts:Math.max(Math.trunc(finiteNumber(stored.attempts)),attempts.length),
+    spellingErrors:Math.max(0,Math.trunc(finiteNumber(stored.spellingErrors))),
+    recallErrors:Math.max(0,Math.trunc(finiteNumber(stored.recallErrors))),
+    supportedEncounters,
+    independentSuccesses
+  };
+}
+
+export function productionStageForCard(cardRow, wordEvidence = {}) {
+  const card=normalizeFlashcardCard(cardRow);
+  const evidence={
+    weakness:Math.max(0,finiteNumber(wordEvidence.weakness)),
+    independentSuccesses:Math.max(0,Math.trunc(finiteNumber(wordEvidence.independentSuccesses)))
+  };
+  if(card.srs.suspended)return PRODUCTION_STAGE.RECOGNITION;
+  if(card.srs.type==='new'||card.srs.interval<7)return PRODUCTION_STAGE.RECOGNITION;
+  if(evidence.weakness>=4||card.srs.interval<21)return PRODUCTION_STAGE.SUPPORTED;
+  if(evidence.independentSuccesses<2)return PRODUCTION_STAGE.GUIDED;
+  if(card.srs.interval<90||evidence.independentSuccesses<5||evidence.weakness>1)return PRODUCTION_STAGE.INDEPENDENT;
+  return PRODUCTION_STAGE.CONTEXTUAL;
+}
+
+export function productionReadiness(cards = [], learnerState = {}) {
+  const counts=Object.fromEntries(Object.values(PRODUCTION_STAGE).map(stage=>[stage,0]));
+  const records=cards.filter(card=>!card.suspended).map(card=>{
+    const evidence=learnerEvidenceForCard(learnerState,card.id);
+    const productionStage=productionStageForCard(card,evidence);
+    counts[productionStage]++;
+    return unifiedVocabularyRecord(card,{...evidence,productionStage});
+  });
+  return {counts,records};
+}
+
 export function remainingNewCards({ configuredMax = 5, loadCap = null, introducedToday = 0, studyDayComplete = false } = {}) {
   if (studyDayComplete) return 0;
   const configured = Math.max(0, Math.trunc(finiteNumber(configuredMax, 5)));
