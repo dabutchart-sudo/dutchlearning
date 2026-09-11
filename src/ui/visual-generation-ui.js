@@ -96,7 +96,7 @@ async function render(){
   else if(user&&pendingError)authCopy=`Pending-review check unavailable: ${esc(pendingError)}`;
   else if(user&&preflightError)authCopy=`Server preflight unavailable: ${esc(preflightError)}`;
   else if(user&&preflight?.ready){authCopy=`Server ready · ${esc(visualGenerationStatusSummary(preflight))}. Estimated £${Number(preflight.estimatedCostGbp||0).toFixed(2)} for this image.`;action='<button id="prepare-visual-generation" class="secondary" type="button">Generate visual cue</button>';}
-  else if(user&&preflight)authCopy=reasonCopy(preflight.reason);
+  else if(user&&preflight)authCopy=visualGenerationStatusSummary(preflight);
   panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Ready for a picture</h2><p class="muted small">You approved this word because a clear image could genuinely help recall. The app will never generate it automatically.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span>${plan.partOfWord?`<br><span class="muted small">${esc(plan.partOfWord)}</span>`:''}</div><p class="muted small">${authCopy}</p>${action}`;
  }
  anchor.insertAdjacentElement('afterend',panel);
