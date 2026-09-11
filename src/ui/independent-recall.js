@@ -2,17 +2,18 @@ import {STORAGE_KEY} from '../engine/persistence.js';
 import {recordProductionAttempt,PRODUCTION_DAILY_LIMIT,productionAttemptsToday} from '../engine/flashcards.js';
 import {independentRecallCandidates,independentExercise,independentReadinessSummary,INDEPENDENT_DAILY_LIMIT,independentAttemptsToday,independentMissCooldownDays} from '../engine/independent-recall.js';
 import {visualCueForRecord,shouldOfferVisualCue} from '../engine/visual-support.js';
+import {applySupportTracking} from '../engine/support-tracking.js';
 
 const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
 let cache=null,scheduled=false,busy=false;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
 function saveState(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}
 function maskedWord(word){const chars=[...String(word||'')],letters=chars.map((c,i)=>/\p{L}/u.test(c)?i:-1).filter(i=>i>=0);if(letters.length<3)return `${chars[0]||''}${'_'.repeat(Math.max(1,chars.length-1))}`;const hide=Math.max(2,Math.ceil(letters.length*.5)),start=Math.max(1,Math.floor((letters.length-hide)/2)),chosen=new Set(letters.slice(start,start+hide));return chars.map((c,i)=>chosen.has(i)?'_':c).join('');}
 function supportWord(s,cardId,today){const key=`card:${String(cardId)}`;s.words??={};s.words[key]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0,supportedEncounters:0};s.words[key].lastSeen=today;return s.words[key];}
-function recordSupportUse(s,cardId,today,type,{complete=false}={}){const word=supportWord(s,cardId,today);if(type==='visual')word.visualSupports=(word.visualSupports||0)+1;if(type==='spelling')word.spellingSupports=(word.spellingSupports||0)+1;if(complete)word.supportedEncounters=(word.supportedEncounters||0)+1;saveState(s);}
+function recordSupportUse(s,cardId,today,type,{complete=false}={}){const word=supportWord(s,cardId,today);applySupportTracking(word,type,{shown:!complete,completed:complete});saveState(s);}
 async function fetchCards(){if(cache)return cache;const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;for(let from=0;;from+=size){const res=await fetch(`${c.SUPABASE_URL}/rest/v1/cards?select=*`,{headers:{apikey:c.SUPABASE_ANON_KEY,Authorization:`Bearer ${c.SUPABASE_ANON_KEY}`,Range:`${from}-${from+size-1}`,'Range-Unit':'items'}});if(!res.ok)throw new Error(`Could not read cards (${res.status}).`);const page=await res.json();rows.push(...page);if(page.length<size)break;}cache=rows;return rows;}
 
 async function status(){const s=state(),today=dayKey(),overallLeft=Math.max(0,PRODUCTION_DAILY_LIMIT-productionAttemptsToday(s,today)),independentDone=independentAttemptsToday(s,today);try{const cards=await fetchCards(),readiness=independentReadinessSummary(cards,s),available=!overallLeft||independentDone>=INDEPENDENT_DAILY_LIMIT?0:(await independentRecallCandidates(cards,s,{today})).length;return {available,done:independentDone,overallLeft,readiness};}catch{return {available:0,done:independentDone,overallLeft,readiness:{ready:0,guided:0,near:[]}};}}
