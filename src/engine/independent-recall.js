@@ -7,7 +7,7 @@ function history(state={}){return Array.isArray(state.flashcardProduction?.attem
 function dateValue(day){const t=Date.parse(`${day}T12:00:00`);return Number.isFinite(t)?t:null;}
 function daysBetween(a,b){const x=dateValue(a),y=dateValue(b);return x===null||y===null?Infinity:Math.round((y-x)/86400000);}
 function lastIndependentMiss(state,cardId){return history(state).filter(a=>a?.meaningful===true&&String(a.cardId)===String(cardId)&&a.stage===PRODUCTION_STAGE.INDEPENDENT&&a.correct===false).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0]||null;}
-export function independentCoolingDown(state={},cardId,today){const miss=lastIndependentMiss(state,cardId);return Boolean(miss?.date&&daysBetween(miss.date,today)>=0&&daysBetween(miss.date,today)<INDEPENDENT_MISS_COOLDOWN_DAYS);}
+export function independentMissCoolingDown(state={},cardId,today){const miss=lastIndependentMiss(state,cardId);return Boolean(miss?.date&&daysBetween(miss.date,today)>=0&&daysBetween(miss.date,today)<INDEPENDENT_MISS_COOLDOWN_DAYS);}
 export function independentAttemptsToday(state={},today){return history(state).filter(a=>a?.meaningful===true&&a.date===today&&a.stage===PRODUCTION_STAGE.INDEPENDENT).length;}
 
 export function independentReadinessSummary(cards=[],state={}){
@@ -26,7 +26,7 @@ export function independentRecallCandidates(cards=[],state={}, {today,limit=INDE
  if(!remaining)return[];
  const seenToday=new Set(history(state).filter(a=>a?.meaningful===true&&a.date===today).map(a=>String(a.cardId)));
  return productionReadiness(cards,state).records
-  .filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.INDEPENDENT&&!seenToday.has(String(r.id))&&!independentCoolingDown(state,r.id,today))
+  .filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.INDEPENDENT&&!seenToday.has(String(r.id))&&!independentMissCoolingDown(state,r.id,today))
   .sort(()=>random()-.5)
   .slice(0,remaining);
 }
