@@ -30,3 +30,27 @@ test('custom lower limits are respected',()=>{
  assert.equal(a.allowed,true);
  assert.equal(a.remaining,1);
 });
+
+test('configured GBP budget blocks a generation that would exceed the monthly ceiling',()=>{
+ const events=[{created_at:'2026-09-03T08:00:00Z',estimated_cost_gbp:0.6},{created_at:'2026-09-08T08:00:00Z',estimated_cost_gbp:0.3}];
+ const a=visualGenerationAllowance(events,{today:'2026-09-11',dailyLimit:2,monthlyLimit:20,estimatedCostGbp:0.2,monthlyBudgetGbp:1});
+ assert.equal(a.allowed,false);
+ assert.equal(a.costAllowed,false);
+ assert.equal(a.usedCostGbp,0.9);
+ assert.equal(a.costRemainingGbp,0.1);
+});
+
+test('configured GBP budget allows a generation that remains within the ceiling',()=>{
+ const events=[{created_at:'2026-09-03T08:00:00Z',estimated_cost_gbp:0.4}];
+ const a=visualGenerationAllowance(events,{today:'2026-09-11',dailyLimit:2,monthlyLimit:20,estimatedCostGbp:0.2,monthlyBudgetGbp:1});
+ assert.equal(a.allowed,true);
+ assert.equal(a.costAllowed,true);
+ assert.equal(a.usedCostGbp,0.4);
+ assert.equal(a.costRemainingGbp,0.6);
+});
+
+test('partial cost configuration fails closed',()=>{
+ const a=visualGenerationAllowance([],{today:'2026-09-11',estimatedCostGbp:0.2});
+ assert.equal(a.allowed,false);
+ assert.equal(a.costAllowed,false);
+});
