@@ -39,6 +39,13 @@ async function functionFailureMessage(error){
  return [status,detail].filter(Boolean).join(' — ')||'Visual generation failed with no server details.';
 }
 
+async function sessionClient(actionLabel){
+ const client=await visualClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
+ if(sessionError)throw sessionError;
+ if(!sessionData.session)throw new Error(`Sign in with Google before ${actionLabel}.`);
+ return client;
+}
+
 export async function visualGenerationUser(){
  const client=await visualClient(),{data,error}=await client.auth.getSession();
  if(error)throw error;
@@ -46,9 +53,7 @@ export async function visualGenerationUser(){
 }
 
 export async function visualGenerationStatus(){
- const client=await visualClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
- if(sessionError)throw sessionError;
- if(!sessionData.session)throw new Error('Sign in with Google before checking visual generation.');
+ const client=await sessionClient('checking visual generation');
  const {data,error}=await client.functions.invoke('generate-visual',{body:{action:'status'}});
  if(error)throw new Error(`Visual generation status unavailable: ${await functionFailureMessage(error)}`);
  return normalizeVisualGenerationStatus(data);
@@ -56,10 +61,25 @@ export async function visualGenerationStatus(){
 
 export async function requestGeneratedVisual(plan){
  if(!plan?.cardId)throw new Error('Visual generation requires a generation plan.');
- const client=await visualClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
- if(sessionError)throw sessionError;
- if(!sessionData.session)throw new Error('Sign in with Google before generating a visual cue.');
+ const client=await sessionClient('generating a visual cue');
  const {data,error}=await client.functions.invoke('generate-visual',{body:{cardId:String(plan.cardId)}});
  if(error)throw new Error(`Visual generation failed: ${await functionFailureMessage(error)}`);
  return validateGeneratedVisual(data,plan.cardId);
+}
+
+export async function approveGeneratedVisual(visual){
+ if(!visual?.generationId||!visual?.cardId)throw new Error('Visual approval requires a staged generation.');
+ const client=await sessionClient('approving a visual cue');
+ const {data,error}=await client.functions.invoke('generate-visual',{body:{action:'approve',generationId:String(visual.generationId)}});
+ if(error)throw new Error(`Visual approval failed: ${await functionFailureMessage(error)}`);
+ return validateGeneratedVisual(data,visual.cardId);
+}
+
+export async function rejectGeneratedVisual(visual){
+ if(!visual?.generationId||!visual?.cardId)throw new Error('Visual rejection requires a staged generation.');
+ const client=await sessionClient('rejecting a visual cue');
+ const {data,error}=await client.functions.invoke('generate-visual',{body:{action:'reject',generationId:String(visual.generationId)}});
+ if(error)throw new Error(`Visual rejection failed: ${await functionFailureMessage(error)}`);
+ if(String(data?.cardId||'')!==String(visual.cardId)||String(data?.status||'')!=='rejected')throw new Error('Visual rejection returned an unexpected response.');
+ return data;
 }
