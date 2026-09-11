@@ -1,0 +1,28 @@
+import {STORAGE_KEY} from '../engine/persistence.js';
+import {PRODUCTION_STAGE,productionReadiness} from '../engine/flashcards.js';
+import {productionProgress} from '../engine/production-progress.js';
+
+const content=document.getElementById('content');
+const tab=document.getElementById('flashcards-preview-tab');
+let cardsCache=null,scheduled=false;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const pct=v=>v==null?'—':`${Math.round(v*100)}%`;
+function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
+async function cards(){if(cardsCache)return cardsCache;const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;for(let from=0;;from+=size){const res=await fetch(`${c.SUPABASE_URL}/rest/v1/cards?select=*`,{headers:{apikey:c.SUPABASE_ANON_KEY,Authorization:`Bearer ${c.SUPABASE_ANON_KEY}`,Range:`${from}-${from+size-1}`,'Range-Unit':'items'}});if(!res.ok)throw new Error(`Could not read cards (${res.status}).`);const page=await res.json();rows.push(...page);if(page.length<size)break;}cardsCache=rows;return rows;}
+function stageLabel(stage){return stage===PRODUCTION_STAGE.SUPPORTED?'Supported':stage===PRODUCTION_STAGE.GUIDED?'Guided':stage===PRODUCTION_STAGE.INDEPENDENT?'Independent':'Contextual';}
+async function inject(){
+ const anchor=document.getElementById('independent-recall-pilot')||document.querySelector('.production-practice-callout');
+ if(!anchor||document.getElementById('production-progress-panel'))return;
+ const host=document.createElement('article');host.id='production-progress-panel';host.className='card evidence-card production-progress-panel';host.innerHTML='<div class="eyebrow">ACTIVE RECALL EVIDENCE</div><h2>Recent production</h2><p class="muted">Reading your recent practice…</p>';anchor.insertAdjacentElement('afterend',host);
+ try{
+  const s=state(),today=dayKey(),allCards=await cards(),progress=productionProgress(s,{today,days:14}),readiness=productionReadiness(allCards,s),byId=new Map(allCards.map(c=>[String(c.id),c]));
+  if(!host.isConnected)return;
+  const guided=progress.byStage[PRODUCTION_STAGE.GUIDED],supported=progress.byStage[PRODUCTION_STAGE.SUPPORTED],independent=progress.byStage[PRODUCTION_STAGE.INDEPENDENT],nearIndependent=readiness.records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.GUIDED&&r.evidence.guidedSuccesses===1&&r.evidence.weakness<4).length;
+  host.innerHTML=`<div class="row"><div><div class="eyebrow">ACTIVE RECALL EVIDENCE · LAST 14 DAYS</div><h2>Recent production</h2></div><div class="flashcard-retention">${pct(progress.rate)}</div></div><p class="muted">${progress.correct} correct from ${progress.total} meaningful English → Dutch attempts. This is separate from Flashcard SRS retention.</p><div class="flashcard-due-grid"><div class="metric"><span class="eyebrow">Supported</span><span class="n">${supported.correct}/${supported.total}</span></div><div class="metric"><span class="eyebrow">Guided</span><span class="n">${guided.correct}/${guided.total}</span></div><div class="metric"><span class="eyebrow">Independent</span><span class="n">${independent.correct}/${independent.total}</span></div><div class="metric"><span class="eyebrow">Near independent</span><span class="n">${nearIndependent}</span></div></div>${progress.recentMisses.length?`<div class="spaced"><strong>Recent words needing support</strong><div class="recent-mistakes">${progress.recentMisses.map(m=>{const card=byId.get(m.cardId);return `<div class="mistake-row"><div class="row"><strong lang="nl">${esc(card?.dutch||m.expected||'Word')}</strong><span class="pill">${esc(stageLabel(m.stage))}</span></div><div class="mini">${esc(card?.english||m.prompt||'')} · ${esc(m.date)}</div></div>`}).join('')}</div></div>`:`<p class="muted small spaced">No active-recall misses in this 14-day window.</p>`}`;
+ }catch(error){if(host.isConnected)host.innerHTML=`<div class="eyebrow">ACTIVE RECALL EVIDENCE</div><h2>Recent production</h2><p class="muted">${esc(error.message)}</p>`;}
+}
+function refresh(){if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;if(document.querySelector('.production-practice-callout'))inject().catch(()=>{});});}
+new MutationObserver(refresh).observe(content,{childList:true,subtree:true});
+tab?.addEventListener('click',()=>setTimeout(refresh,0));
+refresh();
