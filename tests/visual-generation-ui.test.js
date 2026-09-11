@@ -12,7 +12,7 @@ test('visual generation UI is loaded and cached for offline app code',()=>{
 });
 
 test('visual generation remains an explicit two-step spending action',()=>{
- assert.match(source,/data|prepare-visual-generation/);
+ assert.match(source,/prepare-visual-generation/);
  assert.match(source,/Confirm image generation/);
  assert.match(source,/Confirm generation/);
  assert.match(source,/requestGeneratedVisual\(plan\)/);
@@ -22,4 +22,11 @@ test('visual generation remains an explicit two-step spending action',()=>{
 test('generation waits until semantic review is complete',()=>{
  assert.match(source,/visualSemanticReviewQueue/);
  assert.match(source,/if\(visualSemanticReviewQueue\(allCards,s,\{today\}\)\.length\)return/);
+});
+
+test('spending action is gated by a no-spend server preflight and rechecked before generation',()=>{
+ assert.match(source,/visualGenerationStatus/);
+ assert.match(source,/preflight\?\.ready/);
+ assert.match(source,/const freshStatus=await status\(true\)/);
+ assert.match(source,/if\(!freshStatus\.ready\)throw new Error/);
 });
