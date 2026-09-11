@@ -162,12 +162,36 @@ Deno.serve(async req=>{
  const reservationStaleBefore=new Date(Date.now()-RESERVATION_STALE_MINUTES*60*1000).toISOString();
  await admin.from('visual_generation_log').update({status:'failed',failure_reason:'stale-reservation',completed_at:nowIso}).eq('card_id',cardId).eq('status','reserved').lt('created_at',reservationStaleBefore);
  await expireStaleReviews(admin,userData.user.id,bucket);
- const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model,estimated_cost_gbp:estimatedCostGbp,status:'reserved'}).select('id').single();
- if(logError||!logRow){
-  if((logError as any)?.code==='23505')return json({error:'A generated visual for this card is already in progress or waiting for review.'},409);
-  console.error('Visual generation audit insert failed',logError);
-  return json({error:'Visual generation could not reserve budget.'},500);
+
+ // Final spending admission is atomic in Postgres. The per-user advisory lock in
+ // reserve_visual_generation prevents concurrent requests for different cards from
+ // both passing the same daily/monthly/GBP budget check.
+ const {data:reservationRows,error:reservationError}=await admin.rpc('reserve_visual_generation',{
+  p_user_id:userData.user.id,
+  p_card_id:cardId,
+  p_model:model,
+  p_estimated_cost_gbp:estimatedCostGbp,
+  p_daily_limit:dailyLimit,
+  p_monthly_limit:monthlyLimit,
+  p_monthly_budget_gbp:monthlyBudgetGbp
+ });
+ if(reservationError){
+  console.error('Atomic visual generation reservation failed',reservationError);
+  return json({error:'Visual generation budget could not be reserved safely.'},500);
  }
+ const reservation=Array.isArray(reservationRows)?reservationRows[0]:reservationRows;
+ if(!reservation?.allowed){
+  const reserveReason=clean(reservation?.reason);
+  if(reserveReason==='active-card')return json({error:'A generated visual for this card is already in progress or waiting for review.'},409);
+  if(reserveReason==='daily-limit-reached')return json({error:'Daily visual generation limit reached.',dailyLimit},429);
+  if(reserveReason==='monthly-limit-reached')return json({error:'Monthly visual generation limit reached.',monthlyLimit},429);
+  if(reserveReason==='monthly-cost-ceiling-reached')return json({error:'Monthly visual generation cost ceiling reached.'},429);
+  if(reserveReason==='invalid-budget-config')return json({error:'Visual generation budget configuration is invalid.'},503);
+  return json({error:'Visual generation budget reservation was refused.'},500);
+ }
+ const attemptId=clean(reservation?.attempt_id||reservation?.attemptId);
+ if(!attemptId)return json({error:'Visual generation reservation returned no attempt id.'},500);
+ const logRow={id:attemptId};
 
  try{
   const openaiResponse=await fetch('https://api.openai.com/v1/images/generations',{
