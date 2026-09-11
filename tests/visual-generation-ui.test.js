@@ -30,3 +30,14 @@ test('spending action is gated by a no-spend server preflight and rechecked befo
  assert.match(source,/const freshStatus=await status\(true\)/);
  assert.match(source,/if\(!freshStatus\.ready\)throw new Error/);
 });
+
+test('a generated image must be explicitly approved before it becomes a card cue',()=>{
+ assert.match(source,/Check the picture before using it/);
+ assert.match(source,/Use this image/);
+ assert.match(source,/Reject image/);
+ assert.match(source,/approveGeneratedVisual\(generated\)/);
+ assert.match(source,/rejectGeneratedVisual\(generated\)/);
+ const requestIndex=source.indexOf('generated=await requestGeneratedVisual(plan)');
+ const attachIndex=source.indexOf('record.image_url=result.imageUrl');
+ assert.ok(requestIndex>=0&&attachIndex>requestIndex);
+});
