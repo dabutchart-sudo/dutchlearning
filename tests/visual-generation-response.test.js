@@ -16,6 +16,13 @@ test('accepts snake case server fields and supplies a safe alt fallback',()=>{
  assert.equal(result.alt,'Visual memory cue');
 });
 
+test('requires a generation id while a visual is awaiting learner review',()=>{
+ assert.throws(()=>normalizeGeneratedVisual({cardId:1,imageUrl:'https://example.com/a.png',status:'awaiting_review'}),/missing a generation id/);
+ const result=normalizeGeneratedVisual({cardId:1,generationId:'abc',imageUrl:'https://example.com/a.png',status:'awaiting_review'});
+ assert.equal(result.generationId,'abc');
+ assert.equal(result.status,'awaiting_review');
+});
+
 test('rejects missing, malformed, or non-https image URLs',()=>{
  assert.throws(()=>normalizeGeneratedVisual({cardId:1}),/invalid image URL/);
  assert.throws(()=>normalizeGeneratedVisual({cardId:1,imageUrl:'not-a-url'}),/invalid image URL/);
