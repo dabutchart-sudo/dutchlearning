@@ -7,6 +7,8 @@ const blankStage=()=>({correct:0,total:0,rate:null});
 const rate=(correct,total)=>total?correct/total:null;
 const dayNumber=value=>{const d=new Date(`${String(value).slice(0,10)}T12:00:00`);return Number.isNaN(d.getTime())?null:Math.floor(d.getTime()/DAY_MS);};
 const dateFromDay=day=>{const d=new Date(day*DAY_MS);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;};
+const stableErrorType=attempt=>['spelling','recall'].includes(attempt?.errorType)?attempt.errorType:classifyProductionError(attempt?.expected||'',attempt?.answer||'');
+const attemptTime=attempt=>{const timestamp=Date.parse(attempt?.timestamp||'');if(Number.isFinite(timestamp))return timestamp;const date=Date.parse(`${String(attempt?.date||'').slice(0,10)}T12:00:00`);return Number.isFinite(date)?date:0;};
 
 export function productionProgress(state={}, {today,days=14}={}){
  if(!today)throw new Error('Production progress requires a study day.');
@@ -26,10 +28,10 @@ export function productionProgress(state={}, {today,days=14}={}){
  }
  for(const stage of Object.values(byStage))stage.rate=rate(stage.correct,stage.total);
  const latestMissByCard=new Map();
- for(const attempt of [...attempts].reverse()){
-  if(attempt.correct!==false)continue;
+ const misses=attempts.filter(a=>a.correct===false).sort((a,b)=>attemptTime(b)-attemptTime(a));
+ for(const attempt of misses){
   const id=String(attempt.cardId??'');
-  if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||'',answer:attempt.answer||'',errorType:classifyProductionError(attempt.expected||'',attempt.answer||'')});
+  if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||'',answer:attempt.answer||'',errorType:stableErrorType(attempt)});
  }
  const daily=[];
  for(let day=Math.max(start,end-6);day<=end;day++){
