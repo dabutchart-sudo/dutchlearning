@@ -1,11 +1,12 @@
 import {STORAGE_KEY} from '../engine/persistence.js';
 import {visualGenerationQueue} from '../engine/visual-generation-plan.js';
+import {visualGenerationStatusSummary} from '../engine/visual-generation-status.js';
 import {visualSemanticReviewQueue} from '../engine/visual-semantic-review.js';
-import {requestGeneratedVisual,visualGenerationUser} from './visual-generation-client.js';
+import {requestGeneratedVisual,visualGenerationStatus,visualGenerationUser} from './visual-generation-client.js';
 
 const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
-let cardsCache=null,scheduled=false,busy=false,confirmCardId=null,message='',generated=null;
+let cardsCache=null,scheduled=false,busy=false,confirmCardId=null,message='',generated=null,serviceStatus=null,statusCheckedAt=0;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
@@ -21,29 +22,50 @@ async function cards(){
  cardsCache=rows;return rows;
 }
 function removePanel(){document.getElementById('visual-generation-panel')?.remove();}
-function errorText(error){return esc(error?.message||'Visual generation is unavailable.');}
+async function status(force=false){
+ if(!force&&serviceStatus&&Date.now()-statusCheckedAt<60000)return serviceStatus;
+ serviceStatus=await visualGenerationStatus();statusCheckedAt=Date.now();return serviceStatus;
+}
+function reasonCopy(reason){
+ return ({
+  disabled:'The visual generation service is deliberately disabled on the server.',
+  'missing-openai-key':'The server is missing its OpenAI image-generation key.',
+  'usage-budget-disabled':'Server usage limits currently disable visual generation.',
+  'cost-budget-unconfigured':'The server cost estimate or monthly GBP ceiling still needs configuring.',
+  'audit-log-unavailable':'The private generation audit log is not ready yet.',
+  'storage-bucket-unavailable':'The visual-cue storage bucket is not ready yet.',
+  'storage-bucket-not-public':'The visual-cue storage bucket must be public before activation.',
+  'daily-limit-reached':'Today’s visual generation allowance has already been used.',
+  'monthly-limit-reached':'This month’s visual generation allowance has been reached.',
+  'monthly-cost-ceiling-reached':'The monthly visual-generation GBP ceiling has been reached.'
+ })[reason]||'The visual generation service is not ready to spend API credit.';
+}
 
 async function render(){
  const anchor=document.getElementById('visual-semantic-review-panel')||document.getElementById('production-progress-panel');
  if(!anchor){removePanel();return;}
  const allCards=await cards(),s=state(),today=dayKey();
  removePanel();
- // Finish semantic decisions before offering an API-spending action.
  if(visualSemanticReviewQueue(allCards,s,{today}).length)return;
  const plan=visualGenerationQueue(allCards,s,{today,limit:1})[0]||null;
  if(!plan){generated=null;confirmCardId=null;return;}
- let user=null,authError='';
+ let user=null,authError='',preflight=null,preflightError='';
  try{user=await visualGenerationUser();}catch(error){authError=error?.message||'Sign-in status could not be checked.';}
+ if(user){try{preflight=await status();}catch(error){preflightError=error?.message||'Server preflight could not be checked.';}}
  const panel=document.createElement('article');
  panel.id='visual-generation-panel';panel.className='card evidence-card';panel.setAttribute('aria-live','polite');
- const confirming=confirmCardId===String(plan.cardId);
+ const confirming=confirmCardId===String(plan.cardId)&&preflight?.ready;
  if(generated&&String(generated.cardId)===String(plan.cardId)){
   panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Picture created</h2><p class="muted small">The image has been stored on the flashcard and can now be used as adaptive recall support.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><img src="${esc(generated.imageUrl)}" alt="${esc(generated.alt)}" style="display:block;width:100%;max-width:360px;aspect-ratio:1;object-fit:cover;border-radius:16px;margin:14px auto 0">`;
  }else if(confirming){
-  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Confirm image generation</h2><p class="muted small">This is an explicit spending action. It can consume one server generation allowance and API credit. Nothing will be generated unless you confirm.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><div class="actions"><button id="confirm-visual-generation" class="primary" type="button" ${busy?'disabled':''}>${busy?'Generating…':'Confirm generation'}</button><button id="cancel-visual-generation" class="secondary" type="button" ${busy?'disabled':''}>Cancel</button></div>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
+  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Confirm image generation</h2><p class="muted small">This is an explicit spending action. The server currently estimates this image at £${Number(preflight.estimatedCostGbp||0).toFixed(2)} and will reject it if any daily, monthly or GBP limit has been reached.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><div class="actions"><button id="confirm-visual-generation" class="primary" type="button" ${busy?'disabled':''}>${busy?'Generating…':'Confirm generation'}</button><button id="cancel-visual-generation" class="secondary" type="button" ${busy?'disabled':''}>Cancel</button></div>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
  }else{
-  const authCopy=user?'You are signed in. Generation is still manual and uses the server-side usage and GBP budget limits.':authError?`Generation cannot start yet: ${esc(authError)}`:'Sign in with Google in the “Today’s varied examples” panel before generating a visual cue.';
-  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Ready for a picture</h2><p class="muted small">You approved this word because a clear image could genuinely help recall. The app will never generate it automatically.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span>${plan.partOfWord?`<br><span class="muted small">${esc(plan.partOfWord)}</span>`:''}</div><p class="muted small">${authCopy}</p>${user?'<button id="prepare-visual-generation" class="secondary" type="button">Generate visual cue</button>':''}`;
+  let authCopy='Sign in with Google in the “Today’s varied examples” panel before generating a visual cue.',action='';
+  if(authError)authCopy=`Generation cannot start yet: ${esc(authError)}`;
+  else if(user&&preflightError)authCopy=`Server preflight unavailable: ${esc(preflightError)}`;
+  else if(user&&preflight?.ready){authCopy=`Server ready · ${esc(visualGenerationStatusSummary(preflight))}. Estimated £${Number(preflight.estimatedCostGbp||0).toFixed(2)} for this image.`;action='<button id="prepare-visual-generation" class="secondary" type="button">Generate visual cue</button>';}
+  else if(user&&preflight)authCopy=reasonCopy(preflight.reason);
+  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Ready for a picture</h2><p class="muted small">You approved this word because a clear image could genuinely help recall. The app will never generate it automatically.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span>${plan.partOfWord?`<br><span class="muted small">${esc(plan.partOfWord)}</span>`:''}</div><p class="muted small">${authCopy}</p>${action}`;
  }
  anchor.insertAdjacentElement('afterend',panel);
  document.getElementById('prepare-visual-generation')?.addEventListener('click',()=>{confirmCardId=String(plan.cardId);message='';render().catch(()=>{});});
@@ -51,9 +73,10 @@ async function render(){
  document.getElementById('confirm-visual-generation')?.addEventListener('click',async()=>{
   if(busy)return;busy=true;message='';await render();
   try{
+   const freshStatus=await status(true);if(!freshStatus.ready)throw new Error(reasonCopy(freshStatus.reason));
    const result=await requestGeneratedVisual(plan);
    const record=allCards.find(card=>String(card.id)===String(plan.cardId));if(record)record.image_url=result.imageUrl;
-   generated=result;confirmCardId=null;
+   generated=result;confirmCardId=null;serviceStatus=null;statusCheckedAt=0;
   }catch(error){message=error?.message||'Visual generation failed.';}
   busy=false;await render();
  });
