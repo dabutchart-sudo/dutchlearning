@@ -23,8 +23,7 @@ on:
         type: string
   push:
     paths:
-      - .github/workflows/manage-epic-board.yml
-      - .github/scripts/manage-epic-board.sh
+      - .github/epic-board-request.json
 
 permissions:
   contents: read
@@ -35,13 +34,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Load request
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TARGET_REPO: ${{ github.event.inputs.target_repo }}
+          INPUT_EPIC_ISSUE: ${{ github.event.inputs.epic_issue }}
+          INPUT_PROJECT_TITLE: ${{ github.event.inputs.project_title }}
+          INPUT_RELATED_ITEMS: ${{ github.event.inputs.related_items }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            echo "TARGET_REPO=$(jq -r '.target_repo' .github/epic-board-request.json)" >> "$GITHUB_ENV"
+            echo "EPIC_ISSUE=$(jq -r '.epic_issue' .github/epic-board-request.json)" >> "$GITHUB_ENV"
+            echo "PROJECT_TITLE=$(jq -r '.project_title' .github/epic-board-request.json)" >> "$GITHUB_ENV"
+            echo "RELATED_ITEMS=$(jq -r '.related_items // ""' .github/epic-board-request.json)" >> "$GITHUB_ENV"
+          else
+            echo "TARGET_REPO=$INPUT_TARGET_REPO" >> "$GITHUB_ENV"
+            echo "EPIC_ISSUE=$INPUT_EPIC_ISSUE" >> "$GITHUB_ENV"
+            echo "PROJECT_TITLE=$INPUT_PROJECT_TITLE" >> "$GITHUB_ENV"
+            echo "RELATED_ITEMS=$INPUT_RELATED_ITEMS" >> "$GITHUB_ENV"
+          fi
+
       - name: Run epic board manager
         env:
           GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
           OWNER_NODE_ID: U_kgDODrSTyg
-          TARGET_REPO: ${{ github.event.inputs.target_repo || 'dabutchart-sudo/dutchlearning' }}
-          EPIC_ISSUE: ${{ github.event.inputs.epic_issue || '14' }}
-          PROJECT_TITLE: ${{ github.event.inputs.project_title || 'Dutch Learning - Unified Flashcards' }}
-          RELATED_ITEMS: ${{ github.event.inputs.related_items || 'pr:13:in_progress,issue:12:todo,issue:8:todo' }}
           BOARD_VIEW_NAME: Epic Board
         run: bash .github/scripts/manage-epic-board.sh
