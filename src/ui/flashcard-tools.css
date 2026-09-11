@@ -1,4 +1,5 @@
 .flashcard-tool-row{transform:translateY(-70px)}
 .flashcard-tool-row .text-link{min-height:42px;border:1px solid var(--separator);background:rgba(255,255,255,.82);color:var(--accent);border-radius:14px;font-weight:720;padding:0 17px}.flashcard-tool-row .text-link.flagged{color:#b54b00;border-color:color-mix(in srgb,#b54b00 28%,var(--separator))}
+.flashcard-language-marker{font-size:1.35rem;line-height:1;letter-spacing:0;text-transform:none}
 .flashcard-word .flashcard-part{display:inline-flex;align-items:center;margin:0 0 0 10px;padding:4px 8px;border:1px solid var(--separator);border-radius:999px;background:rgba(118,118,128,.08);color:var(--muted);font-size:.78rem;font-weight:720;letter-spacing:.01em;line-height:1.1;vertical-align:middle;position:relative;top:-.2em;white-space:nowrap}
-@media(max-width:520px){.flashcard-tool-row{transform:translateY(-70px)}.flashcard-word .flashcard-part{margin-left:8px;font-size:.74rem;padding:4px 7px}}
+@media(max-width:520px){.flashcard-tool-row{transform:translateY(-70px)}.flashcard-language-marker{font-size:1.3rem}.flashcard-word .flashcard-part{margin-left:8px;font-size:.74rem;padding:4px 7px}}
