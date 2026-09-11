@@ -100,7 +100,7 @@ jobs:
           fields_json=$(gh api graphql -f query="$fields_query" -f id="$project_id")
           stage_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .id' | head -n1)
           if [ -n "$stage_id" ]; then
-            delete_mutation='mutation($fieldId: ID!) { deleteProjectV2Field(input: {fieldId: $fieldId}) { deletedFieldId } }'
+            delete_mutation='mutation($fieldId: ID!) { deleteProjectV2Field(input: {fieldId: $fieldId}) { clientMutationId } }'
             gh api graphql -f query="$delete_mutation" -f fieldId="$stage_id" >/dev/null
             echo "Removed temporary Stage field"
           fi
