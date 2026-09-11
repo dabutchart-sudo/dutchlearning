@@ -25,6 +25,11 @@ Goal: replace the standalone Flashcards application with a fully integrated Dutc
 
 Current Phase 1 work is tracked in draft PR #13 (`feature/unified-flashcards-phase-1`). It introduces a reversible shared foundation. The standalone Flashcards app remains the production path while this work is validated.
 
+The operational board for this epic is **Dutch Learning - Unified Flashcards · Project #6**:
+https://github.com/users/dabutchart-sudo/projects/6
+
+Its standard workflow is **Todo → In Progress → Testing → Done**.
+
 Suggested staged roadmap:
 
 1. **Shared foundation** — domain helpers, integration boundaries, migration notes, regression coverage.
@@ -77,6 +82,10 @@ PR #13 predates this formalised workflow and is unusually large. Treat it as an 
 
 Issue #7 is the portfolio anchor for Dutch Learning.
 
+Every active epic should have a dedicated GitHub Projects board as its operational work view. The standard status flow is **Todo → In Progress → Testing → Done**. The higher-level personal Project Portfolio remains the cross-project overview rather than replacing epic-level boards.
+
+The Unified Flashcards board is bootstrapped by `.github/workflows/bootstrap-unified-flashcards-project.yml`, using the repository Actions secret `PROJECTS_TOKEN`. The secret must never be printed or committed.
+
 Substantial work should normally have an issue describing the problem/objective and acceptance criteria. Group related work conceptually under these areas as the backlog develops:
 
 - Unified Flashcards
@@ -127,8 +136,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Establish the Unified Flashcards work as a formal epic/roadmap item.
-2. Continue validating Phase 1 without retiring the standalone Flashcards production path.
-3. Complete issue #8 real-device/Supabase checks when appropriate.
-4. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
-5. Split subsequent Flashcards integration phases into focused, testable increments.
+1. Continue validating Phase 1 without retiring the standalone Flashcards production path.
+2. Complete issue #8 real-device/Supabase checks when appropriate.
+3. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
+4. Split subsequent Flashcards integration phases into focused, testable increments and place their work on the epic board.
