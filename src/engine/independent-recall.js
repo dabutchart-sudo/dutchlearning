@@ -2,12 +2,14 @@ import {PRODUCTION_DAILY_LIMIT,PRODUCTION_STAGE,productionAttemptsToday,producti
 
 export const INDEPENDENT_DAILY_LIMIT=1;
 export const INDEPENDENT_MISS_COOLDOWN_DAYS=3;
+export const INDEPENDENT_SPELLING_COOLDOWN_DAYS=1;
 
 function history(state={}){return Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];}
 function dateValue(day){const t=Date.parse(`${day}T12:00:00`);return Number.isFinite(t)?t:null;}
 function daysBetween(a,b){const x=dateValue(a),y=dateValue(b);return x===null||y===null?Infinity:Math.round((y-x)/86400000);}
 function lastIndependentMiss(state,cardId){return history(state).filter(a=>a?.meaningful===true&&String(a.cardId)===String(cardId)&&a.stage===PRODUCTION_STAGE.INDEPENDENT&&a.correct===false).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))[0]||null;}
-export function independentMissCoolingDown(state={},cardId,today){const miss=lastIndependentMiss(state,cardId);return Boolean(miss?.date&&daysBetween(miss.date,today)>=0&&daysBetween(miss.date,today)<INDEPENDENT_MISS_COOLDOWN_DAYS);}
+export function independentMissCooldownDays(attempt){return attempt?.errorType==='spelling'?INDEPENDENT_SPELLING_COOLDOWN_DAYS:INDEPENDENT_MISS_COOLDOWN_DAYS;}
+export function independentMissCoolingDown(state={},cardId,today){const miss=lastIndependentMiss(state,cardId);if(!miss?.date)return false;const elapsed=daysBetween(miss.date,today),cooldown=independentMissCooldownDays(miss);return elapsed>=0&&elapsed<cooldown;}
 export function independentAttemptsToday(state={},today){return history(state).filter(a=>a?.meaningful===true&&a.date===today&&a.stage===PRODUCTION_STAGE.INDEPENDENT).length;}
 
 export function independentReadinessSummary(cards=[],state={}){
