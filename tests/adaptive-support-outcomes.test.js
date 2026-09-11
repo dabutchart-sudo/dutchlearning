@@ -21,7 +21,7 @@ test('summarises spelling and recall recovery separately',()=>{
  assert.equal(result.byType.recall.followupRate,0);
 });
 
-test('does not treat another recovery encounter as unsupported follow-up',()=>{
+test('counts one unsupported follow-up after consecutive recovery encounters',()=>{
  const state={flashcardProduction:{attempts:[
   attempt(1,'2026-09-01',{correct:true,recovery:'recall'}),
   attempt(1,'2026-09-02',{correct:true,recovery:'recall'}),
@@ -29,8 +29,35 @@ test('does not treat another recovery encounter as unsupported follow-up',()=>{
  ]}};
  const result=adaptiveSupportOutcomes(state,{today:'2026-09-11',days:30});
  assert.equal(result.overall.supportTotal,2);
+ assert.equal(result.overall.followups,1);
+ assert.equal(result.overall.followupCorrect,1);
+ assert.equal(result.byType.recall.followups,1);
+});
+
+test('attributes a shared follow-up to the most recent recovery type',()=>{
+ const state={flashcardProduction:{attempts:[
+  attempt(1,'2026-09-01',{correct:true,recovery:'spelling'}),
+  attempt(1,'2026-09-02',{correct:true,recovery:'recall'}),
+  attempt(1,'2026-09-03',{correct:false,errorType:'recall'})
+ ]}};
+ const result=adaptiveSupportOutcomes(state,{today:'2026-09-11',days:30});
+ assert.equal(result.overall.followups,1);
+ assert.equal(result.byType.spelling.followups,0);
+ assert.equal(result.byType.recall.followups,1);
+ assert.equal(result.byType.recall.followupCorrect,0);
+});
+
+test('separate unsupported recalls close separate support episodes',()=>{
+ const state={flashcardProduction:{attempts:[
+  attempt(1,'2026-09-01',{correct:true,recovery:'recall'}),
+  attempt(1,'2026-09-02',{correct:true}),
+  attempt(1,'2026-09-03',{correct:true,recovery:'recall'}),
+  attempt(1,'2026-09-04',{correct:false,errorType:'recall'})
+ ]}};
+ const result=adaptiveSupportOutcomes(state,{today:'2026-09-11',days:30});
+ assert.equal(result.overall.supportTotal,2);
  assert.equal(result.overall.followups,2);
- assert.equal(result.overall.followupCorrect,2);
+ assert.equal(result.overall.followupCorrect,1);
 });
 
 test('limits support events to the reporting window',()=>{
