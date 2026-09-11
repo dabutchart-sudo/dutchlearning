@@ -38,6 +38,7 @@ test('a generated image must be explicitly approved before it becomes a card cue
  assert.match(source,/approveGeneratedVisual\(generated\)/);
  assert.match(source,/rejectGeneratedVisual\(generated\)/);
  const requestIndex=source.indexOf('generated=await requestGeneratedVisual(plan)');
+ const approvalIndex=source.indexOf('const result=await approveGeneratedVisual(generated)');
  const attachIndex=source.indexOf('record.image_url=result.imageUrl');
- assert.ok(requestIndex>=0&&attachIndex>requestIndex);
+ assert.ok(requestIndex>=0&&approvalIndex>=0&&attachIndex>approvalIndex,'card image must only be attached after explicit approval');
 });
