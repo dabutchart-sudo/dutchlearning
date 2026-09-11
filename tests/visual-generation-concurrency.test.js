@@ -26,5 +26,5 @@ test('stale reservations are failed before a new reservation is attempted',()=>{
 
 test('concurrent reservation conflicts are reported without starting another generation',()=>{
  assert.match(fn,/23505/);
- assert.match(fn,/already in progress for this card/i);
+ assert.match(fn,/already in progress or waiting for review/i);
 });
