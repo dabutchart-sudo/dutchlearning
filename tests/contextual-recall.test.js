@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {contextualRecallCandidates,contextualExercise,contextualAttemptsToday,CONTEXTUAL_DAILY_LIMIT} from '../src/engine/contextual-recall.js';
+import {contextualRecallCandidates,contextualExercise,contextualAttemptsToday,contextualEvidenceForCard,contextualProofSummary,CONTEXTUAL_DAILY_LIMIT,CONTEXTUAL_PROOF_SUCCESSES} from '../src/engine/contextual-recall.js';
 import {PRODUCTION_STAGE} from '../src/engine/flashcards.js';
 
 const card=(id,overrides={})=>({id,dutch:`woord${id}`,english:`word ${id}`,partofword:'noun',type:'review',interval:120,ease:2.5,reps:12,lapses:0,first_seen:'2026-06-01',last_reviewed:'2026-09-01',due_date:'2026-12-01',suspended:false,dutch_sentence:`Ik gebruik woord${id} vandaag.`,english_sentence:`I use word ${id} today.`,...overrides});
 const contextualState={words:{'card:1':{guidedSuccesses:2,independentSuccesses:5,weakness:0},'card:2':{guidedSuccesses:2,independentSuccesses:5,weakness:0}},flashcardProduction:{attempts:[]}};
+const ctx=(cardId,date,correct=true)=>({cardId:String(cardId),date,stage:PRODUCTION_STAGE.CONTEXTUAL,meaningful:true,correct});
 
 test('offers at most one contextual sentence per day and respects overall active-recall capacity',()=>{
  const q=contextualRecallCandidates([card(1),card(2)],structuredClone(contextualState),{today:'2026-09-11',random:()=>.5});
@@ -39,7 +40,34 @@ test('builds a meaningful full-sentence tile exercise',()=>{
 });
 
 test('does not offer a second contextual item after one contextual attempt today',()=>{
- const s=structuredClone(contextualState);s.flashcardProduction.attempts.push({cardId:'1',date:'2026-09-11',stage:PRODUCTION_STAGE.CONTEXTUAL,meaningful:true,correct:true});
+ const s=structuredClone(contextualState);s.flashcardProduction.attempts.push(ctx(1,'2026-09-11'));
  assert.equal(contextualAttemptsToday(s,'2026-09-11'),1);
  assert.equal(contextualRecallCandidates([card(1),card(2)],s,{today:'2026-09-11'}).length,0);
+});
+
+test('requires successful contextual use on two different days for proof',()=>{
+ const s=structuredClone(contextualState);s.flashcardProduction.attempts.push(ctx(1,'2026-09-09'),ctx(1,'2026-09-10'));
+ const evidence=contextualEvidenceForCard(s,1);
+ assert.equal(CONTEXTUAL_PROOF_SUCCESSES,2);
+ assert.equal(evidence.successDays,2);
+ assert.equal(evidence.proven,true);
+ const sameDay=structuredClone(contextualState);sameDay.flashcardProduction.attempts.push(ctx(1,'2026-09-10'),ctx(1,'2026-09-10'));
+ assert.equal(contextualEvidenceForCard(sameDay,1).proven,false);
+});
+
+test('a later contextual miss removes proof until the word succeeds again',()=>{
+ const s=structuredClone(contextualState);s.flashcardProduction.attempts.push(ctx(1,'2026-09-08'),ctx(1,'2026-09-09'),ctx(1,'2026-09-10',false));
+ assert.equal(contextualEvidenceForCard(s,1).proven,false);
+ s.flashcardProduction.attempts.push(ctx(1,'2026-09-11'));
+ assert.equal(contextualEvidenceForCard(s,1).proven,true);
+});
+
+test('contextual practice prioritises unproven words before already proven words',()=>{
+ const s=structuredClone(contextualState);s.flashcardProduction.attempts.push(ctx(1,'2026-09-08'),ctx(1,'2026-09-09'));
+ const q=contextualRecallCandidates([card(1),card(2)],s,{today:'2026-09-11',random:()=>.5});
+ assert.equal(q[0].id,'2');
+ const summary=contextualProofSummary([card(1),card(2)],s);
+ assert.equal(summary.eligible,2);
+ assert.equal(summary.proven,1);
+ assert.equal(summary.untried,1);
 });
