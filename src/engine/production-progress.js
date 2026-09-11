@@ -1,4 +1,5 @@
 import {PRODUCTION_STAGE} from './flashcards.js';
+import {classifyProductionError} from './production-errors.js';
 
 const DAY_MS=86400000;
 const stages=[PRODUCTION_STAGE.SUPPORTED,PRODUCTION_STAGE.GUIDED,PRODUCTION_STAGE.INDEPENDENT,PRODUCTION_STAGE.CONTEXTUAL];
@@ -28,7 +29,7 @@ export function productionProgress(state={}, {today,days=14}={}){
  for(const attempt of [...attempts].reverse()){
   if(attempt.correct!==false)continue;
   const id=String(attempt.cardId??'');
-  if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||''});
+  if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||'',answer:attempt.answer||'',errorType:classifyProductionError(attempt.expected||'',attempt.answer||'')});
  }
  const daily=[];
  for(let day=Math.max(start,end-6);day<=end;day++){
