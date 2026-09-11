@@ -2,7 +2,7 @@ import {STORAGE_KEY} from '../engine/persistence.js';
 import {visualGenerationQueue} from '../engine/visual-generation-plan.js';
 import {visualGenerationStatusSummary} from '../engine/visual-generation-status.js';
 import {visualSemanticReviewQueue} from '../engine/visual-semantic-review.js';
-import {requestGeneratedVisual,visualGenerationStatus,visualGenerationUser} from './visual-generation-client.js';
+import {approveGeneratedVisual,rejectGeneratedVisual,requestGeneratedVisual,visualGenerationStatus,visualGenerationUser} from './visual-generation-client.js';
 
 const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
@@ -51,14 +51,14 @@ async function render(){
  if(!plan){generated=null;confirmCardId=null;return;}
  let user=null,authError='',preflight=null,preflightError='';
  try{user=await visualGenerationUser();}catch(error){authError=error?.message||'Sign-in status could not be checked.';}
- if(user){try{preflight=await status();}catch(error){preflightError=error?.message||'Server preflight could not be checked.';}}
+ if(user&&!generated){try{preflight=await status();}catch(error){preflightError=error?.message||'Server preflight could not be checked.';}}
  const panel=document.createElement('article');
  panel.id='visual-generation-panel';panel.className='card evidence-card';panel.setAttribute('aria-live','polite');
  const confirming=confirmCardId===String(plan.cardId)&&preflight?.ready;
  if(generated&&String(generated.cardId)===String(plan.cardId)){
-  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Picture created</h2><p class="muted small">The image has been stored on the flashcard and can now be used as adaptive recall support.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><img src="${esc(generated.imageUrl)}" alt="${esc(generated.alt)}" style="display:block;width:100%;max-width:360px;aspect-ratio:1;object-fit:cover;border-radius:16px;margin:14px auto 0">`;
+  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Check the picture before using it</h2><p class="muted small">The image has been generated and stored temporarily, but it has <strong>not</strong> been attached to the flashcard yet. Keep it only if it clearly represents the meaning and would genuinely help recall.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><img src="${esc(generated.imageUrl)}" alt="${esc(generated.alt)}" style="display:block;width:100%;max-width:360px;aspect-ratio:1;object-fit:cover;border-radius:16px;margin:14px auto 0"><div class="actions"><button id="approve-generated-visual" class="primary" type="button" ${busy?'disabled':''}>${busy?'Saving…':'Use this image'}</button><button id="reject-generated-visual" class="secondary" type="button" ${busy?'disabled':''}>${busy?'Please wait…':'Reject image'}</button></div><p class="muted small">Rejecting removes the staged image. The generation attempt still counts toward today’s allowance because the API cost has already occurred.</p>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
  }else if(confirming){
-  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Confirm image generation</h2><p class="muted small">This is an explicit spending action. The server currently estimates this image at £${Number(preflight.estimatedCostGbp||0).toFixed(2)} and will reject it if any daily, monthly or GBP limit has been reached.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><div class="actions"><button id="confirm-visual-generation" class="primary" type="button" ${busy?'disabled':''}>${busy?'Generating…':'Confirm generation'}</button><button id="cancel-visual-generation" class="secondary" type="button" ${busy?'disabled':''}>Cancel</button></div>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
+  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Confirm image generation</h2><p class="muted small">This is an explicit spending action. The server currently estimates this image at £${Number(preflight.estimatedCostGbp||0).toFixed(2)} and will reject it if any daily, monthly or GBP limit has been reached. You will review the generated image before it can become a learning cue.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span></div><div class="actions"><button id="confirm-visual-generation" class="primary" type="button" ${busy?'disabled':''}>${busy?'Generating…':'Confirm generation'}</button><button id="cancel-visual-generation" class="secondary" type="button" ${busy?'disabled':''}>Cancel</button></div>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
  }else{
   let authCopy='Sign in with Google in the “Today’s varied examples” panel before generating a visual cue.',action='';
   if(authError)authCopy=`Generation cannot start yet: ${esc(authError)}`;
@@ -74,10 +74,23 @@ async function render(){
   if(busy)return;busy=true;message='';await render();
   try{
    const freshStatus=await status(true);if(!freshStatus.ready)throw new Error(reasonCopy(freshStatus.reason));
-   const result=await requestGeneratedVisual(plan);
-   const record=allCards.find(card=>String(card.id)===String(plan.cardId));if(record)record.image_url=result.imageUrl;
-   generated=result;confirmCardId=null;serviceStatus=null;statusCheckedAt=0;
+   generated=await requestGeneratedVisual(plan);confirmCardId=null;serviceStatus=null;statusCheckedAt=0;
   }catch(error){message=error?.message||'Visual generation failed.';}
+  busy=false;await render();
+ });
+ document.getElementById('approve-generated-visual')?.addEventListener('click',async()=>{
+  if(busy||!generated)return;busy=true;message='';await render();
+  try{
+   const result=await approveGeneratedVisual(generated);
+   const record=allCards.find(card=>String(card.id)===String(plan.cardId));if(record)record.image_url=result.imageUrl;
+   generated=null;serviceStatus=null;statusCheckedAt=0;message='';
+  }catch(error){message=error?.message||'Visual approval failed.';}
+  busy=false;await render();
+ });
+ document.getElementById('reject-generated-visual')?.addEventListener('click',async()=>{
+  if(busy||!generated)return;busy=true;message='';await render();
+  try{await rejectGeneratedVisual(generated);generated=null;serviceStatus=null;statusCheckedAt=0;message='';}
+  catch(error){message=error?.message||'Visual rejection failed.';}
   busy=false;await render();
  });
 }
