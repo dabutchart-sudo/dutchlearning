@@ -12,12 +12,33 @@ function distance(a,b){
  return row[y.length];
 }
 
+function tokenLooksLikeSpelling(target,given){
+ if(target===given)return true;
+ const d=distance(target,given),maxLen=Math.max(target.length,given.length);
+ if(maxLen<=4){
+  if(d!==1)return false;
+  if(target.length!==given.length)return true;
+  return target[0]===given[0];
+ }
+ const threshold=Math.min(2,Math.max(1,Math.ceil(maxLen*.2)));
+ return d<=threshold;
+}
+
 export function classifyProductionError(expected,answer){
  const target=clean(expected),given=clean(answer);
  if(target===given)return 'none';
  if(!given)return 'recall';
  const targetWords=target.split(' '),givenWords=given.split(' ');
  if(targetWords.length!==givenWords.length)return 'recall';
- const compactTarget=target.replace(/\s/g,''),compactGiven=given.replace(/\s/g,''),maxLen=Math.max(compactTarget.length,compactGiven.length),threshold=Math.min(2,Math.max(1,Math.ceil(maxLen*.2)));
- return distance(compactTarget,compactGiven)<=threshold?'spelling':'recall';
+ let changed=0,totalDistance=0;
+ for(let i=0;i<targetWords.length;i++){
+  if(targetWords[i]===givenWords[i])continue;
+  changed++;
+  if(!tokenLooksLikeSpelling(targetWords[i],givenWords[i]))return 'recall';
+  totalDistance+=distance(targetWords[i],givenWords[i]);
+ }
+ if(!changed)return 'none';
+ const compactLength=Math.max(target.replace(/\s/g,'').length,given.replace(/\s/g,'').length);
+ const totalThreshold=Math.min(2,Math.max(1,Math.ceil(compactLength*.2)));
+ return totalDistance<=totalThreshold?'spelling':'recall';
 }
