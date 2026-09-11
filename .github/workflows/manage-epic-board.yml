@@ -34,13 +34,29 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
       OWNER_NODE_ID: U_kgDODrSTyg
-      PROJECT_TITLE: ${{ inputs.project_title || 'Dutch Learning - Unified Flashcards' }}
-      TARGET_REPO: ${{ inputs.target_repo || 'dabutchart-sudo/dutchlearning' }}
-      EPIC_ISSUE: ${{ inputs.epic_issue || '14' }}
-      RELATED_ITEMS: ${{ inputs.related_items || 'pr:13:in_progress,issue:12:todo,issue:8:todo' }}
+      PROJECT_TITLE: ${{ github.event.inputs.project_title }}
+      TARGET_REPO: ${{ github.event.inputs.target_repo }}
+      EPIC_ISSUE: ${{ github.event.inputs.epic_issue }}
+      RELATED_ITEMS: ${{ github.event.inputs.related_items }}
       BOARD_VIEW_NAME: Epic Board
 
     steps:
+      - name: Apply self-test defaults
+        shell: bash
+        run: |
+          if [ -z "${PROJECT_TITLE:-}" ]; then
+            echo "PROJECT_TITLE=Dutch Learning - Unified Flashcards" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${TARGET_REPO:-}" ]; then
+            echo "TARGET_REPO=dabutchart-sudo/dutchlearning" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${EPIC_ISSUE:-}" ]; then
+            echo "EPIC_ISSUE=14" >> "$GITHUB_ENV"
+          fi
+          if [ -z "${RELATED_ITEMS:-}" ]; then
+            echo "RELATED_ITEMS=pr:13:in_progress,issue:12:todo,issue:8:todo" >> "$GITHUB_ENV"
+          fi
+
       - name: Verify Projects token
         shell: bash
         run: |
@@ -210,7 +226,6 @@ jobs:
               echo "$label already present"
             fi
 
-            update_mutation='mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) { updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $item_id, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) { projectV2Item { id } } }'
             update_mutation='mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) { updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) { projectV2Item { id } } }'
             gh api graphql -f query="$update_mutation" -f projectId="$project_id" -f itemId="$item_id" -f fieldId="$status_id" -f optionId="$option_id" >/dev/null
           }
