@@ -3,6 +3,8 @@ import {PRODUCTION_DAILY_LIMIT,PRODUCTION_STAGE,productionAttemptsToday,producti
 export const CONTEXTUAL_DAILY_LIMIT=1;
 export const CONTEXTUAL_PROOF_SUCCESSES=2;
 export const CONTEXTUAL_PROOF_CONTEXTS=2;
+export const CONTEXTUAL_MAINTENANCE_DAYS=14;
+const DAY_MS=86400000;
 
 function history(state={}){return Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];}
 function courseHistory(state={}){return Array.isArray(state.attempts)?state.attempts:[];}
@@ -25,6 +27,8 @@ function shuffled(items,random=Math.random){
 function evidenceDate(attempt){return String(attempt?.date||attempt?.occurredAt||attempt?.timestamp||'').slice(0,10);}
 function evidenceTime(attempt){const raw=attempt?.occurredAt||attempt?.timestamp||`${evidenceDate(attempt)}T12:00:00`;const value=Date.parse(raw);return Number.isFinite(value)?value:0;}
 function contextKey(attempt){return clean(attempt?.expected||attempt?.correctSentence||'');}
+function dayNumber(value){const t=Date.parse(`${String(value??'').slice(0,10)}T12:00:00`);return Number.isFinite(t)?Math.floor(t/DAY_MS):null;}
+function addDays(date,days){const d=new Date(`${date}T12:00:00`);d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function contextualHistory(state={},cardId){return history(state).filter(a=>a?.meaningful===true&&a.stage===PRODUCTION_STAGE.CONTEXTUAL&&String(a.cardId)===String(cardId)).map(a=>({...a,source:'flashcards'}));}
 function courseContextualHistory(state={},cardId){
  const key=`card:${String(cardId)}`;
@@ -32,29 +36,38 @@ function courseContextualHistory(state={},cardId){
 }
 
 export function contextualEvidenceForCard(state={},cardId,{requiredSuccesses=CONTEXTUAL_PROOF_SUCCESSES,requiredContexts=CONTEXTUAL_PROOF_CONTEXTS}={}){
- const flashcardAttempts=contextualHistory(state,cardId),courseAttempts=courseContextualHistory(state,cardId),attempts=[...flashcardAttempts,...courseAttempts].sort((a,b)=>evidenceTime(a)-evidenceTime(b)),correct=attempts.filter(a=>a.correct===true),correctDays=new Set(correct.map(evidenceDate).filter(Boolean)),correctContexts=new Set(correct.map(contextKey).filter(Boolean)),courseDays=new Set(courseAttempts.map(evidenceDate).filter(Boolean)),flashcardDays=new Set(flashcardAttempts.filter(a=>a.correct===true).map(evidenceDate).filter(Boolean)),latest=attempts.at(-1)||null,successDays=correctDays.size,successContexts=correctContexts.size;
- return {attempts:attempts.length,flashcardAttempts:flashcardAttempts.length,courseAttempts:courseAttempts.length,correct:correct.length,successDays,successContexts,courseSuccessDays:courseDays.size,flashcardSuccessDays:flashcardDays.size,requiredSuccesses,requiredContexts,proven:successDays>=requiredSuccesses&&successContexts>=requiredContexts&&latest?.correct===true,lastResult:latest?.correct===true?'correct':latest?.correct===false?'wrong':null,lastSource:latest?.source||null};
+ const flashcardAttempts=contextualHistory(state,cardId),courseAttempts=courseContextualHistory(state,cardId),attempts=[...flashcardAttempts,...courseAttempts].sort((a,b)=>evidenceTime(a)-evidenceTime(b)),correct=attempts.filter(a=>a.correct===true),correctDays=new Set(correct.map(evidenceDate).filter(Boolean)),correctContexts=new Set(correct.map(contextKey).filter(Boolean)),courseDays=new Set(courseAttempts.map(evidenceDate).filter(Boolean)),flashcardDays=new Set(flashcardAttempts.filter(a=>a.correct===true).map(evidenceDate).filter(Boolean)),latest=attempts.at(-1)||null,successDays=correctDays.size,successContexts=correctContexts.size,latestDate=latest?evidenceDate(latest):null;
+ return {attempts:attempts.length,flashcardAttempts:flashcardAttempts.length,courseAttempts:courseAttempts.length,correct:correct.length,successDays,successContexts,courseSuccessDays:courseDays.size,flashcardSuccessDays:flashcardDays.size,requiredSuccesses,requiredContexts,proven:successDays>=requiredSuccesses&&successContexts>=requiredContexts&&latest?.correct===true,lastResult:latest?.correct===true?'correct':latest?.correct===false?'wrong':null,lastSource:latest?.source||null,lastDate:latestDate};
 }
 
-export function contextualProofSummary(cards=[],state={}, {requiredSuccesses=CONTEXTUAL_PROOF_SUCCESSES,requiredContexts=CONTEXTUAL_PROOF_CONTEXTS}={}){
+export function contextualMaintenanceStatus(state={},cardId,today,{maintenanceDays=CONTEXTUAL_MAINTENANCE_DAYS}={}){
+ const evidence=contextualEvidenceForCard(state,cardId),todayDay=dayNumber(today),lastDay=dayNumber(evidence.lastDate),gap=Math.max(1,Math.trunc(Number(maintenanceDays)||CONTEXTUAL_MAINTENANCE_DAYS));
+ if(!evidence.proven||todayDay===null||lastDay===null)return {due:false,daysSince:null,nextDue:null,evidence};
+ const daysSince=Math.max(0,todayDay-lastDay);
+ return {due:daysSince>=gap,daysSince,nextDue:addDays(evidence.lastDate,gap),evidence};
+}
+
+export function contextualProofSummary(cards=[],state={}, {today=null,requiredSuccesses=CONTEXTUAL_PROOF_SUCCESSES,requiredContexts=CONTEXTUAL_PROOF_CONTEXTS,maintenanceDays=CONTEXTUAL_MAINTENANCE_DAYS}={}){
  const records=productionReadiness(cards,state).records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.CONTEXTUAL&&hasUsableSentence(r));
- const evidence=records.map(record=>({record,evidence:contextualEvidenceForCard(state,record.id,{requiredSuccesses,requiredContexts})}));
- return {eligible:records.length,proven:evidence.filter(x=>x.evidence.proven).length,developing:evidence.filter(x=>!x.evidence.proven&&x.evidence.attempts>0).length,untried:evidence.filter(x=>x.evidence.attempts===0).length,courseContributors:evidence.filter(x=>x.evidence.courseSuccessDays>0).length,records:evidence};
+ const evidence=records.map(record=>{const ev=contextualEvidenceForCard(state,record.id,{requiredSuccesses,requiredContexts}),maintenance=today&&ev.proven?contextualMaintenanceStatus(state,record.id,today,{maintenanceDays}):{due:false};return {record,evidence:ev,maintenance};});
+ return {eligible:records.length,proven:evidence.filter(x=>x.evidence.proven).length,developing:evidence.filter(x=>!x.evidence.proven&&x.evidence.attempts>0).length,untried:evidence.filter(x=>x.evidence.attempts===0).length,courseContributors:evidence.filter(x=>x.evidence.courseSuccessDays>0).length,maintenanceDue:evidence.filter(x=>x.evidence.proven&&x.maintenance.due).length,resting:evidence.filter(x=>x.evidence.proven&&!x.maintenance.due).length,records:evidence};
 }
 
 export function contextualAttemptsToday(state={},today){return history(state).filter(a=>a?.meaningful===true&&a.date===today&&a.stage===PRODUCTION_STAGE.CONTEXTUAL).length;}
 
-export function contextualRecallCandidates(cards=[],state={}, {today,limit=CONTEXTUAL_DAILY_LIMIT,random=Math.random}={}){
+export function contextualRecallCandidates(cards=[],state={}, {today,limit=CONTEXTUAL_DAILY_LIMIT,random=Math.random,maintenanceDays=CONTEXTUAL_MAINTENANCE_DAYS}={}){
  if(!today)throw new Error('Contextual recall requires a study day.');
  const overallRemaining=Math.max(0,PRODUCTION_DAILY_LIMIT-productionAttemptsToday(state,today));
  const contextualRemaining=Math.max(0,Math.trunc(limit)-contextualAttemptsToday(state,today));
  const remaining=Math.min(overallRemaining,contextualRemaining);
  if(!remaining)return[];
  const seenToday=new Set(history(state).filter(a=>a?.meaningful===true&&a.date===today).map(a=>String(a.cardId)));
+ for(const record of productionReadiness(cards,state).records){if(courseContextualHistory(state,record.id).some(a=>evidenceDate(a)===today))seenToday.add(String(record.id));}
  return productionReadiness(cards,state).records
   .filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.CONTEXTUAL&&!seenToday.has(String(r.id))&&hasUsableSentence(r))
-  .map(r=>({record:r,evidence:contextualEvidenceForCard(state,r.id),tie:random()}))
-  .sort((a,b)=>Number(a.evidence.proven)-Number(b.evidence.proven)||a.evidence.successContexts-b.evidence.successContexts||a.evidence.successDays-b.evidence.successDays||a.evidence.attempts-b.evidence.attempts||a.tie-b.tie)
+  .map(r=>{const evidence=contextualEvidenceForCard(state,r.id),maintenance=contextualMaintenanceStatus(state,r.id,today,{maintenanceDays});return {record:r,evidence,maintenance,tie:random()};})
+  .filter(x=>!x.evidence.proven||x.maintenance.due)
+  .sort((a,b)=>Number(a.evidence.proven)-Number(b.evidence.proven)||a.evidence.successContexts-b.evidence.successContexts||a.evidence.successDays-b.evidence.successDays||a.evidence.attempts-b.evidence.attempts||((b.maintenance.daysSince||0)-(a.maintenance.daysSince||0))||a.tie-b.tie)
   .slice(0,remaining)
   .map(x=>x.record);
 }
