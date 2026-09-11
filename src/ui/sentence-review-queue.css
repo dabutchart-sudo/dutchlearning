@@ -1,0 +1,15 @@
+.sentence-review-summary{border-left:4px solid var(--accent)}
+.sentence-review-summary h2{margin:6px 0 0;font-size:1.35rem}
+.sentence-review-summary .status{min-width:42px;text-align:center}
+.sentence-review-view{max-width:820px;margin:0 auto}
+.sentence-review-header{margin-bottom:14px;align-items:center}
+.sentence-review-header h2{margin:6px 0 0}
+.sentence-review-header button{width:auto}
+.sentence-review-card{padding:20px}
+.sentence-review-word{font-size:1.35rem}
+.sentence-review-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.sentence-review-pair>div{padding:14px;border-radius:12px;background:var(--surface-2,#f3f6f9)}
+.sentence-review-pair p{margin:7px 0 0;line-height:1.45}
+.sentence-review-card>.secondary{width:auto}
+.sentence-review-card .remove-sentence-flag{width:auto;margin:0}
+@media(max-width:620px){.sentence-review-header{align-items:stretch;flex-direction:column}.sentence-review-header button{width:100%}.sentence-review-pair{grid-template-columns:1fr}}
