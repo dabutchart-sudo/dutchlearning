@@ -59,6 +59,14 @@ export async function visualGenerationStatus(){
  return normalizeVisualGenerationStatus(data);
 }
 
+export async function pendingGeneratedVisual(){
+ const client=await sessionClient('checking pending visual review');
+ const {data,error}=await client.functions.invoke('generate-visual',{body:{action:'pending-review'}});
+ if(error)throw new Error(`Pending visual review unavailable: ${await functionFailureMessage(error)}`);
+ if(!data?.pending)return null;
+ return validateGeneratedVisual(data,data.cardId);
+}
+
 export async function requestGeneratedVisual(plan){
  if(!plan?.cardId)throw new Error('Visual generation requires a generation plan.');
  const client=await sessionClient('generating a visual cue');
