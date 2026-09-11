@@ -10,7 +10,7 @@ let currentPair=null;
 let panelBusy=false;
 let panelMessage='';
 
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=s=>String(s??'').replace(/\s*\(.*?\)\s*$/,'').trim().toLocaleLowerCase('nl-NL');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
