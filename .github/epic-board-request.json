@@ -1,7 +1,7 @@
 {
-  "request_id": "2026-09-11-dutch-unified-flashcards-validation",
-  "target_repo": "dabutchart-sudo/dutchlearning",
-  "epic_issue": 14,
-  "project_title": "Dutch Learning - Unified Flashcards",
-  "related_items": "pr:13:in_progress,issue:12:todo,issue:8:todo"
+  "request_id": "2026-09-11-wave-rover-clean-foundation",
+  "target_repo": "dabutchart-sudo/wave-rover",
+  "epic_issue": 1,
+  "project_title": "Wave Rover - Clean ROS 2 Foundation",
+  "related_items": "issue:2:in_progress,issue:3:todo,issue:4:todo,issue:5:todo,issue:6:todo"
 }
