@@ -1,1 +1,3 @@
+.flashcard-tool-row{transform:translateY(-60px)}
 .flashcard-tool-row .text-link{min-height:42px;border:1px solid var(--separator);background:rgba(255,255,255,.82);color:var(--accent);border-radius:14px;font-weight:720;padding:0 17px}.flashcard-tool-row .text-link.flagged{color:#b54b00;border-color:color-mix(in srgb,#b54b00 28%,var(--separator))}
+@media(max-width:520px){.flashcard-tool-row{transform:translateY(-62px)}}
