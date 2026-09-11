@@ -15,10 +15,15 @@ test('offers at most one contextual sentence per day and respects overall active
  assert.equal(contextualRecallCandidates([card(1)],full,{today:'2026-09-11'}).length,0);
 });
 
-test('requires a usable sentence pair containing the target word',()=>{
+test('requires a usable sentence pair containing the complete target word or phrase',()=>{
  const missing=card(1,{dutch_sentence:'',english_sentence:''});
  const unrelated=card(2,{dutch_sentence:'Ik lees vandaag.',english_sentence:'I read today.'});
  assert.equal(contextualRecallCandidates([missing,unrelated],structuredClone(contextualState),{today:'2026-09-11'}).length,0);
+ const state={words:{'card:1':{guidedSuccesses:2,independentSuccesses:5,weakness:0}},flashcardProduction:{attempts:[]}};
+ const substring=card(1,{dutch:'man',english:'man',dutch_sentence:'De mand staat hier.',english_sentence:'The basket is here.'});
+ assert.equal(contextualRecallCandidates([substring],state,{today:'2026-09-11'}).length,0);
+ const punctuated=card(1,{dutch:'man',english:'man',dutch_sentence:'Daar staat de man, vandaag.',english_sentence:'The man is standing there today.'});
+ assert.equal(contextualRecallCandidates([punctuated],state,{today:'2026-09-11'}).length,1);
 });
 
 test('builds a meaningful full-sentence tile exercise',()=>{
