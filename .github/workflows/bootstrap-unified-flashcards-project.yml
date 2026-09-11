@@ -1,0 +1,180 @@
+name: Bootstrap Unified Flashcards Project
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/bootstrap-unified-flashcards-project.yml
+
+permissions:
+  contents: read
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      OWNER_LOGIN: dabutchart-sudo
+      OWNER_NODE_ID: U_kgDODrSTyg
+      OWNER_REST_ID: "246715338"
+      REPO: dabutchart-sudo/dutchlearning
+      REPO_NODE_ID: R_kgDOUQfnDg
+      PROJECT_TITLE: Dutch Learning - Unified Flashcards
+      BOARD_VIEW_NAME: Epic Board
+    steps:
+      - name: Verify Projects token is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "PROJECTS_TOKEN is not available to this workflow."
+            exit 1
+          fi
+
+      - name: Create or find the epic project
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          query='query { viewer { projectsV2(first: 100) { nodes { id number title url } } } }'
+          projects_json=$(gh api graphql -f query="$query")
+          project_id=$(echo "$projects_json" | jq -r --arg title "$PROJECT_TITLE" '.data.viewer.projectsV2.nodes[] | select(.title == $title) | .id' | head -n1)
+
+          if [ -z "$project_id" ]; then
+            mutation='mutation($ownerId: ID!, $title: String!) { createProjectV2(input: {ownerId: $ownerId, title: $title}) { projectV2 { id number title url } } }'
+            created=$(gh api graphql -f query="$mutation" -f ownerId="$OWNER_NODE_ID" -f title="$PROJECT_TITLE")
+            project_id=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.id')
+            project_number=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.number')
+            project_url=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.url')
+            echo "Created project #$project_number: $PROJECT_TITLE"
+          else
+            project_number=$(echo "$projects_json" | jq -r --arg id "$project_id" '.data.viewer.projectsV2.nodes[] | select(.id == $id) | .number')
+            project_url=$(echo "$projects_json" | jq -r --arg id "$project_id" '.data.viewer.projectsV2.nodes[] | select(.id == $id) | .url')
+            echo "Using existing project #$project_number: $PROJECT_TITLE"
+          fi
+
+          echo "project_id=$project_id" >> "$GITHUB_OUTPUT"
+          echo "project_number=$project_number" >> "$GITHUB_OUTPUT"
+          echo "project_url=$project_url" >> "$GITHUB_OUTPUT"
+
+      - name: Link project to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          mutation='mutation($projectId: ID!, $repositoryId: ID!) { linkProjectV2ToRepository(input: {projectId: $projectId, repositoryId: $repositoryId}) { repository { id } } }'
+          gh api graphql -f query="$mutation" -f projectId='${{ steps.project.outputs.project_id }}' -f repositoryId="$REPO_NODE_ID" >/dev/null || true
+
+      - name: Create or find workflow Stage field
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_id='${{ steps.project.outputs.project_id }}'
+
+          fields_query='query($id: ID!) { node(id: $id) { ... on ProjectV2 { fields(first: 100) { nodes { ... on ProjectV2SingleSelectField { id databaseId name options { id name } } } } } } }'
+          fields_json=$(gh api graphql -f query="$fields_query" -f id="$project_id")
+          stage_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .id' | head -n1)
+
+          if [ -z "$stage_id" ]; then
+            create_mutation='mutation($input: CreateProjectV2FieldInput!) { createProjectV2Field(input: $input) { projectV2Field { ... on ProjectV2SingleSelectField { id databaseId name options { id name } } } } }'
+            payload=$(jq -n \
+              --arg query "$create_mutation" \
+              --arg projectId "$project_id" \
+              '{query:$query,variables:{input:{projectId:$projectId,dataType:"SINGLE_SELECT",name:"Stage",singleSelectOptions:[
+                {name:"Todo",color:GRAY,description:"Ready to be worked"},
+                {name:"In Progress",color:BLUE,description:"Currently being worked"},
+                {name:"Testing",color:YELLOW,description:"Awaiting or undergoing verification"},
+                {name:"Done",color:GREEN,description:"Completed and accepted"}
+              ]}}}')
+            created=$(echo "$payload" | gh api graphql --input -)
+            stage_id=$(echo "$created" | jq -r '.data.createProjectV2Field.projectV2Field.id')
+            stage_database_id=$(echo "$created" | jq -r '.data.createProjectV2Field.projectV2Field.databaseId')
+            echo "Created Stage field"
+          else
+            stage_database_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .databaseId' | head -n1)
+            echo "Using existing Stage field"
+          fi
+
+          # Re-query so option IDs are available whether the field was new or existing.
+          fields_json=$(gh api graphql -f query="$fields_query" -f id="$project_id")
+          todo_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .options[] | select(.name == "Todo") | .id')
+          progress_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .options[] | select(.name == "In Progress") | .id')
+          testing_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .options[] | select(.name == "Testing") | .id')
+          done_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Stage") | .options[] | select(.name == "Done") | .id')
+
+          echo "stage_id=$stage_id" >> "$GITHUB_OUTPUT"
+          echo "stage_database_id=$stage_database_id" >> "$GITHUB_OUTPUT"
+          echo "todo_id=$todo_id" >> "$GITHUB_OUTPUT"
+          echo "progress_id=$progress_id" >> "$GITHUB_OUTPUT"
+          echo "testing_id=$testing_id" >> "$GITHUB_OUTPUT"
+          echo "done_id=$done_id" >> "$GITHUB_OUTPUT"
+
+      - name: Create board view
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_number='${{ steps.project.outputs.project_number }}'
+          stage_database_id='${{ steps.stage.outputs.stage_database_id }}'
+
+          views=$(gh api -H 'X-GitHub-Api-Version: 2026-03-10' "/users/$OWNER_REST_ID/projectsV2/$project_number/views")
+          existing=$(echo "$views" | jq -r --arg name "$BOARD_VIEW_NAME" '.[]? | select(.name == $name) | .id' | head -n1)
+
+          if [ -z "$existing" ]; then
+            body=$(jq -n \
+              --arg name "$BOARD_VIEW_NAME" \
+              --argjson stage "$stage_database_id" \
+              '{name:$name,layout:"board",vertical_group_by:[$stage]}')
+            echo "$body" | gh api --method POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'X-GitHub-Api-Version: 2026-03-10' \
+              "/users/$OWNER_REST_ID/projectsV2/$project_number/views" \
+              --input - >/dev/null
+            echo "Created board view: $BOARD_VIEW_NAME"
+          else
+            echo "Board view already exists: $BOARD_VIEW_NAME"
+          fi
+
+      - name: Add epic work items and set stages
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_id='${{ steps.project.outputs.project_id }}'
+          stage_id='${{ steps.stage.outputs.stage_id }}'
+          todo_id='${{ steps.stage.outputs.todo_id }}'
+          progress_id='${{ steps.stage.outputs.progress_id }}'
+
+          add_item() {
+            local content_id="$1"
+            local option_id="$2"
+            local label="$3"
+
+            items_query='query($id: ID!) { node(id: $id) { ... on ProjectV2 { items(first: 100) { nodes { id content { ... on Issue { id } ... on PullRequest { id } } } } } } }'
+            items_json=$(gh api graphql -f query="$items_query" -f id="$project_id")
+            item_id=$(echo "$items_json" | jq -r --arg content "$content_id" '.data.node.items.nodes[] | select(.content.id == $content) | .id' | head -n1)
+
+            if [ -z "$item_id" ]; then
+              add_mutation='mutation($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } } }'
+              added=$(gh api graphql -f query="$add_mutation" -f projectId="$project_id" -f contentId="$content_id")
+              item_id=$(echo "$added" | jq -r '.data.addProjectV2ItemById.item.id')
+              echo "Added $label"
+            else
+              echo "$label is already on the project"
+            fi
+
+            update_mutation='mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) { updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) { projectV2Item { id } } }'
+            gh api graphql -f query="$update_mutation" -f projectId="$project_id" -f itemId="$item_id" -f fieldId="$stage_id" -f optionId="$option_id" >/dev/null
+          }
+
+          add_item 'I_kwDOUQfnDs8AAAABQ47zWw' "$progress_id" 'Epic #14'
+          add_item 'PR_kwDOUQfnDs8AAAABC_68dA' "$progress_id" 'PR #13'
+          add_item 'I_kwDOUQfnDs8AAAABQoeJdg' "$todo_id" 'Issue #12'
+          add_item 'I_kwDOUQfnDs8AAAABQUEJjw' "$todo_id" 'Issue #8'
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "### Unified Flashcards project ready" >> "$GITHUB_STEP_SUMMARY"
+          echo "Project: ${{ steps.project.outputs.project_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Board view: $BOARD_VIEW_NAME" >> "$GITHUB_STEP_SUMMARY"
+          echo "Stages: Todo / In Progress / Testing / Done" >> "$GITHUB_STEP_SUMMARY"
