@@ -14,10 +14,11 @@ export function independentAttemptsToday(state={},today){return history(state).f
 
 export function independentReadinessSummary(cards=[],state={}){
  const records=productionReadiness(cards,state).records;
- const ready=records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.INDEPENDENT||r.evidence.productionStage===PRODUCTION_STAGE.CONTEXTUAL);
+ const ready=records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.INDEPENDENT);
+ const contextual=records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.CONTEXTUAL);
  const guided=records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.GUIDED);
  const near=guided.filter(r=>r.srs.interval>=21&&r.evidence.weakness<4).map(r=>({id:r.id,dutch:r.dutch,english:r.english,guidedSuccesses:r.evidence.guidedSuccesses,needed:Math.max(0,2-r.evidence.guidedSuccesses)})).filter(r=>r.needed>0).sort((a,b)=>a.needed-b.needed||a.dutch.localeCompare(b.dutch,'nl')).slice(0,3);
- return {ready:ready.length,guided:guided.length,near};
+ return {ready:ready.length,contextual:contextual.length,guided:guided.length,near};
 }
 
 export function independentRecallCandidates(cards=[],state={}, {today,limit=INDEPENDENT_DAILY_LIMIT,random=Math.random}={}){
