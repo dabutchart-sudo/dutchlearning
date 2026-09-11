@@ -1,4 +1,5 @@
 import {chooseSentence} from '../engine/sentence-bank.js';
+import {sentenceGenerationTargets} from '../engine/sentence-targets.js';
 import {cachedSentenceBank,clearSentenceGenerationReturn,generateSentenceBanks,inspectSentenceBanks,sentenceGenerationReturnRequested,sentenceGenerationUser,signInForSentenceGeneration,signOutSentenceGeneration} from './sentence-bank-client.js';
 
 const content=document.getElementById('content');
@@ -9,9 +10,11 @@ let currentPair=null;
 let panelBusy=false;
 let panelMessage='';
 
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const clean=s=>String(s??'').replace(/\s*\(.*?\)\s*$/,'').trim().toLocaleLowerCase('nl-NL');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const maxNewSetting=()=>{const n=parseInt(localStorage.getItem('dfc_max_new')??'',10);return Number.isFinite(n)?Math.max(0,n):5;};
 
 async function fetchCards(){
  if(cards)return cards;
@@ -31,11 +34,13 @@ async function renderPanel(){
  let panel=document.getElementById('sentence-bank-panel');
  if(!panel){panel=document.createElement('article');panel.id='sentence-bank-panel';panel.className='card evidence-card sentence-bank-panel';host.append(panel);}
  try{
-  const list=await fetchCards(),[coverage,user]=await Promise.all([inspectSentenceBanks(list),sentenceGenerationUser()]);
-  panel.innerHTML=`<div class="row"><div><div class="eyebrow">Contextual sentence banks</div><h2>Varied examples</h2></div><span class="status">${coverage.ready}/${coverage.total} ready</span></div><p class="muted">The app can keep up to 10 varied examples for each word and rotate them during Flashcard review. Generation is manual, cached, and limited to five words per request.</p><div class="sentence-bank-metrics"><div class="metric"><span class="eyebrow">Ready</span><span class="n">${coverage.ready}</span></div><div class="metric"><span class="eyebrow">Need examples</span><span class="n">${coverage.needsRefresh}</span></div></div><div class="sentence-bank-actions">${user?`<button id="generate-sentence-banks" class="primary" ${panelBusy||!coverage.needsRefresh?'disabled':''}>${panelBusy?'Generating…':coverage.needsRefresh?'Generate next 5 words':'All banks ready'}</button><button id="sentence-bank-signout" class="text-link">Sign out</button>`:`<button id="sentence-bank-signin" class="secondary" ${panelBusy?'disabled':''}>Sign in with Google to generate</button>`}</div>${panelMessage?`<p class="small ${panelMessage.startsWith('Error:')?'error-message':'muted'}">${esc(panelMessage)}</p>`:''}`;
+  const list=await fetchCards();
+  const targets=sentenceGenerationTargets(list,{today:dayKey(),maxNew:maxNewSetting()});
+  const [coverage,targetCoverage,user]=await Promise.all([inspectSentenceBanks(list),inspectSentenceBanks(targets),sentenceGenerationUser()]);
+  panel.innerHTML=`<div class="row"><div><div class="eyebrow">Contextual sentence banks</div><h2>Today's varied examples</h2></div><span class="status">${targetCoverage.ready}/${targetCoverage.total} ready today</span></div><p class="muted">Sentence generation now focuses only on cards due or likely to appear in today's Flashcard session. It prepares up to five missing banks at a time instead of working through the whole library.</p><div class="sentence-bank-metrics"><div class="metric"><span class="eyebrow">Today's cards</span><span class="n">${targetCoverage.total}</span></div><div class="metric"><span class="eyebrow">Need examples today</span><span class="n">${targetCoverage.needsRefresh}</span></div><div class="metric"><span class="eyebrow">Library ready</span><span class="n">${coverage.ready}</span></div></div><div class="sentence-bank-actions">${user?`<button id="generate-sentence-banks" class="primary" ${panelBusy||!targetCoverage.needsRefresh?'disabled':''}>${panelBusy?'Preparing…':targetCoverage.needsRefresh?'Prepare up to 5 for today':'Today is ready'}</button><button id="sentence-bank-signout" class="text-link">Sign out</button>`:`<button id="sentence-bank-signin" class="secondary" ${panelBusy?'disabled':''}>Sign in with Google to prepare examples</button>`}</div>${panelMessage?`<p class="small ${panelMessage.startsWith('Error:')?'error-message':'muted'}">${esc(panelMessage)}</p>`:''}`;
   document.getElementById('sentence-bank-signin')?.addEventListener('click',async()=>{panelBusy=true;panelMessage='';await renderPanel();try{await signInForSentenceGeneration();}catch(e){panelBusy=false;panelMessage=`Error: ${e.message}`;await renderPanel();}});
   document.getElementById('sentence-bank-signout')?.addEventListener('click',async()=>{panelBusy=true;await renderPanel();try{await signOutSentenceGeneration();panelMessage='Signed out of sentence generation.';}catch(e){panelMessage=`Error: ${e.message}`;}panelBusy=false;await renderPanel();});
-  document.getElementById('generate-sentence-banks')?.addEventListener('click',async()=>{panelBusy=true;panelMessage='';await renderPanel();try{const result=await generateSentenceBanks(list);panelMessage=result.generated?`Verified ${result.readyAfter}/${result.requested} generated sentence banks in the local cache.`:'No sentence banks needed generation.';}catch(e){panelMessage=`Error: ${e.message}`;}panelBusy=false;await renderPanel();});
+  document.getElementById('generate-sentence-banks')?.addEventListener('click',async()=>{panelBusy=true;panelMessage='';await renderPanel();try{const result=await generateSentenceBanks(targets);panelMessage=result.generated?`Prepared and verified ${result.readyAfter}/${result.requested} sentence banks for today's likely cards.`:'Today's likely cards already have complete sentence banks.';}catch(e){panelMessage=`Error: ${e.message}`;}panelBusy=false;await renderPanel();});
  }catch(e){panel.innerHTML=`<div class="eyebrow">Contextual sentence banks</div><h2>Sentence banks unavailable</h2><p class="muted">${esc(e.message)}</p>`;}
 }
 
