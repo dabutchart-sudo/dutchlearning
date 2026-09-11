@@ -32,3 +32,15 @@ export function visualGenerationCandidate(record,state={},options={}){
  const need=visualNeedForRecord(record,state,options),decision=visualSemanticDecision(state,cardId(record));
  return Boolean(need.needed&&need.suitability?.status!=='blocked'&&decision?.decision===VISUAL_SEMANTIC_DECISIONS.SUITABLE);
 }
+
+export function visualSemanticReviewSummary(cards=[],state={},options={}){
+ const pendingRecords=visualSemanticReviewQueue(cards,state,options).map(item=>item.record),suitableRecords=[],unsuitableRecords=[],generationReadyRecords=[];
+ for(const record of cards){
+  const need=visualNeedForRecord(record,state,options),decision=visualSemanticDecision(state,cardId(record));
+  if(!need.needed||!decision)continue;
+  if(decision.decision===VISUAL_SEMANTIC_DECISIONS.SUITABLE)suitableRecords.push(record);
+  if(decision.decision===VISUAL_SEMANTIC_DECISIONS.UNSUITABLE)unsuitableRecords.push(record);
+  if(visualGenerationCandidate(record,state,options))generationReadyRecords.push(record);
+ }
+ return {pending:pendingRecords.length,suitable:suitableRecords.length,unsuitable:unsuitableRecords.length,generationReady:generationReadyRecords.length,pendingRecords,suitableRecords,unsuitableRecords,generationReadyRecords};
+}
