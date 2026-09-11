@@ -23,7 +23,8 @@ test('an incorrect guided recall does not count toward graduation',()=>{
  recordProductionAttempt(state,exercise,'schriven',{today:'2026-09-10',nowIso:'2026-09-10T08:00:00Z'});
  const evidence=learnerEvidenceForCard(state,42);
  assert.equal(evidence.guidedSuccesses,0);
- assert.equal(evidence.recallErrors,1);
+ assert.equal(evidence.spellingErrors,1);
+ assert.equal(evidence.recallErrors,0);
  assert.equal(productionStageForCard(card(),evidence),PRODUCTION_STAGE.GUIDED);
 });
 
