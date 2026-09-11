@@ -8,11 +8,18 @@ const corsHeaders={
 
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,'Content-Type':'application/json'}});
 const clean=(value:unknown)=>String(value??'').trim();
+const positiveLimit=(name:string,fallback:number)=>{const value=Number(Deno.env.get(name));return Number.isFinite(value)&&value>=0?Math.trunc(value):fallback;};
 
 function educationalPrompt(card:{english:string;partofword?:string|null}){
  const part=clean(card.partofword);
  const kind=part?` The vocabulary item is a ${part}.`:'';
  return `Create one simple, clear educational memory image that communicates the meaning "${clean(card.english)}" for a Dutch learner.${kind} Use an everyday, concrete scene where possible. Do not include written words, letters, captions, labels, flags, subtitles, or language-learning text. Avoid decorative details that do not help communicate the meaning.`;
+}
+
+function budgetStarts(now=new Date()){
+ const day=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
+ const month=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1));
+ return {day:day.toISOString(),month:month.toISOString()};
 }
 
 Deno.serve(async req=>{
@@ -42,7 +49,28 @@ Deno.serve(async req=>{
  if(cardError||!card)return json({error:'Card not found.'},404);
  if(clean(card.image_url))return json({cardId:String(card.id),imageUrl:clean(card.image_url),alt:`Visual memory cue for ${clean(card.english)}`,model:'existing'});
 
+ const dailyLimit=positiveLimit('VISUAL_GENERATION_DAILY_LIMIT',1);
+ const monthlyLimit=positiveLimit('VISUAL_GENERATION_MONTHLY_LIMIT',10);
+ if(dailyLimit===0||monthlyLimit===0)return json({error:'Visual generation budget is disabled.'},429);
+ const starts=budgetStarts();
+ const [dailyResult,monthlyResult]=await Promise.all([
+  admin.from('visual_generation_log').select('id',{count:'exact',head:true}).eq('user_id',userData.user.id).gte('created_at',starts.day),
+  admin.from('visual_generation_log').select('id',{count:'exact',head:true}).eq('user_id',userData.user.id).gte('created_at',starts.month)
+ ]);
+ if(dailyResult.error||monthlyResult.error){
+  console.error('Visual budget lookup failed',dailyResult.error||monthlyResult.error);
+  return json({error:'Visual generation budget could not be verified.'},500);
+ }
+ if((dailyResult.count||0)>=dailyLimit)return json({error:'Daily visual generation limit reached.',dailyLimit},429);
+ if((monthlyResult.count||0)>=monthlyLimit)return json({error:'Monthly visual generation limit reached.',monthlyLimit},429);
+
  const model=Deno.env.get('OPENAI_IMAGE_MODEL')||'gpt-image-2';
+ const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model}).select('id').single();
+ if(logError||!logRow){
+  console.error('Visual generation audit insert failed',logError);
+  return json({error:'Visual generation could not reserve budget.'},500);
+ }
+
  const openaiResponse=await fetch('https://api.openai.com/v1/images/generations',{
   method:'POST',
   headers:{Authorization:`Bearer ${openaiKey}`,'Content-Type':'application/json'},
@@ -75,6 +103,7 @@ Deno.serve(async req=>{
 
  const {error:updateError}=await admin.from('cards').update({image_url:imageUrl}).eq('id',cardId);
  if(updateError){console.error('Card image update failed',updateError);return json({error:'Generated image was stored but the card could not be updated.'},500);}
+ await admin.from('visual_generation_log').update({image_url:imageUrl}).eq('id',logRow.id);
 
  return json({cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model});
 });
