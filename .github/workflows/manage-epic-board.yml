@@ -1,0 +1,273 @@
+name: Manage Epic Board
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repo:
+        description: "Repository in owner/name form"
+        required: true
+        default: "dabutchart-sudo/dutchlearning"
+        type: string
+      epic_issue:
+        description: "Epic issue number"
+        required: true
+        type: string
+      project_title:
+        description: "GitHub Project title"
+        required: true
+        type: string
+      related_items:
+        description: "Comma-separated type:number:status entries (issue|pr; todo|in_progress|testing|done)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  manage:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+      OWNER_NODE_ID: U_kgDODrSTyg
+      PROJECT_TITLE: ${{ inputs.project_title }}
+      TARGET_REPO: ${{ inputs.target_repo }}
+      EPIC_ISSUE: ${{ inputs.epic_issue }}
+      RELATED_ITEMS: ${{ inputs.related_items }}
+      BOARD_VIEW_NAME: Epic Board
+
+    steps:
+      - name: Verify Projects token
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "PROJECTS_TOKEN is not available to this workflow."
+            exit 1
+          fi
+
+      - name: Validate target repository and epic
+        id: target
+        shell: bash
+        run: |
+          set -euo pipefail
+          repo_json=$(gh api "repos/$TARGET_REPO")
+          repo_id=$(echo "$repo_json" | jq -r '.node_id')
+          epic_json=$(gh api "repos/$TARGET_REPO/issues/$EPIC_ISSUE")
+          epic_id=$(echo "$epic_json" | jq -r '.node_id')
+          epic_title=$(echo "$epic_json" | jq -r '.title')
+
+          if [ -z "$repo_id" ] || [ "$repo_id" = "null" ]; then
+            echo "Could not resolve repository node ID."
+            exit 1
+          fi
+          if [ -z "$epic_id" ] || [ "$epic_id" = "null" ]; then
+            echo "Could not resolve epic issue node ID."
+            exit 1
+          fi
+
+          echo "repo_id=$repo_id" >> "$GITHUB_OUTPUT"
+          echo "epic_id=$epic_id" >> "$GITHUB_OUTPUT"
+          echo "epic_title=$epic_title" >> "$GITHUB_OUTPUT"
+
+      - name: Create or find project
+        id: project
+        shell: bash
+        run: |
+          set -euo pipefail
+          query='query { viewer { projectsV2(first: 100) { nodes { id number title url } } } }'
+          projects_json=$(gh api graphql -f query="$query")
+          project_id=$(echo "$projects_json" | jq -r --arg title "$PROJECT_TITLE" '.data.viewer.projectsV2.nodes[] | select(.title == $title) | .id' | head -n1)
+
+          if [ -z "$project_id" ]; then
+            mutation='mutation($ownerId: ID!, $title: String!) { createProjectV2(input: {ownerId: $ownerId, title: $title}) { projectV2 { id number title url } } }'
+            created=$(gh api graphql -f query="$mutation" -f ownerId="$OWNER_NODE_ID" -f title="$PROJECT_TITLE")
+            project_id=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.id')
+            project_number=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.number')
+            project_url=$(echo "$created" | jq -r '.data.createProjectV2.projectV2.url')
+            echo "Created project #$project_number: $PROJECT_TITLE"
+          else
+            project_number=$(echo "$projects_json" | jq -r --arg id "$project_id" '.data.viewer.projectsV2.nodes[] | select(.id == $id) | .number')
+            project_url=$(echo "$projects_json" | jq -r --arg id "$project_id" '.data.viewer.projectsV2.nodes[] | select(.id == $id) | .url')
+            echo "Using existing project #$project_number: $PROJECT_TITLE"
+          fi
+
+          echo "project_id=$project_id" >> "$GITHUB_OUTPUT"
+          echo "project_number=$project_number" >> "$GITHUB_OUTPUT"
+          echo "project_url=$project_url" >> "$GITHUB_OUTPUT"
+
+      - name: Link project to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          mutation='mutation($projectId: ID!, $repositoryId: ID!) { linkProjectV2ToRepository(input: {projectId: $projectId, repositoryId: $repositoryId}) { repository { id } } }'
+          gh api graphql \
+            -f query="$mutation" \
+            -f projectId='${{ steps.project.outputs.project_id }}' \
+            -f repositoryId='${{ steps.target.outputs.repo_id }}' >/dev/null || true
+
+      - name: Configure Status workflow
+        id: status
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_id='${{ steps.project.outputs.project_id }}'
+          fields_query='query($id: ID!) { node(id: $id) { ... on ProjectV2 { fields(first: 100) { nodes { ... on ProjectV2SingleSelectField { id name options { id name } } } } } } }'
+          fields_json=$(gh api graphql -f query="$fields_query" -f id="$project_id")
+          status_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .id' | head -n1)
+
+          if [ -z "$status_id" ]; then
+            echo "GitHub did not expose the native Status field."
+            exit 1
+          fi
+
+          current_names=$(echo "$fields_json" | jq -c '[.data.node.fields.nodes[] | select(.name == "Status") | .options[].name]')
+          wanted_names='["Todo","In Progress","Testing","Done"]'
+
+          if [ "$current_names" != "$wanted_names" ]; then
+            mutation='mutation($input: UpdateProjectV2FieldInput!) { updateProjectV2Field(input: $input) { projectV2Field { ... on ProjectV2SingleSelectField { id name options { id name } } } } }'
+            payload=$(jq -n \
+              --arg query "$mutation" \
+              --arg fieldId "$status_id" \
+              '{query:$query,variables:{input:{fieldId:$fieldId,singleSelectOptions:[
+                {name:"Todo",color:"GRAY",description:"Ready to be worked"},
+                {name:"In Progress",color:"BLUE",description:"Currently being worked"},
+                {name:"Testing",color:"YELLOW",description:"Awaiting or undergoing verification"},
+                {name:"Done",color:"GREEN",description:"Completed and accepted"}
+              ]}}}')
+            echo "$payload" | gh api graphql --input - >/dev/null
+          fi
+
+          fields_json=$(gh api graphql -f query="$fields_query" -f id="$project_id")
+          status_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .id' | head -n1)
+          todo_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Todo") | .id')
+          progress_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id')
+          testing_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Testing") | .id')
+          done_id=$(echo "$fields_json" | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "Done") | .id')
+
+          echo "status_id=$status_id" >> "$GITHUB_OUTPUT"
+          echo "todo_id=$todo_id" >> "$GITHUB_OUTPUT"
+          echo "progress_id=$progress_id" >> "$GITHUB_OUTPUT"
+          echo "testing_id=$testing_id" >> "$GITHUB_OUTPUT"
+          echo "done_id=$done_id" >> "$GITHUB_OUTPUT"
+
+      - name: Create board view if needed
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_id='${{ steps.project.outputs.project_id }}'
+          views_query='query($id: ID!) { node(id: $id) { ... on ProjectV2 { views(first: 100) { nodes { id name layout number } } } } }'
+          views_json=$(gh api graphql -f query="$views_query" -f id="$project_id")
+          existing=$(echo "$views_json" | jq -r --arg name "$BOARD_VIEW_NAME" '.data.node.views.nodes[] | select(.name == $name) | .id' | head -n1)
+
+          if [ -z "$existing" ]; then
+            mutation='mutation($input: CreateProjectV2ViewInput!) { createProjectV2View(input: $input) { projectV2View { id name number layout } } }'
+            payload=$(jq -n --arg query "$mutation" --arg projectId "$project_id" --arg name "$BOARD_VIEW_NAME" \
+              '{query:$query,variables:{input:{projectId:$projectId,name:$name,layout:"BOARD_LAYOUT"}}}')
+            echo "$payload" | gh api graphql --input - >/dev/null
+          fi
+
+      - name: Add epic and related items
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_id='${{ steps.project.outputs.project_id }}'
+          status_id='${{ steps.status.outputs.status_id }}'
+          todo_id='${{ steps.status.outputs.todo_id }}'
+          progress_id='${{ steps.status.outputs.progress_id }}'
+          testing_id='${{ steps.status.outputs.testing_id }}'
+          done_id='${{ steps.status.outputs.done_id }}'
+
+          resolve_status() {
+            case "$1" in
+              todo) echo "$todo_id" ;;
+              in_progress) echo "$progress_id" ;;
+              testing) echo "$testing_id" ;;
+              done) echo "$done_id" ;;
+              *) echo "Unknown status: $1" >&2; return 1 ;;
+            esac
+          }
+
+          add_item() {
+            local content_id="$1"
+            local option_id="$2"
+            local label="$3"
+
+            items_query='query($id: ID!) { node(id: $id) { ... on ProjectV2 { items(first: 100) { nodes { id content { ... on Issue { id } ... on PullRequest { id } } } } } } }'
+            items_json=$(gh api graphql -f query="$items_query" -f id="$project_id")
+            item_id=$(echo "$items_json" | jq -r --arg content "$content_id" '.data.node.items.nodes[] | select(.content.id == $content) | .id' | head -n1)
+
+            if [ -z "$item_id" ]; then
+              add_mutation='mutation($projectId: ID!, $contentId: ID!) { addProjectV2ItemById(input: {projectId: $projectId, contentId: $contentId}) { item { id } } }'
+              added=$(gh api graphql -f query="$add_mutation" -f projectId="$project_id" -f contentId="$content_id")
+              item_id=$(echo "$added" | jq -r '.data.addProjectV2ItemById.item.id')
+              echo "Added $label"
+            else
+              echo "$label already present"
+            fi
+
+            update_mutation='mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) { updateProjectV2ItemFieldValue(input: {projectId: $projectId, itemId: $itemId, fieldId: $fieldId, value: {singleSelectOptionId: $optionId}}) { projectV2Item { id } } }'
+            gh api graphql -f query="$update_mutation" -f projectId="$project_id" -f itemId="$item_id" -f fieldId="$status_id" -f optionId="$option_id" >/dev/null
+          }
+
+          add_item '${{ steps.target.outputs.epic_id }}' "$progress_id" "Epic #$EPIC_ISSUE"
+
+          if [ -n "${RELATED_ITEMS// /}" ]; then
+            IFS=',' read -ra entries <<< "$RELATED_ITEMS"
+            for entry in "${entries[@]}"; do
+              entry=$(echo "$entry" | xargs)
+              IFS=':' read -r kind number status <<< "$entry"
+              option_id=$(resolve_status "$status")
+
+              case "$kind" in
+                issue)
+                  content_id=$(gh api "repos/$TARGET_REPO/issues/$number" --jq '.node_id')
+                  ;;
+                pr)
+                  content_id=$(gh api "repos/$TARGET_REPO/pulls/$number" --jq '.node_id')
+                  ;;
+                *)
+                  echo "Unknown item type: $kind"
+                  exit 1
+                  ;;
+              esac
+
+              add_item "$content_id" "$option_id" "$kind #$number"
+            done
+          fi
+
+      - name: Update epic with board link
+        shell: bash
+        run: |
+          set -euo pipefail
+          project_url='${{ steps.project.outputs.project_url }}'
+          project_number='${{ steps.project.outputs.project_number }}'
+          issue_json=$(gh api "repos/$TARGET_REPO/issues/$EPIC_ISSUE")
+          body=$(echo "$issue_json" | jq -r '.body // ""')
+
+          marker='## Epic board'
+          if ! grep -Fq "$marker" <<< "$body"; then
+            addition=$(cat <<EOF
+
+## Epic board
+[**$PROJECT_TITLE · Project #$project_number**]($project_url)
+
+Board status workflow: **Todo → In Progress → Testing → Done**.
+EOF
+)
+            new_body="$body$addition"
+            jq -n --arg body "$new_body" '{body:$body}' | gh api --method PATCH "repos/$TARGET_REPO/issues/$EPIC_ISSUE" --input - >/dev/null
+            echo "Added board link to epic issue"
+          else
+            echo "Epic already contains a board section"
+          fi
+
+      - name: Summary
+        shell: bash
+        run: |
+          echo "### Epic board managed" >> "$GITHUB_STEP_SUMMARY"
+          echo "Repository: $TARGET_REPO" >> "$GITHUB_STEP_SUMMARY"
+          echo "Epic: #$EPIC_ISSUE — ${{ steps.target.outputs.epic_title }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Project: ${{ steps.project.outputs.project_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Workflow: Todo / In Progress / Testing / Done" >> "$GITHUB_STEP_SUMMARY"
