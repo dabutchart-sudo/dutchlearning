@@ -11,11 +11,13 @@ The browser never receives an OpenAI API key. It sends only the selected `cardId
 3. Verifies the authenticated user's server-side generation allowance before contacting OpenAI.
 4. Verifies both count-based limits and a configured monthly GBP cost ceiling.
 5. Reserves one generation attempt and its configured estimated cost in `visual_generation_log` before any API spend.
-6. Builds the educational image prompt on the server.
-7. Calls the OpenAI Images API.
-8. Stores the returned image in Supabase Storage.
-9. Writes the resulting HTTPS URL to `cards.image_url` and the audit row.
-10. Returns only the card id, stored image URL, accessible alt text, model name and configured estimated cost.
+6. Enforces a database-level one-active-reservation-per-card rule so double clicks, concurrent tabs or duplicate requests cannot start two paid generations for the same card.
+7. Builds the educational image prompt on the server.
+8. Calls the OpenAI Images API.
+9. Stores the returned image in Supabase Storage.
+10. Writes the resulting HTTPS URL to `cards.image_url` and marks the audit attempt as succeeded.
+11. Marks failed attempts with a terminal failure state so audit history distinguishes success, failure and an in-progress reservation.
+12. Returns only the card id, stored image URL, accessible alt text, model name and configured estimated cost.
 
 The function is **disabled by default**. `VISUAL_GENERATION_ENABLED=true` must be set before it can spend API credit.
 
@@ -32,6 +34,12 @@ An authenticated client can call the same function with `{ "action": "status" }`
 
 The app rechecks this status immediately before a confirmed generation. The Edge Function still repeats every budget check itself, so the preflight is informative rather than an authorization boundary.
 
+## Duplicate-spend protection
+
+`visual_generation_log.status` has three states: `reserved`, `succeeded` and `failed`. A partial unique index permits only one `reserved` row for a card at any moment. The server creates that reservation before contacting OpenAI, so two concurrent requests cannot both get as far as a paid generation call for the same card.
+
+A reservation older than 15 minutes is treated as stale and marked failed before a new reservation is attempted. This prevents an interrupted Edge Function invocation from blocking the card forever. Failed attempts still count against the conservative daily/monthly and estimated-cost allowances because an upstream provider may already have incurred cost before the failure became visible locally.
+
 ## Required server configuration
 
 Supabase normally provides `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions. Add these project secrets/settings as required:
@@ -45,10 +53,11 @@ Supabase normally provides `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SER
 - `VISUAL_GENERATION_MONTHLY_BUDGET_GBP` — required before spending is enabled. This is the hard estimated monthly visual-generation ceiling per authenticated user.
 - `VISUAL_GENERATION_ENABLED` — set to `true` only when the service, migrations and all budget controls are ready.
 
-Run both migrations before enabling the function:
+Run all migrations before enabling the function:
 
 - `supabase/migrations/20260911_visual_generation_log.sql`
 - `supabase/migrations/20260911_visual_generation_cost_budget.sql`
+- `supabase/migrations/20260911_visual_generation_attempt_state.sql`
 
 The audit table has RLS enabled and deliberately has no client policies; only the Edge Function's service-role client should access it. A generation attempt and its configured estimated cost are recorded before the OpenAI call, so a failed request still consumes that day's/month's allowance and estimated budget. This is intentionally conservative: an upstream failure should not allow repeated retries to create uncontrolled spend.
 
@@ -62,6 +71,6 @@ Create the Storage bucket named by `VISUAL_STORAGE_BUCKET` as a public bucket be
 
 Do not enable generation merely because the Edge Function exists. The browser-side pipeline must still establish all of the following first:
 
-`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit confirmation -> server count budget -> server GBP budget -> generation`
+`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit confirmation -> server count budget -> server GBP budget -> unique reservation -> generation -> terminal audit outcome`
 
-V5.1.70 adds the no-spend server preflight and makes the UI refuse to expose the final generation action until that preflight reports the service and current allowance as ready.
+V5.1.71 adds database-backed duplicate-spend protection and explicit generation attempt outcomes. It prevents concurrent requests for the same card from starting multiple paid image generations and safely releases stale reservations after 15 minutes.
