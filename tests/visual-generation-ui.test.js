@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+
+const source=await readFile(new URL('../src/ui/visual-generation-ui.js',import.meta.url),'utf8');
+const index=await readFile(new URL('../index.html',import.meta.url),'utf8');
+const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');
+
+test('visual generation UI is loaded and cached for offline app code',()=>{
+ assert.match(index,/visual-generation-ui\.js/);
+ assert.match(sw,/\.\/src\/ui\/visual-generation-ui\.js/);
+});
+
+test('visual generation remains an explicit two-step spending action',()=>{
+ assert.match(source,/data|prepare-visual-generation/);
+ assert.match(source,/Confirm image generation/);
+ assert.match(source,/Confirm generation/);
+ assert.match(source,/requestGeneratedVisual\(plan\)/);
+ assert.match(source,/The app will never generate it automatically/);
+});
+
+test('generation waits until semantic review is complete',()=>{
+ assert.match(source,/visualSemanticReviewQueue/);
+ assert.match(source,/if\(visualSemanticReviewQueue\(allCards,s,\{today\}\)\.length\)return/);
+});
