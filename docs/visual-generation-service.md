@@ -11,13 +11,13 @@ The browser never receives an OpenAI API key. It sends only the selected `cardId
 3. Verifies the authenticated user's server-side generation allowance before contacting OpenAI.
 4. Verifies both count-based limits and a configured monthly GBP cost ceiling.
 5. Reserves one generation attempt and its configured estimated cost in `visual_generation_log` before any API spend.
-6. Enforces a database-level one-active-reservation-per-card rule so double clicks, concurrent tabs or duplicate requests cannot start two paid generations for the same card.
-7. Builds the educational image prompt on the server.
-8. Calls the OpenAI Images API.
-9. Stores the returned image in Supabase Storage.
-10. Writes the resulting HTTPS URL to `cards.image_url` and marks the audit attempt as succeeded.
-11. Marks failed attempts with a terminal failure state so audit history distinguishes success, failure and an in-progress reservation.
-12. Returns only the card id, stored image URL, accessible alt text, model name and configured estimated cost.
+6. Enforces a database-level one-active-generation-per-card rule so double clicks, concurrent tabs or duplicate requests cannot start two paid generations for the same card.
+7. Builds the educational image prompt on the server and calls the OpenAI Images API.
+8. Stores the returned image in Supabase Storage as a staged cue.
+9. Marks the audit row `awaiting_review` and returns the staged image to the learner without changing `cards.image_url`.
+10. Attaches the image to the flashcard only after an explicit authenticated `approve` action.
+11. Deletes the staged file and records `rejected` if the learner rejects it.
+12. Records terminal failures separately so audit history distinguishes reservation, review, success, rejection and failure.
 
 The function is **disabled by default**. `VISUAL_GENERATION_ENABLED=true` must be set before it can spend API credit.
 
@@ -34,11 +34,13 @@ An authenticated client can call the same function with `{ "action": "status" }`
 
 The app rechecks this status immediately before a confirmed generation. The Edge Function still repeats every budget check itself, so the preflight is informative rather than an authorization boundary.
 
-## Duplicate-spend protection
+## Duplicate-spend and review protection
 
-`visual_generation_log.status` has three states: `reserved`, `succeeded` and `failed`. A partial unique index permits only one `reserved` row for a card at any moment. The server creates that reservation before contacting OpenAI, so two concurrent requests cannot both get as far as a paid generation call for the same card.
+`visual_generation_log.status` can be `reserved`, `awaiting_review`, `succeeded`, `rejected` or `failed`. A partial unique index permits only one active (`reserved` or `awaiting_review`) row for a card at any moment. The server creates the reservation before contacting OpenAI, so two concurrent requests cannot both reach a paid generation call for the same card.
 
-A reservation older than 15 minutes is treated as stale and marked failed before a new reservation is attempted. This prevents an interrupted Edge Function invocation from blocking the card forever. Failed attempts still count against the conservative daily/monthly and estimated-cost allowances because an upstream provider may already have incurred cost before the failure became visible locally.
+A reservation older than 15 minutes is treated as stale and marked failed before a new reservation is attempted. A staged image left awaiting review for more than 24 hours is removed from Storage and marked failed before another generation for that card can begin. Failed and rejected attempts still count against the conservative daily/monthly and estimated-cost allowances because the upstream generation cost has already occurred.
+
+The learner review gate is intentionally after generation but before learning use. A generated picture is never written to `cards.image_url` automatically. The learner must choose **Use this image** after inspecting it. Choosing **Reject image** removes the staged file instead, preventing a misleading or poor-quality picture from becoming a memory cue.
 
 ## Required server configuration
 
@@ -58,19 +60,20 @@ Run all migrations before enabling the function:
 - `supabase/migrations/20260911_visual_generation_log.sql`
 - `supabase/migrations/20260911_visual_generation_cost_budget.sql`
 - `supabase/migrations/20260911_visual_generation_attempt_state.sql`
+- `supabase/migrations/20260911_visual_generation_review_gate.sql`
 
-The audit table has RLS enabled and deliberately has no client policies; only the Edge Function's service-role client should access it. A generation attempt and its configured estimated cost are recorded before the OpenAI call, so a failed request still consumes that day's/month's allowance and estimated budget. This is intentionally conservative: an upstream failure should not allow repeated retries to create uncontrolled spend.
+The audit table has RLS enabled and deliberately has no client policies; only the Edge Function's service-role client should access it. A generation attempt and its configured estimated cost are recorded before the OpenAI call, so a failed or learner-rejected request still consumes that day's/month's allowance and estimated budget. This is intentionally conservative: an upstream failure should not allow repeated retries to create uncontrolled spend.
 
 Setting either count limit to `0` disables spending even if `VISUAL_GENERATION_ENABLED=true`. Cost protection fails closed too: if either `VISUAL_GENERATION_ESTIMATED_COST_GBP` or `VISUAL_GENERATION_MONTHLY_BUDGET_GBP` is missing, zero or invalid, the function refuses to generate. Existing card images are returned without consuming any allowance.
 
 The GBP figure is an internal conservative estimate, not an invoice from OpenAI. Review and update `VISUAL_GENERATION_ESTIMATED_COST_GBP` whenever the image model, image settings or provider pricing changes. Keeping the estimate deliberately high is safer than under-estimating it.
 
-Create the Storage bucket named by `VISUAL_STORAGE_BUCKET` as a public bucket before enabling generation. The generated cues contain vocabulary illustrations rather than personal data, and a durable public HTTPS URL lets the existing PWA cache the image for offline recall.
+Create the Storage bucket named by `VISUAL_STORAGE_BUCKET` as a public bucket before enabling generation. The generated cues contain vocabulary illustrations rather than personal data, and a durable public HTTPS URL lets the existing PWA cache approved images for offline recall.
 
 ## Activation order
 
 Do not enable generation merely because the Edge Function exists. The browser-side pipeline must still establish all of the following first:
 
-`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit confirmation -> server count budget -> server GBP budget -> unique reservation -> generation -> terminal audit outcome`
+`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit spending confirmation -> server budgets -> unique reservation -> generation -> learner image review -> approve/reject -> learning cue`
 
-V5.1.71 adds database-backed duplicate-spend protection and explicit generation attempt outcomes. It prevents concurrent requests for the same card from starting multiple paid image generations and safely releases stale reservations after 15 minutes.
+V5.1.72 adds the learner image-review gate. Generated images are staged rather than attached immediately, so a poor or misleading AI image cannot enter the learning flow unless the learner explicitly approves it.
