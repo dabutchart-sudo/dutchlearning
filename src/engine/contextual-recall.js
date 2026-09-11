@@ -4,6 +4,7 @@ export const CONTEXTUAL_DAILY_LIMIT=1;
 export const CONTEXTUAL_PROOF_SUCCESSES=2;
 
 function history(state={}){return Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];}
+function courseHistory(state={}){return Array.isArray(state.attempts)?state.attempts:[];}
 function clean(value){return String(value??'').trim().toLocaleLowerCase('nl-NL').replace(/[.!?]+$/,'').replace(/\s+/g,' ');}
 function words(value){return clean(value).split(/\s+/).map(w=>w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'')).filter(Boolean);}
 function containsTarget(sentence,target){const hay=words(sentence),needle=words(target);if(!needle.length||needle.length>hay.length)return false;return hay.some((_,i)=>needle.every((word,j)=>hay[i+j]===word));}
@@ -17,17 +18,23 @@ function shuffled(items,random=Math.random){
  for(let i=out.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
  return out;
 }
-function contextualHistory(state={},cardId){return history(state).filter(a=>a?.meaningful===true&&a.stage===PRODUCTION_STAGE.CONTEXTUAL&&String(a.cardId)===String(cardId));}
+function evidenceDate(attempt){return String(attempt?.date||attempt?.occurredAt||attempt?.timestamp||'').slice(0,10);}
+function evidenceTime(attempt){const raw=attempt?.occurredAt||attempt?.timestamp||`${evidenceDate(attempt)}T12:00:00`;const value=Date.parse(raw);return Number.isFinite(value)?value:0;}
+function contextualHistory(state={},cardId){return history(state).filter(a=>a?.meaningful===true&&a.stage===PRODUCTION_STAGE.CONTEXTUAL&&String(a.cardId)===String(cardId)).map(a=>({...a,source:'flashcards'}));}
+function courseContextualHistory(state={},cardId){
+ const key=`card:${String(cardId)}`;
+ return courseHistory(state).filter(a=>Array.isArray(a?.words)&&a.words.includes(key)&&a.direction==='en-nl'&&a.independent===true&&a.grammar===true&&a.spelling!==false&&a.assisted!==true).map(a=>({...a,correct:true,source:'course',date:evidenceDate(a)}));
+}
 
 export function contextualEvidenceForCard(state={},cardId,{requiredSuccesses=CONTEXTUAL_PROOF_SUCCESSES}={}){
- const attempts=contextualHistory(state,cardId),correct=attempts.filter(a=>a.correct===true),correctDays=new Set(correct.map(a=>String(a.date||a.timestamp||'').slice(0,10)).filter(Boolean)),latest=attempts.at(-1)||null,successDays=correctDays.size;
- return {attempts:attempts.length,correct:correct.length,successDays,requiredSuccesses,proven:successDays>=requiredSuccesses&&latest?.correct===true,lastResult:latest?.correct===true?'correct':latest?.correct===false?'wrong':null};
+ const flashcardAttempts=contextualHistory(state,cardId),courseAttempts=courseContextualHistory(state,cardId),attempts=[...flashcardAttempts,...courseAttempts].sort((a,b)=>evidenceTime(a)-evidenceTime(b)),correct=attempts.filter(a=>a.correct===true),correctDays=new Set(correct.map(evidenceDate).filter(Boolean)),courseDays=new Set(courseAttempts.map(evidenceDate).filter(Boolean)),flashcardDays=new Set(flashcardAttempts.filter(a=>a.correct===true).map(evidenceDate).filter(Boolean)),latest=attempts.at(-1)||null,successDays=correctDays.size;
+ return {attempts:attempts.length,flashcardAttempts:flashcardAttempts.length,courseAttempts:courseAttempts.length,correct:correct.length,successDays,courseSuccessDays:courseDays.size,flashcardSuccessDays:flashcardDays.size,requiredSuccesses,proven:successDays>=requiredSuccesses&&latest?.correct===true,lastResult:latest?.correct===true?'correct':latest?.correct===false?'wrong':null,lastSource:latest?.source||null};
 }
 
 export function contextualProofSummary(cards=[],state={}, {requiredSuccesses=CONTEXTUAL_PROOF_SUCCESSES}={}){
  const records=productionReadiness(cards,state).records.filter(r=>r.evidence.productionStage===PRODUCTION_STAGE.CONTEXTUAL&&hasUsableSentence(r));
  const evidence=records.map(record=>({record,evidence:contextualEvidenceForCard(state,record.id,{requiredSuccesses})}));
- return {eligible:records.length,proven:evidence.filter(x=>x.evidence.proven).length,developing:evidence.filter(x=>!x.evidence.proven&&x.evidence.attempts>0).length,untried:evidence.filter(x=>x.evidence.attempts===0).length,records:evidence};
+ return {eligible:records.length,proven:evidence.filter(x=>x.evidence.proven).length,developing:evidence.filter(x=>!x.evidence.proven&&x.evidence.attempts>0).length,untried:evidence.filter(x=>x.evidence.attempts===0).length,courseContributors:evidence.filter(x=>x.evidence.courseSuccessDays>0).length,records:evidence};
 }
 
 export function contextualAttemptsToday(state={},today){return history(state).filter(a=>a?.meaningful===true&&a.date===today&&a.stage===PRODUCTION_STAGE.CONTEXTUAL).length;}
