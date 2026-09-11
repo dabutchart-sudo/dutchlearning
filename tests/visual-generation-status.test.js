@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeVisualGenerationStatus,visualGenerationStatusSummary} from '../src/engine/visual-generation-status.js';
+import {normalizeVisualGenerationStatus,visualGenerationReadiness,visualGenerationStatusSummary} from '../src/engine/visual-generation-status.js';
 
 test('normalizes ready visual-generation status and remaining budgets',()=>{
  const status=normalizeVisualGenerationStatus({enabled:true,ready:true,reason:'ready',model:'gpt-image-2',bucket:'visual-cues',dailyLimit:1,monthlyLimit:10,usedToday:0,usedMonth:3,estimatedCostGbp:0.08,monthlyBudgetGbp:2,usedCostGbp:0.24});
@@ -8,12 +8,33 @@ test('normalizes ready visual-generation status and remaining budgets',()=>{
  assert.equal(status.monthlyRemaining,7);
  assert.equal(status.costRemainingGbp,1.76);
  assert.match(visualGenerationStatusSummary(status),/£1\.76/);
+ assert.equal(visualGenerationReadiness(status).state,'ready');
 });
 
-test('disabled service never reports ready',()=>{
+test('disabled service explains the safe activation order',()=>{
  const status=normalizeVisualGenerationStatus({enabled:false,ready:false,reason:'disabled'});
+ const readiness=visualGenerationReadiness(status);
  assert.equal(status.ready,false);
- assert.match(visualGenerationStatusSummary(status),/disabled/i);
+ assert.equal(readiness.state,'setup');
+ assert.match(readiness.nextAction,/enable it last/i);
+ assert.match(visualGenerationStatusSummary(status),/Next:/);
+});
+
+test('setup failures provide a concrete next deployment action',()=>{
+ const audit=visualGenerationReadiness({ready:false,reason:'audit-log-unavailable'});
+ const storage=visualGenerationReadiness({ready:false,reason:'storage-bucket-unavailable'});
+ const cost=visualGenerationReadiness({ready:false,reason:'cost-budget-unconfigured'});
+ assert.match(audit.nextAction,/migrations/i);
+ assert.match(storage.nextAction,/Storage bucket/i);
+ assert.match(cost.nextAction,/VISUAL_GENERATION_ESTIMATED_COST_GBP/);
+});
+
+test('allowance exhaustion is distinguished from deployment failure',()=>{
+ const daily=visualGenerationReadiness({ready:false,reason:'daily-limit-reached'});
+ const monthly=visualGenerationReadiness({ready:false,reason:'monthly-cost-ceiling-reached'});
+ assert.equal(daily.state,'limit');
+ assert.match(daily.nextAction,/No deployment change/i);
+ assert.equal(monthly.state,'limit');
 });
 
 test('rounds currency fields to pennies',()=>{
