@@ -4,10 +4,12 @@ export const CONTEXTUAL_DAILY_LIMIT=1;
 
 function history(state={}){return Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];}
 function clean(value){return String(value??'').trim().toLocaleLowerCase('nl-NL').replace(/[.!?]+$/,'').replace(/\s+/g,' ');}
+function words(value){return clean(value).split(/\s+/).map(w=>w.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu,'')).filter(Boolean);}
+function containsTarget(sentence,target){const hay=words(sentence),needle=words(target);if(!needle.length||needle.length>hay.length)return false;return hay.some((_,i)=>needle.every((word,j)=>hay[i+j]===word));}
 function hasUsableSentence(record){
  const dutch=String(record?.example?.dutch??'').trim(),english=String(record?.example?.english??'').trim(),target=clean(record?.dutch);
  if(!dutch||!english||dutch.split(/\s+/).length<3||!target)return false;
- return clean(dutch).includes(target);
+ return containsTarget(dutch,target);
 }
 function shuffled(items,random=Math.random){
  const out=[...items];
