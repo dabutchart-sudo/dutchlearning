@@ -11,6 +11,7 @@ const clean=(value:unknown)=>String(value??'').trim();
 const positiveLimit=(name:string,fallback:number)=>{const value=Number(Deno.env.get(name));return Number.isFinite(value)&&value>=0?Math.trunc(value):fallback;};
 const positiveMoney=(name:string)=>{const value=Number(Deno.env.get(name));return Number.isFinite(value)&&value>0?value:0;};
 const roundMoney=(value:number)=>Math.round((Number(value)||0)*100)/100;
+const RESERVATION_STALE_MINUTES=15;
 
 function educationalPrompt(card:{english:string;partofword?:string|null}){
  const part=clean(card.partofword);
@@ -22,6 +23,12 @@ function budgetStarts(now=new Date()){
  const day=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));
  const month=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1));
  return {day:day.toISOString(),month:month.toISOString()};
+}
+
+async function finishAttempt(admin:any,id:string,status:'succeeded'|'failed',extra:Record<string,unknown>={}){
+ const payload={status,completed_at:new Date().toISOString(),...extra};
+ const {error}=await admin.from('visual_generation_log').update(payload).eq('id',id);
+ if(error)console.error('Visual generation audit finalisation failed',error);
 }
 
 Deno.serve(async req=>{
@@ -103,44 +110,59 @@ Deno.serve(async req=>{
  if(cardError||!card)return json({error:'Card not found.'},404);
  if(clean(card.image_url))return json({cardId:String(card.id),imageUrl:clean(card.image_url),alt:`Visual memory cue for ${clean(card.english)}`,model:'existing'});
 
- const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model,estimated_cost_gbp:estimatedCostGbp}).select('id').single();
+ const staleBefore=new Date(Date.now()-RESERVATION_STALE_MINUTES*60*1000).toISOString();
+ await admin.from('visual_generation_log').update({status:'failed',failure_reason:'stale-reservation',completed_at:new Date().toISOString()}).eq('card_id',cardId).eq('status','reserved').lt('created_at',staleBefore);
+ const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model,estimated_cost_gbp:estimatedCostGbp,status:'reserved'}).select('id').single();
  if(logError||!logRow){
+  if((logError as any)?.code==='23505')return json({error:'Visual generation is already in progress for this card.'},409);
   console.error('Visual generation audit insert failed',logError);
   return json({error:'Visual generation could not reserve budget.'},500);
  }
 
- const openaiResponse=await fetch('https://api.openai.com/v1/images/generations',{
-  method:'POST',
-  headers:{Authorization:`Bearer ${openaiKey}`,'Content-Type':'application/json'},
-  body:JSON.stringify({model,prompt:educationalPrompt(card),n:1})
- });
- if(!openaiResponse.ok){
-  const detail=await openaiResponse.text();
-  console.error('OpenAI visual generation failed',openaiResponse.status,detail.slice(0,500));
-  return json({error:'Image generation failed.'},502);
+ try{
+  const openaiResponse=await fetch('https://api.openai.com/v1/images/generations',{
+   method:'POST',
+   headers:{Authorization:`Bearer ${openaiKey}`,'Content-Type':'application/json'},
+   body:JSON.stringify({model,prompt:educationalPrompt(card),n:1})
+  });
+  if(!openaiResponse.ok){
+   const detail=await openaiResponse.text();
+   console.error('OpenAI visual generation failed',openaiResponse.status,detail.slice(0,500));
+   await finishAttempt(admin,logRow.id,'failed',{failure_reason:'openai-error'});
+   return json({error:'Image generation failed.'},502);
+  }
+  const generated=await openaiResponse.json();
+  const item=generated?.data?.[0];
+  let bytes:Uint8Array|null=null;
+  if(item?.b64_json){
+   const binary=atob(item.b64_json);
+   bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+  }else if(item?.url){
+   const imageResponse=await fetch(item.url);
+   if(imageResponse.ok)bytes=new Uint8Array(await imageResponse.arrayBuffer());
+  }
+  if(!bytes?.length){await finishAttempt(admin,logRow.id,'failed',{failure_reason:'empty-image'});return json({error:'Image generator returned no usable image.'},502);}
+
+  const path=`cards/${cardId}/${crypto.randomUUID()}.png`;
+  const {error:uploadError}=await admin.storage.from(bucket).upload(path,bytes,{contentType:'image/png',upsert:false,cacheControl:'31536000'});
+  if(uploadError){console.error('Visual upload failed',uploadError);await finishAttempt(admin,logRow.id,'failed',{failure_reason:'storage-upload-error'});return json({error:'Generated image could not be stored.'},500);}
+  const {data:publicData}=admin.storage.from(bucket).getPublicUrl(path);
+  const imageUrl=clean(publicData?.publicUrl);
+  if(!imageUrl){await admin.storage.from(bucket).remove([path]);await finishAttempt(admin,logRow.id,'failed',{failure_reason:'storage-url-error'});return json({error:'Stored image URL is unavailable.'},500);}
+
+  const {error:updateError}=await admin.from('cards').update({image_url:imageUrl}).eq('id',cardId);
+  if(updateError){
+   console.error('Card image update failed',updateError);
+   await admin.storage.from(bucket).remove([path]);
+   await finishAttempt(admin,logRow.id,'failed',{failure_reason:'card-update-error'});
+   return json({error:'Generated image was stored but the card could not be updated.'},500);
+  }
+  await finishAttempt(admin,logRow.id,'succeeded',{image_url:imageUrl,failure_reason:null});
+
+  return json({cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model,estimatedCostGbp});
+ }catch(error){
+  console.error('Unexpected visual generation failure',error);
+  await finishAttempt(admin,logRow.id,'failed',{failure_reason:'unexpected-error'});
+  return json({error:'Visual generation failed unexpectedly.'},500);
  }
- const generated=await openaiResponse.json();
- const item=generated?.data?.[0];
- let bytes:Uint8Array|null=null;
- if(item?.b64_json){
-  const binary=atob(item.b64_json);
-  bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
- }else if(item?.url){
-  const imageResponse=await fetch(item.url);
-  if(imageResponse.ok)bytes=new Uint8Array(await imageResponse.arrayBuffer());
- }
- if(!bytes?.length)return json({error:'Image generator returned no usable image.'},502);
-
- const path=`cards/${cardId}/${crypto.randomUUID()}.png`;
- const {error:uploadError}=await admin.storage.from(bucket).upload(path,bytes,{contentType:'image/png',upsert:false,cacheControl:'31536000'});
- if(uploadError){console.error('Visual upload failed',uploadError);return json({error:'Generated image could not be stored.'},500);}
- const {data:publicData}=admin.storage.from(bucket).getPublicUrl(path);
- const imageUrl=clean(publicData?.publicUrl);
- if(!imageUrl)return json({error:'Stored image URL is unavailable.'},500);
-
- const {error:updateError}=await admin.from('cards').update({image_url:imageUrl}).eq('id',cardId);
- if(updateError){console.error('Card image update failed',updateError);return json({error:'Generated image was stored but the card could not be updated.'},500);}
- await admin.from('visual_generation_log').update({image_url:imageUrl}).eq('id',logRow.id);
-
- return json({cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model,estimatedCostGbp});
 });
