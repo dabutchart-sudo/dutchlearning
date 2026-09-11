@@ -22,18 +22,20 @@ export function adaptiveSupportOutcomes(state={}, {today,days=30}={}){
  const end=dayNumber(today),windowDays=Math.max(1,Math.trunc(Number(days)||30)),start=end-windowDays+1;
  const history=Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];
  const ordered=history.map((attempt,index)=>({attempt,index,day:dayNumber(attempt?.date||attempt?.timestamp)})).filter(x=>x.attempt?.meaningful===true&&x.day!==null).sort((a,b)=>a.day-b.day||String(a.attempt.timestamp||'').localeCompare(String(b.attempt.timestamp||''))||a.index-b.index);
- const overall=blankOutcome(),byType={spelling:blankOutcome(),recall:blankOutcome()};
- for(let i=0;i<ordered.length;i++){
-  const current=ordered[i];
-  if(current.day<start||current.day>end)continue;
-  const type=current.attempt.recovery;
-  if(type!=='spelling'&&type!=='recall')continue;
-  const buckets=[overall,byType[type]];
-  for(const bucket of buckets){bucket.supportTotal++;if(current.attempt.correct===true)bucket.supportCorrect++;}
-  const cardId=String(current.attempt.cardId??'');
-  const follow=ordered.slice(i+1).find(x=>String(x.attempt.cardId??'')===cardId&&!x.attempt.recovery&&x.attempt.stage===PRODUCTION_STAGE.GUIDED);
-  if(!follow)continue;
-  for(const bucket of buckets){bucket.followups++;if(follow.attempt.correct===true)bucket.followupCorrect++;}
+ const overall=blankOutcome(),byType={spelling:blankOutcome(),recall:blankOutcome()},pending=new Map();
+ for(const current of ordered){
+  const cardId=String(current.attempt.cardId??''),type=current.attempt.recovery,inWindow=current.day>=start&&current.day<=end;
+  if(type==='spelling'||type==='recall'){
+   if(!inWindow)continue;
+   const buckets=[overall,byType[type]];
+   for(const bucket of buckets){bucket.supportTotal++;if(current.attempt.correct===true)bucket.supportCorrect++;}
+   if(cardId)pending.set(cardId,type);
+   continue;
+  }
+  if(!inWindow||current.attempt.stage!==PRODUCTION_STAGE.GUIDED||!cardId||!pending.has(cardId))continue;
+  const pendingType=pending.get(cardId),buckets=[overall,byType[pendingType]];
+  for(const bucket of buckets){bucket.followups++;if(current.attempt.correct===true)bucket.followupCorrect++;}
+  pending.delete(cardId);
  }
  return {days:windowDays,overall:finish(overall),byType:{spelling:finish(byType.spelling),recall:finish(byType.recall)}};
 }
