@@ -7,7 +7,7 @@ import {applySupportTracking} from '../engine/support-tracking.js';
 const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
 let cache=null,scheduled=false,busy=false;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
 function saveState(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}
