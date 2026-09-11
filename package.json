@@ -1,6 +1,6 @@
 {
   "name": "dutch-sentence-trainer",
-  "version": "5.1.45",
+  "version": "5.1.46",
   "private": true,
   "type": "module",
   "scripts": { "test": "node --test" }
