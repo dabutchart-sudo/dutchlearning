@@ -24,6 +24,7 @@ on:
   push:
     paths:
       - .github/epic-board-request.json
+      - .github/workflows/manage-epic-board.yml
 
 permissions:
   contents: read
