@@ -1,4 +1,5 @@
 import {validateGeneratedVisual} from '../engine/visual-generation-response.js';
+import {normalizeVisualGenerationStatus} from '../engine/visual-generation-status.js';
 
 const AUTH_STORAGE_KEY='dutch_sentence_auth';
 let clientPromise=null;
@@ -42,6 +43,15 @@ export async function visualGenerationUser(){
  const client=await visualClient(),{data,error}=await client.auth.getSession();
  if(error)throw error;
  return data.session?.user||null;
+}
+
+export async function visualGenerationStatus(){
+ const client=await visualClient(),{data:sessionData,error:sessionError}=await client.auth.getSession();
+ if(sessionError)throw sessionError;
+ if(!sessionData.session)throw new Error('Sign in with Google before checking visual generation.');
+ const {data,error}=await client.functions.invoke('generate-visual',{body:{action:'status'}});
+ if(error)throw new Error(`Visual generation status unavailable: ${await functionFailureMessage(error)}`);
+ return normalizeVisualGenerationStatus(data);
 }
 
 export async function requestGeneratedVisual(plan){
