@@ -82,10 +82,10 @@ jobs:
               --arg query "$create_mutation" \
               --arg projectId "$project_id" \
               '{query:$query,variables:{input:{projectId:$projectId,dataType:"SINGLE_SELECT",name:"Stage",singleSelectOptions:[
-                {name:"Todo",color:GRAY,description:"Ready to be worked"},
-                {name:"In Progress",color:BLUE,description:"Currently being worked"},
-                {name:"Testing",color:YELLOW,description:"Awaiting or undergoing verification"},
-                {name:"Done",color:GREEN,description:"Completed and accepted"}
+                {name:"Todo",color:"GRAY",description:"Ready to be worked"},
+                {name:"In Progress",color:"BLUE",description:"Currently being worked"},
+                {name:"Testing",color:"YELLOW",description:"Awaiting or undergoing verification"},
+                {name:"Done",color:"GREEN",description:"Completed and accepted"}
               ]}}}')
             created=$(echo "$payload" | gh api graphql --input -)
             stage_id=$(echo "$created" | jq -r '.data.createProjectV2Field.projectV2Field.id')
