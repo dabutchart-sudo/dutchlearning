@@ -34,6 +34,16 @@ async function finishAttempt(admin:any,id:string,status:AttemptStatus,extra:Reco
  if(error)console.error('Visual generation audit finalisation failed',error);
 }
 
+async function expireStaleReviews(admin:any,userId:string,bucket:string){
+ const staleBefore=new Date(Date.now()-REVIEW_STALE_HOURS*60*60*1000).toISOString();
+ const {data:staleReviews,error}=await admin.from('visual_generation_log').select('id,storage_path').eq('user_id',userId).eq('status','awaiting_review').lt('created_at',staleBefore);
+ if(error){console.error('Stale visual review lookup failed',error);return;}
+ for(const stale of staleReviews||[]){
+  const path=clean(stale.storage_path);if(path)await admin.storage.from(bucket).remove([path]);
+  await finishAttempt(admin,stale.id,'failed',{failure_reason:'stale-review'});
+ }
+}
+
 Deno.serve(async req=>{
  if(req.method==='OPTIONS')return new Response('ok',{headers:corsHeaders});
  if(req.method!=='POST')return json({error:'Method not allowed.'},405);
@@ -56,6 +66,16 @@ Deno.serve(async req=>{
  const admin=createClient(supabaseUrl,serviceRole,{auth:{persistSession:false}});
  const action=clean(body?.action).toLowerCase();
  const bucket=Deno.env.get('VISUAL_STORAGE_BUCKET')||'visual-cues';
+
+ if(action==='pending-review'){
+  await expireStaleReviews(admin,userData.user.id,bucket);
+  const {data:attempt,error:attemptError}=await admin.from('visual_generation_log').select('id,card_id,status,image_url,model,estimated_cost_gbp,created_at').eq('user_id',userData.user.id).eq('status','awaiting_review').order('created_at',{ascending:false}).limit(1).maybeSingle();
+  if(attemptError){console.error('Pending visual review lookup failed',attemptError);return json({error:'Pending visual review could not be checked.'},500);}
+  if(!attempt)return json({pending:false});
+  const imageUrl=clean(attempt.image_url);
+  if(!imageUrl)return json({error:'Pending visual review is incomplete.'},500);
+  return json({pending:true,generationId:attempt.id,cardId:String(attempt.card_id),imageUrl,alt:'Visual memory cue',model:clean(attempt.model),estimatedCostGbp:Number(attempt.estimated_cost_gbp)||0,status:'awaiting_review'});
+ }
 
  if(action==='approve'||action==='reject'){
   const generationId=clean(body?.generationId);
@@ -141,12 +161,7 @@ Deno.serve(async req=>{
  const nowIso=new Date().toISOString();
  const reservationStaleBefore=new Date(Date.now()-RESERVATION_STALE_MINUTES*60*1000).toISOString();
  await admin.from('visual_generation_log').update({status:'failed',failure_reason:'stale-reservation',completed_at:nowIso}).eq('card_id',cardId).eq('status','reserved').lt('created_at',reservationStaleBefore);
- const reviewStaleBefore=new Date(Date.now()-REVIEW_STALE_HOURS*60*60*1000).toISOString();
- const {data:staleReviews}=await admin.from('visual_generation_log').select('id,storage_path').eq('card_id',cardId).eq('status','awaiting_review').lt('created_at',reviewStaleBefore);
- for(const stale of staleReviews||[]){
-  const path=clean(stale.storage_path);if(path)await admin.storage.from(bucket).remove([path]);
-  await finishAttempt(admin,stale.id,'failed',{failure_reason:'stale-review'});
- }
+ await expireStaleReviews(admin,userData.user.id,bucket);
  const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model,estimated_cost_gbp:estimatedCostGbp,status:'reserved'}).select('id').single();
  if(logError||!logRow){
   if((logError as any)?.code==='23505')return json({error:'A generated visual for this card is already in progress or waiting for review.'},409);
