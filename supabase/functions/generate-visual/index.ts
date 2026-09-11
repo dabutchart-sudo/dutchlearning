@@ -9,6 +9,7 @@ const corsHeaders={
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...corsHeaders,'Content-Type':'application/json'}});
 const clean=(value:unknown)=>String(value??'').trim();
 const positiveLimit=(name:string,fallback:number)=>{const value=Number(Deno.env.get(name));return Number.isFinite(value)&&value>=0?Math.trunc(value):fallback;};
+const positiveMoney=(name:string)=>{const value=Number(Deno.env.get(name));return Number.isFinite(value)&&value>0?value:0;};
 
 function educationalPrompt(card:{english:string;partofword?:string|null}){
  const part=clean(card.partofword);
@@ -51,21 +52,28 @@ Deno.serve(async req=>{
 
  const dailyLimit=positiveLimit('VISUAL_GENERATION_DAILY_LIMIT',1);
  const monthlyLimit=positiveLimit('VISUAL_GENERATION_MONTHLY_LIMIT',10);
+ const estimatedCostGbp=positiveMoney('VISUAL_GENERATION_ESTIMATED_COST_GBP');
+ const monthlyBudgetGbp=positiveMoney('VISUAL_GENERATION_MONTHLY_BUDGET_GBP');
  if(dailyLimit===0||monthlyLimit===0)return json({error:'Visual generation budget is disabled.'},429);
+ if(estimatedCostGbp<=0||monthlyBudgetGbp<=0)return json({error:'Visual generation cost budget is not configured.'},503);
  const starts=budgetStarts();
  const [dailyResult,monthlyResult]=await Promise.all([
   admin.from('visual_generation_log').select('id',{count:'exact',head:true}).eq('user_id',userData.user.id).gte('created_at',starts.day),
-  admin.from('visual_generation_log').select('id',{count:'exact',head:true}).eq('user_id',userData.user.id).gte('created_at',starts.month)
+  admin.from('visual_generation_log').select('id,estimated_cost_gbp').eq('user_id',userData.user.id).gte('created_at',starts.month)
  ]);
  if(dailyResult.error||monthlyResult.error){
   console.error('Visual budget lookup failed',dailyResult.error||monthlyResult.error);
   return json({error:'Visual generation budget could not be verified.'},500);
  }
+ const monthlyRows=monthlyResult.data||[];
+ const monthlyCount=monthlyRows.length;
+ const usedCostGbp=monthlyRows.reduce((sum,row)=>sum+Math.max(0,Number(row.estimated_cost_gbp)||0),0);
  if((dailyResult.count||0)>=dailyLimit)return json({error:'Daily visual generation limit reached.',dailyLimit},429);
- if((monthlyResult.count||0)>=monthlyLimit)return json({error:'Monthly visual generation limit reached.',monthlyLimit},429);
+ if(monthlyCount>=monthlyLimit)return json({error:'Monthly visual generation limit reached.',monthlyLimit},429);
+ if(usedCostGbp+estimatedCostGbp>monthlyBudgetGbp)return json({error:'Monthly visual generation cost ceiling reached.'},429);
 
  const model=Deno.env.get('OPENAI_IMAGE_MODEL')||'gpt-image-2';
- const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model}).select('id').single();
+ const {data:logRow,error:logError}=await admin.from('visual_generation_log').insert({user_id:userData.user.id,card_id:cardId,model,estimated_cost_gbp:estimatedCostGbp}).select('id').single();
  if(logError||!logRow){
   console.error('Visual generation audit insert failed',logError);
   return json({error:'Visual generation could not reserve budget.'},500);
@@ -105,5 +113,5 @@ Deno.serve(async req=>{
  if(updateError){console.error('Card image update failed',updateError);return json({error:'Generated image was stored but the card could not be updated.'},500);}
  await admin.from('visual_generation_log').update({image_url:imageUrl}).eq('id',logRow.id);
 
- return json({cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model});
+ return json({cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model,estimatedCostGbp});
 });
