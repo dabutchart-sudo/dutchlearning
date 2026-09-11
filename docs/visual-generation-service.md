@@ -12,12 +12,13 @@ The browser never receives an OpenAI API key. It sends only the selected `cardId
 4. Verifies both count-based limits and a configured monthly GBP cost ceiling.
 5. Reserves one generation attempt and its configured estimated cost in `visual_generation_log` before any API spend.
 6. Enforces a database-level one-active-generation-per-card rule so double clicks, concurrent tabs or duplicate requests cannot start two paid generations for the same card.
-7. Builds the educational image prompt on the server and calls the OpenAI Images API.
-8. Stores the returned image in Supabase Storage as a staged cue.
-9. Marks the audit row `awaiting_review` and returns the staged image to the learner without changing `cards.image_url`.
-10. Attaches the image to the flashcard only after an explicit authenticated `approve` action.
-11. Deletes the staged file and records `rejected` if the learner rejects it.
-12. Records terminal failures separately so audit history distinguishes reservation, review, success, rejection and failure.
+7. Serializes budget admission per user inside Postgres so concurrent requests for different cards cannot both pass the same daily, monthly or GBP ceiling.
+8. Builds the educational image prompt on the server and calls the OpenAI Images API.
+9. Stores the returned image in Supabase Storage as a staged cue.
+10. Marks the audit row `awaiting_review` and returns the staged image to the learner without changing `cards.image_url`.
+11. Attaches the image to the flashcard only after an explicit authenticated `approve` action.
+12. Deletes the staged file and records `rejected` if the learner rejects it.
+13. Records terminal failures separately so audit history distinguishes reservation, review, success, rejection and failure.
 
 The function is **disabled by default**. `VISUAL_GENERATION_ENABLED=true` must be set before it can spend API credit.
 
@@ -32,7 +33,13 @@ An authenticated client can call the same function with `{ "action": "status" }`
 - whether the configured Storage bucket exists and is public;
 - the authenticated user's remaining daily, monthly and estimated GBP allowance.
 
-The app rechecks this status immediately before a confirmed generation. The Edge Function still repeats every budget check itself, so the preflight is informative rather than an authorization boundary.
+The app rechecks this status immediately before a confirmed generation. The preflight is informative rather than an authorization boundary; the atomic database reservation is the final spending gate.
+
+## Atomic budget reservation
+
+`reserve_visual_generation(...)` runs the final count and GBP checks plus the audit-row insert in one database transaction. It takes a transaction-scoped advisory lock derived from the authenticated user id before counting prior attempts. This means two requests for different cards by the same user are serialized: the second request sees the reservation made by the first before deciding whether another spend is allowed.
+
+The RPC fails closed for invalid budget configuration and returns explicit refusal reasons for the daily limit, monthly limit, monthly GBP ceiling and an already-active card. Execute permission is removed from `public`, `anon` and `authenticated`; only the Supabase `service_role` used by the Edge Function can call it.
 
 ## Duplicate-spend and review protection
 
@@ -67,6 +74,7 @@ Run all migrations before enabling the function:
 - `supabase/migrations/20260911_visual_generation_cost_budget.sql`
 - `supabase/migrations/20260911_visual_generation_attempt_state.sql`
 - `supabase/migrations/20260911_visual_generation_review_gate.sql`
+- `supabase/migrations/20260911_visual_generation_atomic_budget.sql`
 
 The audit table has RLS enabled and deliberately has no client policies; only the Edge Function's service-role client should access it. A generation attempt and its configured estimated cost are recorded before the OpenAI call, so a failed or learner-rejected request still consumes that day's/month's allowance and estimated budget. This is intentionally conservative: an upstream failure should not allow repeated retries to create uncontrolled spend.
 
@@ -80,6 +88,6 @@ Create the Storage bucket named by `VISUAL_STORAGE_BUCKET` as a public bucket be
 
 Do not enable generation merely because the Edge Function exists. The browser-side pipeline must still establish all of the following first:
 
-`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit spending confirmation -> server budgets -> unique reservation -> generation -> durable pending review -> learner approve/reject -> learning cue`
+`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit spending confirmation -> atomic database budget reservation -> generation -> durable pending review -> learner approve/reject -> learning cue`
 
-V5.1.73 makes staged image review durable across refreshes and signed-in devices. A generated image is recovered from the server until it is approved, rejected or expires after 24 hours, so an interrupted review cannot silently lose a paid generation or encourage a duplicate one.
+V5.1.74 makes the final spending reservation atomic. Concurrent requests for different cards can no longer race past the same daily, monthly or GBP budget check before either request is recorded.
