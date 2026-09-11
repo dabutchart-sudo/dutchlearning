@@ -5,6 +5,7 @@ const stages=[PRODUCTION_STAGE.SUPPORTED,PRODUCTION_STAGE.GUIDED,PRODUCTION_STAG
 const blankStage=()=>({correct:0,total:0,rate:null});
 const rate=(correct,total)=>total?correct/total:null;
 const dayNumber=value=>{const d=new Date(`${String(value).slice(0,10)}T12:00:00`);return Number.isNaN(d.getTime())?null:Math.floor(d.getTime()/DAY_MS);};
+const dateFromDay=day=>{const d=new Date(day*DAY_MS);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;};
 
 export function productionProgress(state={}, {today,days=14}={}){
  if(!today)throw new Error('Production progress requires a study day.');
@@ -29,5 +30,10 @@ export function productionProgress(state={}, {today,days=14}={}){
   const id=String(attempt.cardId??'');
   if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||''});
  }
- return {days:windowDays,total:attempts.length,correct,rate:rate(correct,attempts.length),byStage,recentMisses:[...latestMissByCard.values()].slice(0,3)};
+ const daily=[];
+ for(let day=Math.max(start,end-6);day<=end;day++){
+  const date=dateFromDay(day),items=attempts.filter(a=>String(a.date||a.timestamp).slice(0,10)===date),dayCorrect=items.filter(a=>a.correct===true).length;
+  daily.push({date,total:items.length,correct:dayCorrect,rate:rate(dayCorrect,items.length)});
+ }
+ return {days:windowDays,total:attempts.length,correct,rate:rate(correct,attempts.length),byStage,daily,recentMisses:[...latestMissByCard.values()].slice(0,3)};
 }
