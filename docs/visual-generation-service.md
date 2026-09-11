@@ -42,6 +42,12 @@ A reservation older than 15 minutes is treated as stale and marked failed before
 
 The learner review gate is intentionally after generation but before learning use. A generated picture is never written to `cards.image_url` automatically. The learner must choose **Use this image** after inspecting it. Choosing **Reject image** removes the staged file instead, preventing a misleading or poor-quality picture from becoming a memory cue.
 
+## Review recovery
+
+An authenticated client can call `{ "action": "pending-review" }` without spending API credit. The server first expires any staged reviews older than 24 hours, then returns the newest still-valid `awaiting_review` image for that user. This allows a paid generation to survive a page refresh, browser restart or move to another signed-in device without generating the picture again.
+
+The Flashcards UI checks for this pending review before offering semantic-review or generation work. If one exists, it restores the same **Use this image / Reject image** decision and keeps `cards.image_url` untouched until the learner resolves it. This avoids both lost paid generations and accidental duplicate spend after an interrupted review.
+
 ## Required server configuration
 
 Supabase normally provides `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions. Add these project secrets/settings as required:
@@ -74,6 +80,6 @@ Create the Storage bucket named by `VISUAL_STORAGE_BUCKET` as a public bucket be
 
 Do not enable generation merely because the Edge Function exists. The browser-side pipeline must still establish all of the following first:
 
-`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit spending confirmation -> server budgets -> unique reservation -> generation -> learner image review -> approve/reject -> learning cue`
+`genuine repeated recall difficulty -> structural suitability -> semantic suitability -> generation plan -> authenticated preflight -> explicit spending confirmation -> server budgets -> unique reservation -> generation -> durable pending review -> learner approve/reject -> learning cue`
 
-V5.1.72 adds the learner image-review gate. Generated images are staged rather than attached immediately, so a poor or misleading AI image cannot enter the learning flow unless the learner explicitly approves it.
+V5.1.73 makes staged image review durable across refreshes and signed-in devices. A generated image is recovered from the server until it is approved, rejected or expires after 24 hours, so an interrupted review cannot silently lose a paid generation or encourage a duplicate one.
