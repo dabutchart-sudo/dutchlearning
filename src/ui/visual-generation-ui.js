@@ -48,8 +48,9 @@ function reasonCopy(reason){
 }
 
 async function render(){
- const anchor=document.getElementById('visual-semantic-review-panel')||document.getElementById('production-progress-panel');
- if(!anchor){removePanel();return;}
+ const hero=document.querySelector('.flashcards-preview .flashcard-hero');
+ const normalAnchor=document.getElementById('visual-semantic-review-panel')||document.getElementById('production-progress-panel');
+ if(!hero&&!normalAnchor){removePanel();return;}
  const allCards=await cards(),s=state(),today=dayKey();
  removePanel();
  let user=null,authError='',pendingError='';
@@ -60,8 +61,8 @@ async function render(){
  if(generated&&recoveredPlan){
   const panel=document.createElement('article');
   panel.id='visual-generation-panel';panel.className='card evidence-card';panel.setAttribute('aria-live','polite');
-  panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Check the picture before using it</h2><p class="muted small">The image has been generated and stored temporarily, but it has <strong>not</strong> been attached to the flashcard yet. This review survives a refresh or another signed-in device until you approve or reject it.</p><div class="rule"><strong lang="nl">${esc(recoveredPlan.dutch)}</strong><br><span>${esc(recoveredPlan.english)}</span></div><img src="${esc(generated.imageUrl)}" alt="${esc(generated.alt)}" style="display:block;width:100%;max-width:360px;aspect-ratio:1;object-fit:cover;border-radius:16px;margin:14px auto 0"><div class="actions"><button id="approve-generated-visual" class="primary" type="button" ${busy?'disabled':''}>${busy?'Saving…':'Use this image'}</button><button id="reject-generated-visual" class="secondary" type="button" ${busy?'disabled':''}>${busy?'Please wait…':'Reject image'}</button></div><p class="muted small">Rejecting removes the staged image. The generation attempt still counts toward today’s allowance because the API cost has already occurred.</p>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
-  anchor.insertAdjacentElement('afterend',panel);
+  panel.innerHTML=`<div class="eyebrow">VISUAL CUE AWAITING REVIEW</div><h2>Check the picture for ${esc(recoveredPlan.dutch)}</h2><p class="muted small">The image has been generated and stored temporarily, but it has <strong>not</strong> been attached to the flashcard yet. This review survives a refresh or another signed-in device until you approve or reject it.</p><div class="rule"><strong lang="nl">${esc(recoveredPlan.dutch)}</strong><br><span>${esc(recoveredPlan.english)}</span></div><img src="${esc(generated.imageUrl)}" alt="${esc(generated.alt)}" style="display:block;width:100%;max-width:360px;aspect-ratio:1;object-fit:cover;border-radius:16px;margin:14px auto 0"><div class="actions"><button id="approve-generated-visual" class="primary" type="button" ${busy?'disabled':''}>${busy?'Saving…':'Use this image'}</button><button id="reject-generated-visual" class="secondary" type="button" ${busy?'disabled':''}>${busy?'Please wait…':'Reject image'}</button></div><p class="muted small">Rejecting removes the staged image. The generation attempt still counts toward today’s allowance because the API cost has already occurred.</p>${message?`<p class="small error-message">${esc(message)}</p>`:''}`;
+  (hero||normalAnchor).insertAdjacentElement('afterend',panel);
   document.getElementById('approve-generated-visual')?.addEventListener('click',async()=>{
    if(busy||!generated)return;busy=true;message='';await render();
    try{
@@ -80,6 +81,7 @@ async function render(){
   return;
  }
  if(generated&&!recoveredPlan){generated=null;pendingCheckedAt=0;}
+ if(!normalAnchor)return;
  if(visualSemanticReviewQueue(allCards,s,{today}).length)return;
  const plan=visualGenerationQueue(allCards,s,{today,limit:1})[0]||null;
  if(!plan){confirmCardId=null;return;}
@@ -99,7 +101,7 @@ async function render(){
   else if(user&&preflight)authCopy=visualGenerationStatusSummary(preflight);
   panel.innerHTML=`<div class="eyebrow">VISUAL MEMORY CUE</div><h2>Ready for a picture</h2><p class="muted small">You approved this word because a clear image could genuinely help recall. The app will never generate it automatically.</p><div class="rule"><strong lang="nl">${esc(plan.dutch)}</strong><br><span>${esc(plan.english)}</span>${plan.partOfWord?`<br><span class="muted small">${esc(plan.partOfWord)}</span>`:''}</div><p class="muted small">${authCopy}</p>${action}`;
  }
- anchor.insertAdjacentElement('afterend',panel);
+ normalAnchor.insertAdjacentElement('afterend',panel);
  document.getElementById('prepare-visual-generation')?.addEventListener('click',()=>{confirmCardId=String(plan.cardId);message='';render().catch(()=>{});});
  document.getElementById('cancel-visual-generation')?.addEventListener('click',()=>{confirmCardId=null;message='';render().catch(()=>{});});
  document.getElementById('confirm-visual-generation')?.addEventListener('click',async()=>{
