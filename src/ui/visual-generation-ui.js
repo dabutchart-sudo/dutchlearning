@@ -6,7 +6,7 @@ import {approveGeneratedVisual,pendingGeneratedVisual,rejectGeneratedVisual,requ
 
 const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
-let cardsCache=null,scheduled=false,busy=false,confirmCardId=null,message='',generated=null,serviceStatus=null,statusCheckedAt=0,pendingCheckedAt=0;
+let cardsCache=null,scheduled=false,rendering=false,busy=false,confirmCardId=null,message='',generated=null,serviceStatus=null,statusCheckedAt=0,pendingCheckedAt=0;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
@@ -21,7 +21,7 @@ async function cards(){
  }
  cardsCache=rows;return rows;
 }
-function removePanel(){document.getElementById('visual-generation-panel')?.remove();}
+function removePanel(){document.querySelectorAll('#visual-generation-panel').forEach(panel=>panel.remove());}
 async function status(force=false){
  if(!force&&serviceStatus&&Date.now()-statusCheckedAt<60000)return serviceStatus;
  serviceStatus=await visualGenerationStatus();statusCheckedAt=Date.now();return serviceStatus;
@@ -113,12 +113,23 @@ async function render(){
   busy=false;await render();
  });
 }
-function refresh(){if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;render().catch(()=>{});});}
+function refresh(){
+ if(scheduled||rendering)return;
+ scheduled=true;
+ queueMicrotask(async()=>{
+  scheduled=false;
+  if(rendering)return;
+  rendering=true;
+  try{await render();}finally{rendering=false;}
+ });
+}
 if(content)new MutationObserver(()=>{
+ if(rendering)return;
  const hero=document.querySelector('.flashcards-preview .flashcard-hero');
- const panel=document.getElementById('visual-generation-panel');
- if(hero&&!panel)refresh();
- else if(!hero&&panel)removePanel();
+ const panels=document.querySelectorAll('#visual-generation-panel');
+ if(hero&&panels.length===0)refresh();
+ else if(!hero&&panels.length)removePanel();
+ else if(panels.length>1){[...panels].slice(1).forEach(panel=>panel.remove());}
 }).observe(content,{childList:true,subtree:true});
 tab?.addEventListener('click',()=>setTimeout(()=>{pendingCheckedAt=0;refresh();},0));
 refresh();
