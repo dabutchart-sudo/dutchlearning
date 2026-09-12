@@ -49,10 +49,12 @@ export async function sentenceGenerationUser(){
  if(error)throw error;return data.session?.user||null;
 }
 
-export function sentenceGenerationReturnRequested(){
+export function sentenceGenerationReturnTarget(){
  const query=new URLSearchParams(location.search);
- return sessionStorage.getItem(SIGNIN_RETURN_KEY)==='flashcards'||query.get(SIGNIN_RETURN_PARAM)==='flashcards';
+ return sessionStorage.getItem(SIGNIN_RETURN_KEY)||query.get(SIGNIN_RETURN_PARAM)||'';
 }
+
+export function sentenceGenerationReturnRequested(){return sentenceGenerationReturnTarget()==='flashcards';}
 
 export function clearSentenceGenerationReturn(){
  sessionStorage.removeItem(SIGNIN_RETURN_KEY);
@@ -63,13 +65,14 @@ export function clearSentenceGenerationReturn(){
  }
 }
 
-export async function signInForSentenceGeneration(){
+export async function signInForSentenceGeneration(returnTarget='flashcards'){
  const {client}=await generationClient();
- sessionStorage.setItem(SIGNIN_RETURN_KEY,'flashcards');
+ const target=String(returnTarget||'flashcards');
+ sessionStorage.setItem(SIGNIN_RETURN_KEY,target);
  const returnUrl=new URL(location.href);
  returnUrl.search='';
  returnUrl.hash='';
- returnUrl.searchParams.set(SIGNIN_RETURN_PARAM,'flashcards');
+ returnUrl.searchParams.set(SIGNIN_RETURN_PARAM,target);
  const {error}=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:returnUrl.toString()}});
  if(error)throw error;
 }
@@ -104,9 +107,10 @@ export async function generateSentenceBanks(cards,{force=false}={}){
   const id=Number(result.id),card=byId.get(id);
   if(!card)throw new Error(`Generated card ${id} was not found locally.`);
   if(!Array.isArray(result.sentences)||result.sentences.length!==5||result.sentences.some(p=>!validPair(p)))throw new Error(`Sentence generator returned invalid examples for card ${id}.`);
-  const sentences=mergeSentenceBank(card,cache[String(id)]?.sentences||[],result.sentences);
+  const generatedSentences=result.sentences.map(pair=>({nl:pair.nl.trim(),en:pair.en.trim()}));
+  const sentences=mergeSentenceBank(card,cache[String(id)]?.sentences||[],generatedSentences);
   if(sentenceBankNeedsRefresh(sentences))throw new Error(`Generated examples for card ${id} did not create a complete sentence bank.`);
-  cache[String(id)]={sentences,updatedAt:new Date().toISOString()};updated.push({id,sentences});
+  cache[String(id)]={sentences,updatedAt:new Date().toISOString()};updated.push({id,sentences,generatedSentences});
  }
  writeSentenceBankCache(localStorage,url,cache);
  const verified=readSentenceBankCache(localStorage,url),readyAfter=ids.filter(id=>Array.isArray(verified[String(id)]?.sentences)&&!sentenceBankNeedsRefresh(mergeSentenceBank(byId.get(id),verified[String(id)].sentences,[]))).length;
