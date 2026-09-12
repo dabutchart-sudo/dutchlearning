@@ -114,6 +114,11 @@ async function render(){
  });
 }
 function refresh(){if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;render().catch(()=>{});});}
-if(content)new MutationObserver(refresh).observe(content,{childList:true,subtree:true});
+if(content)new MutationObserver(()=>{
+ const hero=document.querySelector('.flashcards-preview .flashcard-hero');
+ const panel=document.getElementById('visual-generation-panel');
+ if(hero&&!panel)refresh();
+ else if(!hero&&panel)removePanel();
+}).observe(content,{childList:true,subtree:true});
 tab?.addEventListener('click',()=>setTimeout(()=>{pendingCheckedAt=0;refresh();},0));
 refresh();
