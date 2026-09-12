@@ -2,7 +2,7 @@ const content=document.getElementById('content');
 const tab=document.getElementById('flashcards-preview-tab');
 let scheduled=false,adjusting=false;
 
-function shell(){return document.querySelector('.flashcards-preview');}
+function shell(){const root=document.querySelector('.flashcards-preview');return root?.querySelector('.flashcard-hero')?root:null;}
 function details(){return document.getElementById('flashcard-dashboard-details');}
 function toggle(){return document.getElementById('flashcard-dashboard-details-toggle');}
 function directCards(root){return root?[...root.children].filter(node=>node.matches?.('article.card')):[];}
