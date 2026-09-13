@@ -6,6 +6,7 @@ import {sessionVocabulary,briefingDone,rememberBriefing} from '../engine/session
 
 let content=null,repo=null,bypassStart=false,autoSkipping=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inSandbox=()=>!!document.querySelector('.debug-banner');
 
 function installLayoutRules(){
  const style=document.createElement('style');
@@ -69,7 +70,7 @@ function adjustCorrectionScreen(){
 }
 
 function skipMidSessionReminder(){
- if(autoSkipping)return;
+ if(autoSkipping||inSandbox())return;
  const direction=document.querySelector('.question-card .direction');
  const button=document.getElementById('words-learned');
  if(!direction||!button||!direction.textContent.includes('Vocabulary reminder'))return;
@@ -87,6 +88,7 @@ function observe(){
 
 function interceptClicks(){
  document.addEventListener('click',event=>{
+  if(inSandbox())return;
   const start=event.target.closest?.('#start');
   if(start&&!bypassStart){
    const state=currentState();if(!state)return;
