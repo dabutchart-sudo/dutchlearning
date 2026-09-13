@@ -54,12 +54,14 @@ test('session briefing collects practice vocabulary once without leaking proof-o
  assert.ok(values.has(BRIEFING_STORAGE_KEY));
 });
 
-test('V5.1.95 loads and caches the learning-session refinement module',()=>{
+test('current build loads and caches the learning-session refinement module',()=>{
  const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
+ const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
  const ui=readFileSync(new URL('../src/ui/learning-session-refinements.js',import.meta.url),'utf8');
- assert.match(index,/V5\.1\.95/);
- assert.match(index,/learning-session-refinements\.js\?v=5\.1\.95/);
+ const escaped=pkg.version.replaceAll('.','\\.');
+ assert.match(index,new RegExp(`V${escaped}`));
+ assert.match(index,new RegExp(`learning-session-refinements\\.js\\?v=${escaped}`));
  assert.match(sw,/\.\/src\/engine\/session-briefing\.js/);
  assert.match(sw,/\.\/src\/ui\/learning-session-refinements\.js/);
  assert.match(ui,/Words for today’s practice/);
