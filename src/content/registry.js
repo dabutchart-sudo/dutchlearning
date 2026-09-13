@@ -1,7 +1,8 @@
 import a1CoreExpansion from './a1-core-expansion.js';
+import a1CoreExpansion2 from './a1-core-expansion-2.js';
 export function registerPacks(packs){
  const includesMainCourse=packs.some(p=>p?.id==='foundation-a1');
- const sources=includesMainCourse?[...packs,a1CoreExpansion]:packs;
+ const sources=includesMainCourse?[...packs,a1CoreExpansion,a1CoreExpansion2]:packs;
  const concepts=[],sentences=[],ids=new Set();
  for(const p of sources){if(p.schemaVersion!==1)throw Error('Unsupported content pack version');for(const c of p.concepts){if(ids.has(c.id))throw Error('Duplicate concept');ids.add(c.id);concepts.push(c)}sentences.push(...p.sentences)}
  const seen=new Set();for(const s of sentences){if(seen.has(s.id)||!ids.has(s.concept)||!s.nl||!s.en)throw Error('Invalid sentence record');seen.add(s.id)}
