@@ -26,7 +26,6 @@ export function wordBrowserSummary(cards=[]){
   return {
     total:cards.length,
     active:active.length,
-    frozen:cards.filter(card=>card?.suspended).length,
     withSentence:active.filter(card=>card.dutch_sentence||card.english_sentence).length,
     withImage:active.filter(card=>card.image_url).length,
   };
