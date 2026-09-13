@@ -7,7 +7,8 @@ if(synth&&!synth.__dutchTrainerVoiceWrapped){
   try{
    if(utterance&&/^nl(?:-|_)/i.test(String(utterance.lang||''))){
     const voice=dutchVoice();
-    if(voice){utterance.voice=voice;utterance.lang=voice.lang||'nl-NL';}
+    if(voice&&!voice.__systemFallback){utterance.voice=voice;utterance.lang=voice.lang||'nl-NL';}
+    else if(voice?.lang)utterance.lang=voice.lang;
    }
   }catch{}
   return nativeSpeak(utterance);
