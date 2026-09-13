@@ -104,7 +104,7 @@ test('service worker caches every new runtime module and version',()=>{
 test('feedback always supplies full Dutch and English before specific word differences',async()=>{
  const {correctiveFeedback}=await import('../src/engine/exercises.js');
  for(const kind of ['gap','form','typed','correction','choice','correct-sentence','wordbank']){
-  const q=makeExercise(item,kind,content),raw=['gap','form'].includes(kind)?'schrijft':'wij schrijft';
+  const q=makeExercise(item,kind,content),raw=['gap','form'].includes(kind)?'schrijft':kind==='correction'?'ijft':'wij schrijft';
   const feedback=correctiveFeedback(q,item,raw,assess(q,raw));
   assert.equal(feedback.words.map(w=>w.text).join(' ')+feedback.punctuation,item.nl);
   assert.equal(feedback.meaning,item.en);
