@@ -10,11 +10,21 @@ export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.dai
 export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
 export function activeConcept(s,c){return c.concepts.find(x=>unlocked(x,s)&&!s.progress[x.id].masteredAt)?.id||c.concepts.at(-1).id;}
-export function teachConcept(s,id,content){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
+export function teachConcept(s,id,content,{acknowledge=true}={}){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;if(acknowledge)s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
 export function expose(s,item,reason){if(s.exposures.some(x=>x.nl===normalize(item.nl)))return;s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason});}
 export function markWordsTaught(s,item,date){for(const w of item.vocabulary){s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};s.words[w.id].taughtAt=date;}}
 export function prepareQuestion(s,c,now=new Date(),canListen=false){
- ensureDay(s,now);if(s.daily.count>=DAY_SIZE)return null;if(s.pending){
+ ensureDay(s,now);if(s.daily.count>=DAY_SIZE)return null;
+ if(!s.proof){
+  const current=activeConcept(s,c),progress=s.progress[current];
+  // Older V5 builds could save both `taught` and a pending first question before the learner
+  // explicitly acknowledged the guided lesson. The lesson gate must win over that stale question.
+  if(!progress.lessonAcknowledged&&progress.practiceAttempts===0){
+   if(s.pending?.concept===current&&['practice','maintenance'].includes(s.pending.phase))s.pending=null;
+   return {teachingConcept:current};
+  }
+ }
+ if(s.pending){
   if(s.pending.presentationVersion!==515&&['practice','maintenance'].includes(s.pending.phase)){
    const old=s.pending;s.pending={...makeExercise(c.byId[old.sourceId],old.kind,c,{phase:old.phase,direction:old.direction,seed:old.id}),id:old.id,assisted:old.assisted,retryId:old.retryId};
   }
@@ -23,10 +33,7 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false){
  let q,item,retryId;
  if(s.proof){q=s.proof.questions[s.proof.index];item=c.byId[q.sourceId];}
  else{
-  const current=activeConcept(s,c),progress=s.progress[current];
-  // Older V5 builds could set `taught` automatically before any real practice. Require the
-  // explicit guided lesson for a zero-attempt concept unless this newer acknowledgement exists.
-  if(!progress.lessonAcknowledged&&progress.practiceAttempts===0)return {teachingConcept:current};
+  const current=activeConcept(s,c);
   const selected=selectPractice(s,c,current,s.daily.date,canListen);item=selected.item;retryId=selected.retryId;
   // Vocabulary is intentionally not marked as taught here. The UI can surface unknown or
   // weak words in context before the scored question and records them only after acknowledgement.
