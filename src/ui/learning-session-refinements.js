@@ -56,14 +56,16 @@ function currentState(){try{return repo?.load()||null}catch{return null}}
 
 function adjustCorrectionScreen(){
  const qType=document.querySelector('.q-type');
- if(!qType||qType.textContent.trim()!=='Correct the Dutch sentence')return;
+ if(!qType||!['Correct the Dutch sentence','Type the missing letters'].includes(qType.textContent.trim()))return;
  qType.textContent='Type the missing letters';
+ const prompt=document.querySelector('.question-card .prompt');
+ if(prompt&&!prompt.dataset.separatedBlanks){
+  prompt.textContent=prompt.textContent.replace(/_+/g,run=>run.split('').join(' '));
+  prompt.dataset.separatedBlanks='true';
+ }
  const input=document.getElementById('typed-answer');
  if(input){input.placeholder='Missing letters only';input.setAttribute('aria-label','Missing letters only');}
- if(!document.querySelector('.correction-instruction')){
-  const prompt=document.querySelector('.question-card .prompt');
-  prompt?.insertAdjacentHTML('afterend','<p class="correction-instruction">Type only the missing letters — one letter for each blank.</p>');
- }
+ if(!document.querySelector('.correction-instruction'))prompt?.insertAdjacentHTML('afterend','<p class="correction-instruction">Type only the missing letters — one letter for each blank.</p>');
 }
 
 function skipMidSessionReminder(){
