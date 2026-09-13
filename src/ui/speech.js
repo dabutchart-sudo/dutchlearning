@@ -19,10 +19,15 @@ export function dutchVoice(){
  return voices.sort((a,b)=>voiceScore(b)-voiceScore(a))[0];
 }
 
+export function dutchSpeechAvailable(){
+ return Boolean(globalThis.speechSynthesis&&globalThis.SpeechSynthesisUtterance);
+}
+
 export function speak(text,onError=()=>{}){
  const synth=globalThis.speechSynthesis;
  const Utterance=globalThis.SpeechSynthesisUtterance;
  if(!synth||!Utterance){onError('Speech playback is not available in this browser.');return false;}
+ const message='Audio could not play. Check that speech is enabled for this browser.';
  try{
   const voice=dutchVoice();
   synth.cancel();
@@ -30,11 +35,11 @@ export function speak(text,onError=()=>{}){
   if(voice)u.voice=voice;
   u.lang=voice?.lang||'nl-NL';
   u.rate=.85;
-  u.onerror=()=>onError('Audio could not play. Check that Dutch speech is enabled on this device.');
+  u.onerror=()=>onError(message);
   synth.speak(u);
   return true;
  }catch{
-  onError('Audio could not play. Check that Dutch speech is enabled on this device.');
+  onError(message);
   return false;
  }
 }
