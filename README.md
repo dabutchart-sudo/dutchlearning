@@ -6,7 +6,7 @@ Zin is a personal Dutch-learning PWA focused on sentence construction, adaptive 
 
 **V5.1.104**
 
-The current learning path now supports a sustained Foundation progression model rather than a single isolated session:
+The current learning path supports sustained Foundation progression rather than a single isolated session:
 
 - finite 20-question daily learning sessions;
 - explicit teaching before newly unlocked concepts;
@@ -34,4 +34,4 @@ Run the regression suite with:
 npm test
 ```
 
-The active learning branch is `feature/a1-learning-session-vertical-slice`. Mobile-first testing remains part of each learner-facing milestone.
+Current learner-facing development is on `feature/a1-learning-session-vertical-slice`. Mobile-first testing remains part of each milestone.
