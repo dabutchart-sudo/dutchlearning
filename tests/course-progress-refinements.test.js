@@ -34,10 +34,10 @@ test('Course explains the sustained concept journey and learner-facing milestone
 test('course progress treatment is mobile friendly and shipped offline',()=>{
   assert.match(css,/course-progress-track/);
   assert.match(css,/@media\(max-width:520px\)/);
-  assert.match(index,/course-progress-refinements\.css\?v=5\.1\.105/);
-  assert.match(index,/course-progress-refinements\.js\?v=5\.1\.105/);
-  assert.match(index,/Zin · V5\.1\.105/);
-  assert.match(sw,/dutch-v5\.1\.105/);
+  assert.match(index,/course-progress-refinements\.css\?v=5\.1\.106/);
+  assert.match(index,/course-progress-refinements\.js\?v=5\.1\.106/);
+  assert.match(index,/Zin · V5\.1\.106/);
+  assert.match(sw,/dutch-v5\.1\.106/);
   assert.match(sw,/course-progress-refinements\.js/);
   assert.match(sw,/course-progress-refinements\.css/);
 });
