@@ -16,13 +16,25 @@ test('Today explains practice progress and the next proof milestone',()=>{
   assert.match(ui,/tomorrow continues from this point/);
 });
 
+test('Course translates engine states into the learner journey',()=>{
+  assert.match(ui,/How a concept becomes retained/);
+  assert.match(ui,/mastery proof → wait 3 days → retention proof/);
+  assert.match(ui,/Practice complete · mastery proof ready/);
+  assert.match(ui,/Mastery proved · waiting for retention/);
+  assert.match(ui,/Retention check ready · pass to unlock next lesson/);
+  assert.match(ui,/Retained · concept complete/);
+  assert.match(ui,/Locked until the previous concept is retained/);
+  assert.match(ui,/decorateCourse/);
+});
+
 test('course progress treatment is mobile friendly and shipped offline',()=>{
   assert.match(css,/course-progress-track/);
+  assert.match(css,/course-journey-note/);
   assert.match(css,/@media\(max-width:520px\)/);
-  assert.match(index,/course-progress-refinements\.css\?v=5\.1\.102/);
-  assert.match(index,/course-progress-refinements\.js\?v=5\.1\.102/);
-  assert.match(index,/Zin · V5\.1\.102/);
-  assert.match(sw,/dutch-v5\.1\.102/);
+  assert.match(index,/course-progress-refinements\.css\?v=5\.1\.103/);
+  assert.match(index,/course-progress-refinements\.js\?v=5\.1\.103/);
+  assert.match(index,/Zin · V5\.1\.103/);
+  assert.match(sw,/dutch-v5\.1\.103/);
   assert.match(sw,/course-progress-refinements\.js/);
   assert.match(sw,/course-progress-refinements\.css/);
 });
