@@ -7,6 +7,13 @@ export function itemPriority(item,state){
  weight+=(state.progress[item.concept]?.weakness||0)*2;
  return weight+hash(item.id+state.attempts.length)%1000/1000;
 }
+export function practiceContextWeight(item){
+ const count=normalize(item.nl).split(/\s+/).filter(Boolean).length;
+ if(count>=4&&count<=8)return 6;
+ if(count===3)return 2;
+ if(count<=2)return -6;
+ return 0;
+}
 export function practiceKind(p,canListen=false){
  if(p.recognised<4)return p.practiceAttempts%2?'correct-sentence':'choice';
  if(p.constructed<4)return ['wordbank','gap','form'][p.practiceAttempts%3];
@@ -30,7 +37,7 @@ export function selectPractice(state,content,current,date,canListen){
   const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
   if(alternatives.length)pool=alternatives;else kind='wordbank';
  }
- const item=[...pool].sort((a,b)=>itemPriority(b,state)-itemPriority(a,state))[0];
+ const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
  if(!item)throw Error('No practice content available');
  return {item,kind,phase,retryId:due?.id};
 }
