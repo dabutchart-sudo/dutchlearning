@@ -14,7 +14,10 @@ function decorate(root=document){
 
 function currentDutch(){
  const word=document.querySelector('.flashcard-review-card .flashcard-word[lang="nl"]');
- return String(word?.textContent||'').replace(/\s*\(.*?\)/g,'').trim();
+ if(!word)return '';
+ const spoken=word.cloneNode(true);
+ spoken.querySelector?.('.flashcard-part')?.remove();
+ return String(spoken.textContent||'').replace(/\s*\(.*?\)/g,'').trim();
 }
 
 document.addEventListener('click',event=>{
