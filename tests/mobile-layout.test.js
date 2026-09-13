@@ -22,12 +22,17 @@ test('mobile flashcards use compact icon controls and robust speech wiring',()=>
   assert.match(refinements,/speak\(text/);
 });
 
+test('flashcard Listen speaks the Dutch word without the part-of-word label',()=>{
+  assert.match(refinements,/cloneNode\(true\)/);
+  assert.match(refinements,/querySelector\?\.\('\.flashcard-part'\)\?\.remove\(\)/);
+});
+
 test('mobile header metadata moves into the top-right area',()=>{
   assert.match(polish,/\.brand p\{position:absolute;top:5px;right:0/);
 });
 
 test('mobile polish remains shipped in the current build',()=>{
-  assert.match(index,/V5\.1\.103/);
-  assert.match(index,/mobile-polish\.css\?v=5\.1\.103/);
-  assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.103/);
+  assert.match(index,/V5\.1\.104/);
+  assert.match(index,/mobile-polish\.css\?v=5\.1\.104/);
+  assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.104/);
 });
