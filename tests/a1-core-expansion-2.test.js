@@ -31,3 +31,11 @@ test('A1.9 retention unlocks A1.10 lesson-first and both concepts can be retaine
  assert.equal(activeConcept(state,content),'A1.9');assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:'A1.9'});teachConcept(state,'A1.9',content);now=proveAndRetain(state,'A1.9',now);
  assert.equal(state.progress['A1.9'].status,'mastered');assert.equal(activeConcept(state,content),'A1.10');assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:'A1.10'});teachConcept(state,'A1.10',content);now=proveAndRetain(state,'A1.10',now);assert.equal(state.progress['A1.10'].status,'mastered');
 });
+
+test('the second A1 expansion ships in the V5.1.107 offline build',()=>{
+ const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
+ const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+ assert.equal(pkg.version,'5.1.107');
+ assert.match(sw,/dutch-v5\.1\.107/);
+ assert.match(sw,/src\/content\/a1-core-expansion-2\.js/);
+});
