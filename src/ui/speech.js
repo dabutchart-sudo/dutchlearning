@@ -1,5 +1,6 @@
 const FEMALE_HINT=/(female|colette|ellen|femke|lotte|sofie|sophie|nora|sara|laura|emma|eva|fenna|fleur|ilse|iris|julia|lisa|marieke|noor|roos|saskia|tessa|yara|claire)/i;
 const MALE_HINT=/(male|maarten|xander|ruben|frank|bart|jeroen|pieter|daan)/i;
+const SYSTEM_DUTCH_FALLBACK=Object.freeze({lang:'nl-NL',__systemFallback:true});
 
 function voiceScore(v){
  const name=String(v?.name||'');
@@ -15,8 +16,11 @@ function voiceScore(v){
 }
 
 export function dutchVoice(){
- const voices=globalThis.speechSynthesis?.getVoices?.().filter(v=>/^nl(?:-|_)/i.test(v.lang))||[];
- return voices.sort((a,b)=>voiceScore(b)-voiceScore(a))[0];
+ const synth=globalThis.speechSynthesis;
+ const Utterance=globalThis.SpeechSynthesisUtterance;
+ if(!synth||!Utterance)return undefined;
+ const voices=synth.getVoices?.().filter(v=>/^nl(?:-|_)/i.test(v.lang))||[];
+ return voices.sort((a,b)=>voiceScore(b)-voiceScore(a))[0]||SYSTEM_DUTCH_FALLBACK;
 }
 
 export function dutchSpeechAvailable(){
@@ -32,7 +36,7 @@ export function speak(text,onError=()=>{}){
   const voice=dutchVoice();
   synth.cancel();
   const u=new Utterance(String(text??''));
-  if(voice)u.voice=voice;
+  if(voice&&!voice.__systemFallback)u.voice=voice;
   u.lang=voice?.lang||'nl-NL';
   u.rate=.85;
   u.onerror=()=>onError(message);
