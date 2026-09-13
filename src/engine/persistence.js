@@ -9,6 +9,14 @@ export function validateState(s,content){
  if(!s.words||!Array.isArray(s.retries)||!s.settings||!s.learnerId||!s.deviceId)throw Error('Backup is incomplete.');
  return s;
 }
+export function resetLearningState(current,content,now=new Date()){
+ const next=freshState(content,now);
+ next.learnerId=current?.learnerId||next.learnerId;
+ next.deviceId=current?.deviceId||next.deviceId;
+ next.settings={...next.settings,...(current?.settings||{})};
+ delete next.settings.debugDate;
+ return next;
+}
 export function migrateLegacy(old,content,now=new Date()){
  const s=freshState(content,now);s.migration={from:'V4A/V4B',at:now.toISOString(),note:'Practice and completed proof retained. Unfinished V4 tests are not certified.'};
  for(const c of content.concepts){const p=old.progress?.[c.id];if(!p)continue;const target=s.progress[c.id];target.practiceAttempts=Number(p.practiceAttempts)||0;target.taught=target.practiceAttempts>0;target.recognised=target.taught?4:0;target.constructed=target.taught?4:0;target.independent=(old.attempts||[]).filter(a=>a.concept===c.id&&a.direction==='en-nl'&&a.kind==='typed'&&a.grammar&&!a.assisted).length;
@@ -25,6 +33,7 @@ export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Da
  return {
   load(){const raw=storage.getItem(key);if(raw)return validateState(JSON.parse(raw),content);if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){const state=migrateLegacy(JSON.parse(legacy),content,now());storage.setItem(key,JSON.stringify(state));return state}}}return freshState(content,now());},
   save(state){validateState(state,content);storage.setItem(key,JSON.stringify(state));},
+  resetLearning(){const state=resetLearningState(this.load(),content,now());this.save(state);return state;},
   export(state){return JSON.stringify(state,null,2)},
   import(text){const s=validateState(JSON.parse(text),content);this.save(s);return s;}
  };
