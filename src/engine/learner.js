@@ -4,13 +4,13 @@ import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
 export const DAY_SIZE=20;
-export function blankProgress(){return {status:'learning',taught:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
+export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
 export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,settings:{listening:false},migration:null};}
 export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date)s.daily={date,count:0};return s.daily;}
 export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
 export function activeConcept(s,c){return c.concepts.find(x=>unlocked(x,s)&&!s.progress[x.id].masteredAt)?.id||c.concepts.at(-1).id;}
-export function teachConcept(s,id,content){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
+export function teachConcept(s,id,content){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
 export function expose(s,item,reason){if(s.exposures.some(x=>x.nl===normalize(item.nl)))return;s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason});}
 export function markWordsTaught(s,item,date){for(const w of item.vocabulary){s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};s.words[w.id].taughtAt=date;}}
 export function prepareQuestion(s,c,now=new Date(),canListen=false){
@@ -23,10 +23,10 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false){
  let q,item,retryId;
  if(s.proof){q=s.proof.questions[s.proof.index];item=c.byId[q.sourceId];}
  else{
-  const current=activeConcept(s,c);
-  // A complete learning session begins by explicitly teaching an unlocked concept.
-  // The UI already renders this as an unscored lesson; do not silently auto-complete it.
-  if(!s.progress[current].taught)return {teachingConcept:current};
+  const current=activeConcept(s,c),progress=s.progress[current];
+  // Older V5 builds could set `taught` automatically before any real practice. Require the
+  // explicit guided lesson for a zero-attempt concept unless this newer acknowledgement exists.
+  if(!progress.lessonAcknowledged&&progress.practiceAttempts===0)return {teachingConcept:current};
   const selected=selectPractice(s,c,current,s.daily.date,canListen);item=selected.item;retryId=selected.retryId;
   // Vocabulary is intentionally not marked as taught here. The UI can surface unknown or
   // weak words in context before the scored question and records them only after acknowledgement.
