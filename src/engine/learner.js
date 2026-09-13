@@ -18,8 +18,9 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false){
  if(!s.proof){
   const current=activeConcept(s,c),progress=s.progress[current];
   // Older V5 builds could save both `taught` and a pending first question before the learner
-  // explicitly acknowledged the guided lesson. The lesson gate must win over that stale question.
-  if(!progress.lessonAcknowledged&&progress.practiceAttempts===0){
+  // explicitly acknowledged the guided lesson. Only truly untouched concepts need this migration gate.
+  const noPracticeEvidence=(progress.practiceAttempts||0)===0&&(progress.recognised||0)===0&&(progress.constructed||0)===0&&(progress.independent||0)===0;
+  if(!progress.lessonAcknowledged&&noPracticeEvidence){
    if(s.pending?.concept===current&&['practice','maintenance'].includes(s.pending.phase))s.pending=null;
    return {teachingConcept:current};
   }
