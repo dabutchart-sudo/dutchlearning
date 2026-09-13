@@ -25,6 +25,7 @@ test('mobile flashcards use compact icon controls and robust speech wiring',()=>
 test('flashcard Listen speaks the Dutch word without the part-of-word label',()=>{
   assert.match(refinements,/cloneNode\(true\)/);
   assert.match(refinements,/querySelector\?\.\('\.flashcard-part'\)\?\.remove\(\)/);
+  assert.match(refinements,/spoken\.textContent/);
 });
 
 test('mobile header metadata moves into the top-right area',()=>{
