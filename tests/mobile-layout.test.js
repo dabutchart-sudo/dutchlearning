@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 
 const styles=readFileSync(new URL('../src/ui/styles.css',import.meta.url),'utf8');
+const polish=readFileSync(new URL('../src/ui/mobile-polish.css',import.meta.url),'utf8');
+const refinements=readFileSync(new URL('../src/ui/mobile-flashcard-refinements.js',import.meta.url),'utf8');
 const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 
 test('mobile shell stays inside the viewport while tabs scroll independently',()=>{
@@ -13,7 +15,19 @@ test('mobile shell stays inside the viewport while tabs scroll independently',()
   assert.match(styles,/\.tab\{flex:0 0 auto;min-width:max-content\}/);
 });
 
-test('mobile overflow fix is shipped in V5.1.99',()=>{
-  assert.match(index,/V5\.1\.99/);
-  assert.match(index,/styles\.css\?v=5\.1\.99/);
+test('mobile flashcards use compact icon controls and robust speech wiring',()=>{
+  assert.match(polish,/flashcard-listen::before/);
+  assert.match(polish,/flashcard-tool-row button::before/);
+  assert.match(refinements,/Listen to Dutch pronunciation/);
+  assert.match(refinements,/speak\(text/);
+});
+
+test('mobile header metadata moves into the top-right area',()=>{
+  assert.match(polish,/\.brand p\{position:absolute;top:5px;right:0/);
+});
+
+test('mobile polish is shipped in V5.1.100',()=>{
+  assert.match(index,/V5\.1\.100/);
+  assert.match(index,/mobile-polish\.css\?v=5\.1\.100/);
+  assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.100/);
 });
