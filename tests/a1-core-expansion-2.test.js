@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {registerPacks} from '../src/content/registry.js';
+import {activeConcept,freshState,prepareQuestion,proofEligibility,startProof,submit,teachConcept} from '../src/engine/learner.js';
+
+const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
+const content=registerPacks([base]);
+
+function answerProof(state,now){
+ while(state.proof){const q=prepareQuestion(state,content,now,false);assert.ok(q?.id);submit(state,content,q.id,q.answer,now);}
+}
+function proveAndRetain(state,id,date){
+ const p=state.progress[id];Object.assign(p,{practiceAttempts:40,recognised:4,constructed:4,independent:12,status:'proof-ready',taught:true});state.pending=null;state.daily={date:date.toISOString().slice(0,10),count:0};
+ assert.equal(proofEligibility(state,content,id,'mastery',date),null);startProof(state,content,id,'mastery',date);assert.equal(state.proof.questions.length,20);assert.equal(new Set(state.proof.questions.map(q=>q.sourceId)).size,20);answerProof(state,date);
+ const retention=new Date(date);retention.setUTCDate(retention.getUTCDate()+3);state.daily={date:retention.toISOString().slice(0,10),count:0};assert.equal(activeConcept(state,content),id);assert.equal(proofEligibility(state,content,id,'retention',retention),null);startProof(state,content,id,'retention',retention);assert.equal(state.proof.questions.length,10);assert.equal(new Set(state.proof.questions.map(q=>q.sourceId)).size,10);answerProof(state,retention);return retention;
+}
+
+test('A1.9 and A1.10 extend the course with varied practice and unseen proof material',()=>{
+ for(const id of ['A1.9','A1.10']){
+  const concept=content.conceptById[id];assert.ok(concept);assert.equal(concept.level,'A1');
+  const rows=content.sentences.filter(s=>s.concept===id);assert.ok(rows.filter(s=>s.pool==='practice').length>=10);assert.ok(rows.filter(s=>s.pool==='proof').length>=30);assert.equal(new Set(rows.map(s=>s.nl)).size,rows.length);
+  for(const row of rows){assert.ok(row.suitableKinds.length);assert.ok(row.verbIndex>=0);assert.ok(row.verbIndex<row.nl.trim().split(/\s+/).length);}
+ }
+ assert.deepEqual(content.conceptById['A1.9'].prerequisites,['A1.8']);assert.deepEqual(content.conceptById['A1.10'].prerequisites,['A1.9']);
+});
+
+test('A1.9 retention unlocks A1.10 lesson-first and both concepts can be retained',()=>{
+ let now=new Date('2026-11-01T12:00:00Z');const state=freshState(content,now);
+ for(const c of content.concepts){if(c.id==='A1.9'||c.id==='A1.10')continue;Object.assign(state.progress[c.id],{status:'mastered',masteredAt:'2026-10-31',taught:true,nextMaintenance:'2099-01-01'});}
+ assert.equal(activeConcept(state,content),'A1.9');assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:'A1.9'});teachConcept(state,'A1.9',content);now=proveAndRetain(state,'A1.9',now);
+ assert.equal(state.progress['A1.9'].status,'mastered');assert.equal(activeConcept(state,content),'A1.10');assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:'A1.10'});teachConcept(state,'A1.10',content);now=proveAndRetain(state,'A1.10',now);assert.equal(state.progress['A1.10'].status,'mastered');
+});
