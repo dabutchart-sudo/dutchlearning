@@ -11,8 +11,7 @@ export function correctionParts(item){
  const count=Math.min(letters.length,Math.max(2,Math.ceil(letters.length/2)));
  const prefix=letters.slice(0,letters.length-count).join('');
  const missing=letters.slice(letters.length-count).join('');
- const blanks=Array.from({length:count},()=> '_').join(' ');
- words[item.verbIndex]=prefix+blanks;
+ words[item.verbIndex]=prefix+'_'.repeat(count);
  return {prompt:words.join(' ')+(item.nl.match(/[.!?]$/)?.[0]||'.'),prefix,missing,count,wordIndex:item.verbIndex};
 }
 
@@ -38,7 +37,7 @@ export function makeExercise(item,kind,content,{phase='practice',direction='en-n
  return q;
 }
 
-// Mask the model's suffix with one visibly separate blank per missing letter.
+// Mask the model's suffix; the UI renders each underscore as a visibly separate blank.
 export function maskedCorrection(item){return correctionParts(item).prompt;}
 function completedCorrection(q,item,raw){
  if(q.kind!=='correction'||!q.correction)return raw;
