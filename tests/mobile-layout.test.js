@@ -26,8 +26,8 @@ test('mobile header metadata moves into the top-right area',()=>{
   assert.match(polish,/\.brand p\{position:absolute;top:5px;right:0/);
 });
 
-test('mobile polish is shipped in V5.1.100',()=>{
-  assert.match(index,/V5\.1\.100/);
-  assert.match(index,/mobile-polish\.css\?v=5\.1\.100/);
-  assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.100/);
+test('mobile polish remains shipped in the current build',()=>{
+  assert.match(index,/V5\.1\.101/);
+  assert.match(index,/mobile-polish\.css\?v=5\.1\.101/);
+  assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.101/);
 });
