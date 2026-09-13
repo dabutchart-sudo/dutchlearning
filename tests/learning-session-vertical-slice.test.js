@@ -67,8 +67,6 @@ test('legacy automatic taught state with zero practice still opens the guided le
   const state=freshState(content,today);
   const progress=state.progress['A1.TEST'];
 
-  // This mirrors progress written by older builds: taught was set automatically,
-  // but the learner had not completed a scored question or explicitly seen the new lesson flow.
   progress.taught=true;
   delete progress.lessonAcknowledged;
   progress.practiceAttempts=0;
@@ -77,6 +75,38 @@ test('legacy automatic taught state with zero practice still opens the guided le
   assert.deepEqual(next,{teachingConcept:'A1.TEST'});
   assert.equal(state.pending,null);
   assert.equal(state.daily.count,0);
+});
+
+test('a legacy pending first question cannot bypass an unacknowledged lesson',()=>{
+  const content=fixture();
+  const state=freshState(content,today);
+  const progress=state.progress['A1.TEST'];
+
+  teachConcept(state,'A1.TEST',content);
+  const oldQuestion=prepareQuestion(state,content,today,false);
+  assert.ok(oldQuestion.id);
+  assert.ok(state.pending);
+
+  progress.taught=true;
+  delete progress.lessonAcknowledged;
+  progress.practiceAttempts=0;
+
+  const next=prepareQuestion(state,content,today,false);
+  assert.deepEqual(next,{teachingConcept:'A1.TEST'});
+  assert.equal(state.pending,null);
+  assert.equal(state.daily.count,0);
+});
+
+test('showing the lesson can record teaching exposure without acknowledging it',()=>{
+  const content=fixture();
+  const state=freshState(content,today);
+
+  teachConcept(state,'A1.TEST',content,{acknowledge:false});
+
+  assert.equal(state.progress['A1.TEST'].taught,true);
+  assert.equal(state.progress['A1.TEST'].lessonAcknowledged,false);
+  assert.ok(state.exposures.length>0);
+  assert.deepEqual(prepareQuestion(state,content,today,false),{teachingConcept:'A1.TEST'});
 });
 
 test('acknowledging the lesson advances to recognition without silently teaching vocabulary',()=>{
