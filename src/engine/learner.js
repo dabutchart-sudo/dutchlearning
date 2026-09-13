@@ -23,10 +23,13 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false){
  let q,item,retryId;
  if(s.proof){q=s.proof.questions[s.proof.index];item=c.byId[q.sourceId];}
  else{
-  const current=activeConcept(s,c);const selected=selectPractice(s,c,current,s.daily.date,canListen);item=selected.item;retryId=selected.retryId;
-  // V5.1.3 question-only baseline: learning state remains, but visible teaching/vocabulary interruption screens are bypassed in the engine rather than auto-clicked in the UI.
-  if(!s.progress[item.concept].taught)teachConcept(s,item.concept,c);
-  markWordsTaught(s,item,s.daily.date);
+  const current=activeConcept(s,c);
+  // A complete learning session begins by explicitly teaching an unlocked concept.
+  // The UI already renders this as an unscored lesson; do not silently auto-complete it.
+  if(!s.progress[current].taught)return {teachingConcept:current};
+  const selected=selectPractice(s,c,current,s.daily.date,canListen);item=selected.item;retryId=selected.retryId;
+  // Vocabulary is intentionally not marked as taught here. The UI can surface unknown or
+  // weak words in context before the scored question and records them only after acknowledgement.
   q=makeExercise(item,selected.kind,c,{phase:selected.phase});
  }
  q.retryId=retryId||null;s.pending=q;expose(s,item,q.phase);
