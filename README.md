@@ -16,7 +16,7 @@ The current learning path now supports a sustained Foundation progression model 
 - a three-day retention interval followed by a 10-question retention proof;
 - clean handoff into the next unlocked concept and its lesson;
 - Today and Course both explain the learner's current milestone rather than exposing raw engine state only;
-- Flashcard Listen now excludes part-of-word labels such as "verb" from spoken Dutch.
+- Flashcard Listen excludes part-of-word labels such as "verb" from spoken Dutch.
 
 The real Foundation content pack is covered by regression tests across the F1 mastery/retention boundary and the F2 teaching handoff.
 
@@ -34,4 +34,4 @@ Run the regression suite with:
 npm test
 ```
 
-The active learning work is on `feature/a1-learning-session-vertical-slice`. Mobile-first testing remains part of each learner-facing milestone.
+The active learning branch is `feature/a1-learning-session-vertical-slice`. Mobile-first testing remains part of each learner-facing milestone.
