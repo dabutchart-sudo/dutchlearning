@@ -1,4 +1,4 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {REPORT_RANGES,dailyActivity,dailyRetention,ratingBreakdown,upcomingReviews,cardStatus,reportSummary} from '../src/engine/reporting.js';
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {REPORT_RANGES,dailyActivity,dailyRetention,ratingBreakdown,upcomingReviews,cardStatus,reportSummary} from '../src/engine/reporting.js';
 const now=new Date('2026-09-13T12:00:00');
 const history=[
  {timestamp:'2026-09-13T08:00:00',review_type:'new',rating:'good'},
@@ -13,3 +13,4 @@ test('daily study load separates new cards from reviews',()=>{const rows=dailyAc
 test('recall excludes new-card introductions',()=>{const rows=dailyRetention(history,'7',now);assert.equal(rows.at(-1).total,2);assert.equal(rows.at(-1).rate,.5);const ratings=ratingBreakdown(history,'7',now);assert.equal(ratings.total,3);assert.equal(ratings.counts.good,1);});
 test('current progress and future load use current card truth',()=>{assert.deepEqual(cardStatus(cards),{new:1,learning:2,mature:1,suspended:1});const future=upcomingReviews(cards,7,now);assert.equal(future[0].count,2);assert.equal(future[2].count,1);});
 test('summary exposes high-value headline metrics',()=>{const s=reportSummary(cards,history,'7',now);assert.equal(s.total,4);assert.equal(s.newCards,1);assert.equal(s.reviewed,3);assert.equal(s.retention,2/3);assert.equal(s.mature,1);});
+test('report UI stacks daily load, protects panel headings and labels upcoming counts',()=>{const css=readFileSync(new URL('../src/ui/reporting.css',import.meta.url),'utf8');const ui=readFileSync(new URL('../src/ui/reporting.js',import.meta.url),'utf8');assert.match(css,/report-bar-stack\{[^}]*flex-direction:column-reverse/);assert.match(css,/report-card\{[^}]*padding:/);assert.match(ui,/report-bar-value/);assert.match(ui,/bars\(future,\['count'\],\{labels:true\}\)/);});
