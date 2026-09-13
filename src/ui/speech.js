@@ -15,19 +15,26 @@ function voiceScore(v){
 }
 
 export function dutchVoice(){
- const voices=globalThis.speechSynthesis?.getVoices().filter(v=>/^nl(?:-|_)/i.test(v.lang))||[];
+ const voices=globalThis.speechSynthesis?.getVoices?.().filter(v=>/^nl(?:-|_)/i.test(v.lang))||[];
  return voices.sort((a,b)=>voiceScore(b)-voiceScore(a))[0];
 }
 
 export function speak(text,onError=()=>{}){
- const voice=dutchVoice();
- if(!voice){onError('No Dutch voice is available. Install a Dutch voice in your device settings, or keep practising with text.');return false;}
- speechSynthesis.cancel();
- const u=new SpeechSynthesisUtterance(text);
- u.voice=voice;
- u.lang=voice.lang||'nl-NL';
- u.rate=.85;
- u.onerror=()=>onError('Audio could not play. You can switch this listening question to text.');
- speechSynthesis.speak(u);
- return true;
+ const synth=globalThis.speechSynthesis;
+ const Utterance=globalThis.SpeechSynthesisUtterance;
+ if(!synth||!Utterance){onError('Speech playback is not available in this browser.');return false;}
+ try{
+  const voice=dutchVoice();
+  synth.cancel();
+  const u=new Utterance(String(text??''));
+  if(voice)u.voice=voice;
+  u.lang=voice?.lang||'nl-NL';
+  u.rate=.85;
+  u.onerror=()=>onError('Audio could not play. Check that Dutch speech is enabled on this device.');
+  synth.speak(u);
+  return true;
+ }catch{
+  onError('Audio could not play. Check that Dutch speech is enabled on this device.');
+  return false;
+ }
 }
