@@ -7,12 +7,13 @@ function milestoneCopy(status,attempts=0){
   if(status==='Retention Ready')return 'Retention check ready · pass to unlock next lesson';
   if(status==='Mastered')return 'Retained · concept complete';
   if(status==='Locked')return 'Locked until the previous concept is retained';
+  if(status==='Learning'&&attempts===0)return 'New concept ready · start with the lesson';
   return remaining?`${remaining} practice ${remaining===1?'answer':'answers'} until mastery-proof eligibility`:'Practice requirement complete';
 }
 
 function progressBox({status,attempts=0,compact=false}){
   const safe=Math.min(40,Math.max(0,attempts)),pct=safe/40*100;
-  const title=status==='Proof Ready'?'Practice complete — mastery proof is ready':status==='Retention pending'?'Mastery proved — now let it settle':status==='Retention Ready'?'Retention check is ready':status==='Mastered'?'Concept retained':'Building toward mastery proof';
+  const title=status==='Proof Ready'?'Practice complete — mastery proof is ready':status==='Retention pending'?'Mastery proved — now let it settle':status==='Retention Ready'?'Retention check is ready':status==='Mastered'?'Concept retained':status==='Learning'&&attempts===0?'New concept ready — start with the lesson':'Building toward mastery proof';
   const copy=milestoneCopy(status,attempts);
   return `<div class="course-progress-note${compact?' compact':''}"><div class="row"><strong>${title}</strong><span class="course-progress-count">${safe} / 40 practice</span></div><div class="course-progress-track" role="progressbar" aria-label="Practice toward mastery proof" aria-valuemin="0" aria-valuemax="40" aria-valuenow="${safe}"><span style="width:${pct}%"></span></div><p class="small muted">${copy}</p></div>`;
 }
@@ -33,7 +34,8 @@ function decorateToday(){
     if(status==='Retention pending')note.textContent='The next checkpoint is the retention test shown below. The next concept stays locked until retention is proved.';
     if(status==='Retention Ready')note.textContent='Pass the retention test to complete this concept and unlock the next lesson.';
     if(status==='Mastered')note.textContent='This concept is complete. Zin will move you into the next unlocked lesson and revisit this material later for maintenance.';
-    if(status==='Learning'){const remaining=Math.max(0,40-attempts);note.textContent=remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} before mastery proof can open. Zin will keep mixing recognition, construction and independent Dutch production.`:'The practice requirement is complete. Mastery proof will become available when the session state allows it.';}
+    if(status==='Learning'&&attempts===0)note.textContent='This concept has just opened. Read the lesson first; Zin will then begin scored practice and build toward mastery proof.';
+    else if(status==='Learning'){const remaining=Math.max(0,40-attempts);note.textContent=remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} before mastery proof can open. Zin will keep mixing recognition, construction and independent Dutch production.`:'The practice requirement is complete. Mastery proof will become available when the session state allows it.';}
   }
 
   const done=[...root.querySelectorAll('.card.summary p')].find(p=>/Today’s work is complete/.test(p.textContent||''));
