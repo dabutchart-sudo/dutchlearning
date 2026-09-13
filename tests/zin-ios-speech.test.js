@@ -8,7 +8,7 @@ const speechUrl=new URL('../src/ui/speech.js',import.meta.url);
 
 test('Zin naming is used for the visible app and installed PWA',()=>{
   assert.match(index,/<h1>Zin<\/h1>/);
-  assert.match(index,/<title>Zin · V5\.1\.102<\/title>/);
+  assert.match(index,/<title>Zin · V5\.1\.103<\/title>/);
   assert.match(index,/apple-mobile-web-app-title" content="Zin"/);
   assert.equal(manifest.name,'Zin');
   assert.equal(manifest.short_name,'Zin');
