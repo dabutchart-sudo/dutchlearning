@@ -1,46 +1,70 @@
 # Flashcard integration
 
-The standalone Flashcards application is being absorbed into Dutch Learning. This migration is deliberately additive until the replacement has been exercised against real learner data.
+The standalone Flashcards application is being absorbed into Dutch Learning. This migration remains deliberately reversible until the integrated replacement has passed real-device and persistence verification.
+
+V5.1.92 is the current stabilisation checkpoint. See `checkpoint-v5.1.92.md` for the verification checklist and the boundary for the next development milestone.
 
 ## Product invariants
 
 - Flashcards remain a dedicated daily destination and a complete batch, not a background feature.
 - The daily new-card setting is a hard ceiling. Review-load policy may reduce it but must never increase it.
 - Completing the flashcard study day closes that day. No additional new cards may appear until the next study day.
-- Existing Supabase `cards` scheduling values and `reviewhistory` remain authoritative during migration. The new app must not silently recalculate intervals, ease, reps or lapses.
+- Existing Supabase `cards` scheduling values and `reviewhistory` remain authoritative during migration. The new app must not silently recalculate intervals, ease, reps or lapses outside the defined rating path.
 - Existing reporting remains first-class: retention, activity, mastered cards, rating breakdown, trouble words and interval distribution.
 - Sentence Trainer word evidence may enrich a card, but it must not overwrite SRS history.
 - English-to-Dutch production progresses per word from recognition to supported, guided, independent and contextual production.
 - AI is optional tutoring/generation infrastructure, not part of deterministic SRS scoring.
-- Provider secrets never live in browser JavaScript or GitHub Pages. AI calls go through an authenticated server-side function and generated content is cached.
+- Provider secrets never live in browser JavaScript or GitHub Pages. AI calls go through authenticated server-side functions and generated content is cached.
 - The standalone Flashcards app remains available until the merged experience is validated and migration is reversible.
 
-## Phase 1 domain boundary
+## Shared foundation
 
-`src/engine/flashcards.js` introduces a shared vocabulary view that normalizes rows from the existing `cards` table without changing their SRS values. It also combines those rows with Sentence Trainer word evidence in a separate `evidence` object.
+`src/engine/flashcards.js` provides the shared vocabulary/SRS domain layer while preserving existing card scheduling fields.
 
-`src/engine/integrations.js` defines explicit adapter boundaries for flashcard persistence and server-side sentence generation. Provider credentials remain outside the deterministic learning engine.
+`src/engine/integrations.js` provides explicit adapter boundaries for persistence and server-side generation.
 
-The first regression tests lock the most important migration behaviours: preservation of SRS fields, the strict new-card ceiling, no extra new cards after daily completion, the existing >21-day mastered definition, and retention excluding new-card introductions.
+Regression tests cover core migration behaviours including SRS preservation, strict new-card limits, daily completion and retention rules.
 
-## Live Flashcard migration
+## Live integrated Flashcards path
 
-The Dutch Learning navigation now includes a Flashcards destination using the existing `cards` and `reviewhistory` data. It preserves the full daily SRS batch, live Again/Hard/Good/Easy writes, requeue behaviour and the persisted done-for-today lock.
+Dutch Learning now contains a working Flashcards destination using the existing `cards` and `reviewhistory` data. It includes:
 
-During this temporary migration stage it reuses the public Supabase browser configuration already deployed by the standalone Flashcards PWA. This avoids duplicating configuration while the old app remains available. Before the standalone app is retired, Dutch Learning will own this configuration directly.
+- the full daily SRS batch;
+- Again / Hard / Good / Easy writes;
+- requeue behaviour;
+- review-load dampening of new cards without exceeding the configured ceiling;
+- persisted done-for-today behaviour;
+- live progress/retention information;
+- trouble-word visibility;
+- shared card editing and sentence support.
 
-The current dashboard shows due/new counts, today's completed reviews, 30-day retention, mastered/active/suspended/total counts, trouble words and English-to-Dutch readiness.
+During this migration stage the app continues to reuse the public browser configuration already deployed by the standalone Flashcards PWA. Before legacy retirement, Dutch Learning should own this configuration directly.
 
 ## English-to-Dutch production bridge
 
-Mature cards are staged conservatively through recognition, supported production, guided production, independent production and contextual production. Production practice is a separate optional mini-session capped at five meaningful questions per day. It writes learner evidence only and never changes Flashcard SRS intervals or due dates.
+Mature cards progress conservatively through recognition, supported production, guided production, independent production and contextual production. Production practice remains separate from Flashcard SRS scheduling and writes learning evidence rather than changing intervals or due dates.
 
-Supported words use multiple choice. Guided multi-word phrases use shuffled word tiles. Guided single words use partial-spelling recall rather than a one-tile giveaway. Meaningless legacy attempts from the V5.1.8 prototype are excluded from the daily allowance and learning evidence.
+Supported words use multiple choice. Guided phrases can use word construction. Guided single words use partial-spelling recall rather than one-tile giveaways. Repeated independent failure can reduce support level/exposure rather than forcing the same spelling task indefinitely.
 
-## Contextual sentence-bank groundwork
+## Contextual sentence banks
 
-V5.1.12 adds `src/engine/sentence-bank.js` as the deterministic cache/rotation layer for contextual examples. A card's current Dutch/English example remains the fallback, generated and cached examples are deduplicated, banks are capped at ten examples, and rotation avoids recently shown sentence IDs where alternatives exist.
+The deterministic sentence-bank layer rotates cached examples and keeps generation behind authenticated server-side services. Generated examples are reused rather than making an API call every time a card appears.
 
-The engine requests refresh when a bank contains fewer than five examples. Dated generated banks can also become refresh candidates after 30 days. This layer does not call an AI provider itself; generation remains behind `SentenceGeneratorAdapter` and an authenticated server-side function.
+## Sentence maintenance
 
-The next sentence-bank checkpoint is to connect the existing authenticated `generate-sentences` Edge Function to this cache boundary, then surface varied examples without making an API call every time a card appears.
+V5.1.92 includes a dedicated sentence-maintenance workflow:
+
+1. Flag a word during Flashcard review.
+2. Persist the flag in Supabase using `cards.sentence_flagged`.
+3. Open Sentence maintenance from the Flashcards dashboard.
+4. Prepare five AI Dutch/English sentence alternatives for every flagged word before the selection screen appears.
+5. Select one alternative, request five fresh alternatives, edit manually, or remove the flag.
+6. Saving a replacement updates the card sentence but does not change SRS scheduling/history.
+
+Local browser queue data is retained only as migration/compatibility state; shared Supabase flag state is the cross-device source to converge on.
+
+## Stabilisation boundary
+
+Do not continue broadening this branch with unrelated main-learning features. Remaining work on the Flashcards epic should be defect fixes and verification only.
+
+After the V5.1.92 verification checklist passes, begin the main learning-side development as a fresh bounded milestone centred on one complete learner-visible session loop rather than isolated widgets.
