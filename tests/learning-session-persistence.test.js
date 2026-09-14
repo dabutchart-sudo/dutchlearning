@@ -11,7 +11,7 @@ function contentFixture(){
 
 function memoryStorage(){
  const values=new Map();
- return {getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+ return {getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key),values};
 }
 
 test('completed learning day survives reload and cannot create question 21',()=>{
@@ -73,6 +73,57 @@ test('resuming an unchanged pending question does not rewrite browser storage',(
 
  assert.equal(writes,writesAfterInitialSave,'opening the same pending question should not broadcast a redundant storage write to other tabs');
  assert.equal(repo.load().pending.id,pending.id);
+});
+
+test('same-day daily count is reconstructed from persisted attempt evidence',()=>{
+ const content=contentFixture();
+ const storage=memoryStorage();
+ const now=new Date('2026-09-14T18:00:00');
+ const repo=createRepository(storage,content,{key:'count-recovery',now:()=>now});
+ const state=freshState(content,now);
+ state.daily.count=0;
+ state.attempts=Array.from({length:14},(_,i)=>({id:'a'+i,date:'2026-09-14',concept:'A1.TEST'}));
+ storage.setItem('count-recovery',JSON.stringify(state));
+
+ const recovered=repo.load();
+ assert.equal(recovered.daily.count,14,'visible progress should recover from the attempt ledger instead of showing 0/20');
+});
+
+test('rolling recovery copy restores a more advanced same-day session after an accidental fresh overwrite',()=>{
+ const content=contentFixture();
+ const storage=memoryStorage();
+ const now=new Date('2026-09-14T18:00:00');
+ const repo=createRepository(storage,content,{key:'upgrade-recovery',now:()=>now});
+ const progressed=freshState(content,now);
+ progressed.daily.count=14;
+ progressed.attempts=Array.from({length:14},(_,i)=>({id:'a'+i,date:'2026-09-14',concept:'A1.TEST'}));
+ repo.save(progressed);
+
+ const accidental=freshState(content,now);
+ accidental.learnerId=progressed.learnerId;
+ accidental.deviceId=progressed.deviceId;
+ repo.save(accidental);
+ assert.equal(JSON.parse(storage.getItem('upgrade-recovery')).daily.count,0,'test setup should emulate the bad fresh overwrite');
+
+ const recovered=repo.load();
+ assert.equal(recovered.daily.count,14);
+ assert.equal(recovered.attempts.length,14);
+});
+
+test('an explicit Learning reset is not undone by the recovery copy',()=>{
+ const content=contentFixture();
+ const storage=memoryStorage();
+ const now=new Date('2026-09-14T18:00:00');
+ const repo=createRepository(storage,content,{key:'intentional-reset',now:()=>now});
+ const progressed=freshState(content,now);
+ progressed.daily.count=14;
+ progressed.attempts=Array.from({length:14},(_,i)=>({id:'a'+i,date:'2026-09-14',concept:'A1.TEST'}));
+ repo.save(progressed);
+
+ repo.resetLearning();
+ const reopened=repo.load();
+ assert.equal(reopened.daily.count,0);
+ assert.equal(reopened.attempts.length,0);
 });
 
 test('today screen has an explicit finished state and disables normal start after 20',async()=>{
