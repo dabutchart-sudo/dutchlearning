@@ -58,7 +58,9 @@ function currentState(){try{return repo?.load()||null}catch{return null}}
 function adjustCorrectionScreen(){
  const qType=document.querySelector('.q-type');
  if(!qType||!['Correct the Dutch sentence','Type the missing letters'].includes(qType.textContent.trim()))return;
- qType.textContent='Type the missing letters';
+ // This function runs from a child-list MutationObserver. Replacing an already-correct
+ // label would create another child-list mutation and recursively trigger the observer.
+ if(qType.textContent.trim()!=='Type the missing letters')qType.textContent='Type the missing letters';
  const prompt=document.querySelector('.question-card .prompt');
  if(prompt&&!prompt.dataset.separatedBlanks){
   prompt.textContent=prompt.textContent.replace(/_+/g,run=>run.split('').join(' '));
