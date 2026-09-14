@@ -49,6 +49,32 @@ test('next study day reopens the session without discarding learner evidence',()
  assert.equal(state.attempts.length,1);
 });
 
+test('resuming an unchanged pending question does not rewrite browser storage',()=>{
+ const content=contentFixture();
+ const values=new Map();
+ let writes=0;
+ const storage={
+  getItem:key=>values.has(key)?values.get(key):null,
+  setItem:(key,value)=>{writes++;values.set(key,String(value));},
+  removeItem:key=>values.delete(key)
+ };
+ const now=new Date('2026-09-14T12:00:00');
+ const repo=createRepository(storage,content,{key:'resume-session',now:()=>now});
+ const state=freshState(content,now);
+ state.progress['A1.TEST'].taught=true;
+ state.progress['A1.TEST'].lessonAcknowledged=true;
+ const pending=prepareQuestion(state,content,now,false);
+ repo.save(state);
+ const writesAfterInitialSave=writes;
+
+ const reopened=repo.load();
+ assert.equal(prepareQuestion(reopened,content,now,false).id,pending.id);
+ repo.save(reopened);
+
+ assert.equal(writes,writesAfterInitialSave,'opening the same pending question should not broadcast a redundant storage write to other tabs');
+ assert.equal(repo.load().pending.id,pending.id);
+});
+
 test('today screen has an explicit finished state and disables normal start after 20',async()=>{
  const source=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/ui/app.js',import.meta.url),'utf8'));
  assert.match(source,/Today’s work is complete/);
