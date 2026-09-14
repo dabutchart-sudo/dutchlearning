@@ -29,11 +29,44 @@ export function migrateLegacy(old,content,now=new Date()){
  s.daily.count=Math.min(20,Math.max(s.attempts.filter(a=>a.date===dayKey(now)).length,old.daily?.date===dayKey(now)?old.daily.answers?.length||0:0));
  return s;
 }
+function parseStored(raw,content){return raw?validateState(JSON.parse(raw),content):null;}
+function restoreCountFromAttempts(state){
+ const attemptsToday=state.attempts.filter(a=>a.date===state.daily.date).length;
+ if(attemptsToday>state.daily.count)state.daily.count=Math.min(20,attemptsToday);
+ return state;
+}
+function moreAdvancedSameSession(candidate,current){
+ return !!candidate&&!!current&&candidate.learnerId===current.learnerId&&candidate.deviceId===current.deviceId&&candidate.daily.date===current.daily.date&&(candidate.daily.count>current.daily.count||candidate.attempts.length>current.attempts.length);
+}
 export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Date()}={}){
+ const backupKey=key+'-recovery';
+ const resetKey=key+'-intentional-reset';
+ const read=storedKey=>{try{return parseStored(storage.getItem(storedKey),content)}catch{return null}};
  return {
-  load(){const raw=storage.getItem(key);if(raw)return validateState(JSON.parse(raw),content);if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){const state=migrateLegacy(JSON.parse(legacy),content,now());storage.setItem(key,JSON.stringify(state));return state}}}return freshState(content,now());},
-  save(state){validateState(state,content);const next=JSON.stringify(state);if(storage.getItem(key)!==next)storage.setItem(key,next);},
-  resetLearning(){const state=resetLearningState(this.load(),content,now());this.save(state);return state;},
+  load(){
+   let state=read(key),backup=read(backupKey);
+   if(state){
+    if(!storage.getItem(resetKey)&&moreAdvancedSameSession(backup,state)){state=backup;storage.setItem(key,JSON.stringify(state));}
+    return restoreCountFromAttempts(state);
+   }
+   if(backup){storage.setItem(key,JSON.stringify(backup));return restoreCountFromAttempts(backup);}
+   if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){state=migrateLegacy(JSON.parse(legacy),content,now());storage.setItem(key,JSON.stringify(state));storage.setItem(backupKey,JSON.stringify(state));return state}}}
+   return freshState(content,now());
+  },
+  save(state){
+   validateState(state,content);restoreCountFromAttempts(state);
+   const next=JSON.stringify(state),current=storage.getItem(key);
+   if(current===next)return;
+   if(current){const validCurrent=read(key);if(validCurrent)storage.setItem(backupKey,current);}
+   storage.setItem(key,next);
+   if(state.attempts.length||state.daily.count)storage.removeItem?.(resetKey);
+  },
+  resetLearning(){
+   const state=resetLearningState(this.load(),content,now()),raw=JSON.stringify(state);
+   validateState(state,content);
+   storage.setItem(key,raw);storage.setItem(backupKey,raw);storage.setItem(resetKey,now().toISOString());
+   return state;
+  },
   export(state){return JSON.stringify(state,null,2)},
   import(text){const s=validateState(JSON.parse(text),content);this.save(s);return s;}
  };
