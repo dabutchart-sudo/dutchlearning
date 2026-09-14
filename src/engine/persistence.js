@@ -32,7 +32,7 @@ export function migrateLegacy(old,content,now=new Date()){
 export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Date()}={}){
  return {
   load(){const raw=storage.getItem(key);if(raw)return validateState(JSON.parse(raw),content);if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){const state=migrateLegacy(JSON.parse(legacy),content,now());storage.setItem(key,JSON.stringify(state));return state}}}return freshState(content,now());},
-  save(state){validateState(state,content);storage.setItem(key,JSON.stringify(state));},
+  save(state){validateState(state,content);const next=JSON.stringify(state);if(storage.getItem(key)!==next)storage.setItem(key,next);},
   resetLearning(){const state=resetLearningState(this.load(),content,now());this.save(state);return state;},
   export(state){return JSON.stringify(state,null,2)},
   import(text){const s=validateState(JSON.parse(text),content);this.save(s);return s;}
