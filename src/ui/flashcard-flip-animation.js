@@ -13,20 +13,23 @@ function installFlipStyle(){
  document.head.appendChild(style);
 }
 
-let completingFlip=false,expectIncoming=false;
+let animating=false,bypassNextClick=false,expectIncoming=false;
 
 document.addEventListener('click',event=>{
  const card=event.target.closest?.('#review-card');
- if(!card||event.target.closest('#speak-card')||completingFlip)return;
+ if(!card||event.target.closest('#speak-card'))return;
+ if(bypassNextClick){bypassNextClick=false;return;}
+ if(animating){event.preventDefault();event.stopImmediatePropagation();return;}
  event.preventDefault();
  event.stopImmediatePropagation();
- completingFlip=true;
+ animating=true;
  card.classList.add('flashcard-flip-out');
  const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?1:FLIP_MS/2;
  setTimeout(()=>{
   expectIncoming=true;
-  completingFlip=false;
+  bypassNextClick=true;
   card.click();
+  animating=false;
  },delay);
 },true);
 
