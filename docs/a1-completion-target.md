@@ -79,6 +79,33 @@ The next development should fill the gaps in this order:
 
 The numbering is intentionally finite. New A1 content should normally improve one of these concepts rather than append A1.27, A1.28, and so on.
 
+## Explicit learning-technique layer
+
+Zin must teach the reasoning tools needed to solve Dutch questions, not rely on the learner having acquired those tools from another app. A learner should not be able to answer Zin material only because an external course previously explained the underlying pattern.
+
+For each curriculum concept, development should identify any useful rule, mnemonic, decomposition method or visual framework that helps the learner reason out an answer. Teach that technique at the point where it first solves a real problem, then practise using it explicitly before gradually fading the scaffolding.
+
+The default progression is:
+
+1. **Teach** — briefly explain the useful rule or technique in context.
+2. **Guided application** — expose the reasoning steps and let the learner apply them.
+3. **Faded support** — remove individual prompts as the technique becomes familiar.
+4. **Independent use** — require the correct Dutch without exposing the reasoning path.
+5. **Retention** — revisit both the language and, when needed, the technique after spacing.
+
+Candidate techniques include:
+
+- verb-stem construction and spelling changes;
+- inversion cues and visual sentence-order frameworks;
+- separable-verb decomposition and reconstruction;
+- reliable `de`/`het` categories while treating lexical exceptions honestly;
+- productive plural and diminutive patterns;
+- mnemonic/rule systems such as `'t kofschip` / “soft ketchup” for `-te/-ten` versus `-de/-den` when past-tense morphology is actually introduced.
+
+Do not introduce a mnemonic before the learner has encountered the problem it solves, and do not turn mnemonic recall into the learning objective. The objective is independent Dutch production; the technique is temporary cognitive scaffolding.
+
+As A1.17–A1.26 are developed or refined, explicitly audit both new and already-taught prerequisite concepts for missing explanation. Where Zin currently tests a concept without having taught the learner a usable way to reason about it, add the teaching/scaffolding before increasing difficulty. This is a course-quality requirement, not an optional enrichment feature.
+
 ## Completion evidence
 
 A learner reaches Zin's A1 completion state only when:
@@ -95,6 +122,8 @@ A learner reaches Zin's A1 completion state only when:
 - Reuse known vocabulary where possible so a new structure is visible in context.
 - Introduce genuinely new vocabulary in controlled amounts.
 - Keep English→Dutch production gradual but unavoidable by the end of A1.
+- Teach useful reasoning techniques before expecting the learner to apply the corresponding Dutch concept independently.
+- Fade technique scaffolding as mastery grows; do not make permanent hints a substitute for learning.
 - Do not turn A1 into A2 by adding broad subordinate clauses, complex relative clauses, extensive past-tense distinctions or low-frequency grammar.
 - Preserve the existing lesson → practice → mastery proof → retention proof progression.
 - Each new concept needs enough unique practice/proof material for the existing proof engine; do not weaken proof requirements to make content fit.
@@ -102,4 +131,4 @@ A learner reaches Zin's A1 completion state only when:
 
 ## Immediate next bounded batch
 
-Build A1.17 and A1.18 together as the first capability-driven expansion. They establish the noun/description language needed by the later transaction, location and daily-life strands. Test them through the same lesson-first, mastery and retention path before moving to numbers/time.
+Continue the capability-driven A1 expansion while applying the explicit learning-technique audit to each concept. Before adding harder production for a concept, verify that Zin itself has taught the learner the rule, pattern or reasoning method needed to solve it; add guided and fading scaffolding where that explanation is currently missing.
