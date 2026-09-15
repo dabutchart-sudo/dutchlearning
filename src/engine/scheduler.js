@@ -7,12 +7,36 @@ export function itemPriority(item,state){
  weight+=(state.progress[item.concept]?.weakness||0)*2;
  return weight+hash(item.id+state.attempts.length)%1000/1000;
 }
+export function practiceContextWeight(item){
+ const count=normalize(item.nl).split(/\s+/).filter(Boolean).length;
+ if(count>=4&&count<=8)return 6;
+ if(count===3)return 2;
+ if(count<=2)return -6;
+ return 0;
+}
 export function practiceKind(p,canListen=false){
  if(p.recognised<4)return p.practiceAttempts%2?'correct-sentence':'choice';
  if(p.constructed<4)return ['wordbank','gap','form'][p.practiceAttempts%3];
  if(p.weakness>=4)return ['wordbank','gap','typed'][p.practiceAttempts%3];
  const cycle=['typed','typed','wordbank','typed','correction','form','typed','gap','correct-sentence',canListen?'listening':'choice'];
  return cycle[p.practiceAttempts%cycle.length];
+}
+export function spreadPracticePool(pool,state,{keepVerb=false}={}){
+ if(pool.length<2)return pool;
+ const recent=state.exposures.slice(-3);
+ const lastSentence=recent.at(-1)?.nl;
+ if(lastSentence){
+  const differentSentence=pool.filter(item=>normalize(item.nl)!==lastSentence);
+  if(differentSentence.length)pool=differentSentence;
+ }
+ if(!keepVerb){
+  const recentVerbs=new Set(recent.slice(-2).map(x=>x.verb).filter(Boolean));
+  if(recentVerbs.size){
+   const differentVerb=pool.filter(item=>!recentVerbs.has(item.verb));
+   if(differentVerb.length)pool=differentVerb;
+  }
+ }
+ return pool;
 }
 export function selectPractice(state,content,current,date,canListen){
  const allMastered=content.concepts.every(c=>state.progress[c.id].masteredAt);
@@ -21,16 +45,17 @@ export function selectPractice(state,content,current,date,canListen){
  if(maintenance.length&&(state.daily.count%5===4||state.progress[current].status==='mastered')){concept=maintenance.sort((a,b)=>state.progress[a.id].nextMaintenance.localeCompare(state.progress[b.id].nextMaintenance))[0].id;phase='maintenance'}
  const due=state.retries.find(r=>r.after<=state.attempts.length&&(!r.date||r.date<=date));
  if(due&&state.progress[due.concept].taught){concept=due.concept;phase=state.progress[concept].masteredAt?'maintenance':'practice';}
- let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
- if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length)pool=focused;}
+ let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice'),focusedRetry=false;
+ if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length){pool=focused;focusedRetry=true;}}
+ pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
  let kind=phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen);
  const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
  if(eligible.length)pool=eligible;
  else {
   const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
-  if(alternatives.length)pool=alternatives;else kind='wordbank';
+  if(alternatives.length)pool=spreadPracticePool(alternatives,state);else kind='wordbank';
  }
- const item=[...pool].sort((a,b)=>itemPriority(b,state)-itemPriority(a,state))[0];
+ const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
  if(!item)throw Error('No practice content available');
  return {item,kind,phase,retryId:due?.id};
 }

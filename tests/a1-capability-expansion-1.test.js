@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {registerPacks} from '../src/content/registry.js';
+const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
+const content=registerPacks([base]);
+test('A1.17 and A1.18 fill the first defined A1 capability gaps',()=>{assert.ok(content.conceptById['A1.17']);assert.ok(content.conceptById['A1.18']);assert.deepEqual(content.conceptById['A1.17'].prerequisites,['A1.16']);assert.deepEqual(content.conceptById['A1.18'].prerequisites,['A1.17']);assert.match(content.conceptById['A1.17'].rule,/de fiets/);assert.match(content.conceptById['A1.18'].rule,/Ons/);});
+test('both concepts have substantial unique practice and proof pools',()=>{for(const id of ['A1.17','A1.18']){const p=content.sentences.filter(x=>x.concept===id&&x.pool==='practice');const proof=content.sentences.filter(x=>x.concept===id&&x.pool==='proof');assert.ok(p.length>=10);assert.ok(proof.length>=40);assert.equal(new Set(proof.map(x=>x.nl.toLowerCase())).size,proof.length);for(const row of [...p,...proof]){assert.ok(row.verbIndex>=0&&row.verbIndex<row.nl.trim().split(/\s+/).length);}}});
+test('A1.17 exposes de, het, een and plural noun phrases in context',()=>{const rows=content.sentences.filter(x=>x.concept==='A1.17').map(x=>x.nl);assert.ok(rows.some(x=>/\bde\b/i.test(x)));assert.ok(rows.some(x=>/\bhet\b/i.test(x)));assert.ok(rows.some(x=>/\been\b/i.test(x)));assert.ok(rows.some(x=>/boeken|fietsen|kinderen|stoelen|tafels|ramen|huizen/i.test(x)));});
+test('A1.18 covers core possessives and adjective descriptions',()=>{const text=content.sentences.filter(x=>x.concept==='A1.18').map(x=>x.nl).join(' ');for(const form of ['Mijn','Jouw','Zijn','Haar','Ons','Onze'])assert.match(text,new RegExp(`\\b${form}\\b`,'i'));assert.match(text,/rode fiets|nieuwe jas|blauwe auto|kleine hond/i);});
+test('capability expansion ships in the offline build',()=>{const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/a1-capability-expansion-1\.js/);});

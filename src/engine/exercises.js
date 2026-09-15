@@ -4,6 +4,17 @@ export function wordBank(text,distractors,seed){const needed=displayTokens(sente
 export function chooseTile(selection,tileId,bank){if(!bank.some(t=>t.id===tileId)||selection.includes(tileId))return selection;return [...selection,tileId]}
 export const removeTile=(selection,tileId)=>selection.filter(x=>x!==tileId);
 export const bankAnswer=(selection,bank)=>selection.map(id=>bank.find(t=>t.id===id)?.text||'').join(' ');
+
+export function correctionParts(item){
+ const words=displayTokens(sentenceCase(item.nl));
+ const letters=Array.from(words[item.verbIndex]);
+ const count=Math.min(letters.length,Math.max(2,Math.ceil(letters.length/2)));
+ const prefix=letters.slice(0,letters.length-count).join('');
+ const missing=letters.slice(letters.length-count).join('');
+ words[item.verbIndex]=prefix+'_'.repeat(count);
+ return {prompt:words.join(' ')+(item.nl.match(/[.!?]$/)?.[0]||'.'),prefix,missing,count,wordIndex:item.verbIndex};
+}
+
 export function makeExercise(item,kind,content,{phase='practice',direction='en-nl',seed=uid()}={}){
  const q={presentationVersion:515,id:uid(),sourceId:item.id,concept:item.concept,kind,phase,direction,answer:item.nl,prompt:item.en,alternatives:item.alternatives,verbIndex:item.verbIndex,verbSlots:item.verbSlots||[item.verbIndex],forms:item.forms,assisted:false};
  const nl=displayTokens(sentenceCase(item.nl));let wrong=[...nl];const wrongForm=item.forms.find(x=>normalize(x)!==normalize(nl[item.verbIndex]));wrong[item.verbIndex]=wrongForm||'werken';
@@ -20,16 +31,19 @@ export function makeExercise(item,kind,content,{phase='practice',direction='en-n
  }else if(kind==='correct-sentence'){
   const reversed=[...nl];[reversed[0],reversed[1]]=[reversed[1],reversed[0]];
   q.options=shuffle([...new Set([item.nl,bad,sentenceCase(reversed.map((w,i)=>i===1?normalize(w):w).join(' '))])],seed);
- }else if(kind==='correction'){q.prompt=maskedCorrection(item);q.cue=item.en;}
+ }else if(kind==='correction'){
+  q.correction=correctionParts(item);q.prompt=q.correction.prompt;q.cue=item.en;q.answer=q.correction.missing;q.alternatives=[];
+ }
  return q;
 }
 
-// Mask the model's suffix, rather than displaying the erroneous form or its location in colour.
-export function maskedCorrection(item){
+// Mask the model's suffix; the UI renders each underscore as a visibly separate blank.
+export function maskedCorrection(item){return correctionParts(item).prompt;}
+function completedCorrection(q,item,raw){
+ if(q.kind!=='correction'||!q.correction)return raw;
  const words=displayTokens(sentenceCase(item.nl));
- const letters=Array.from(words[item.verbIndex]);
- const count=Math.min(letters.length,Math.max(2,Math.ceil(letters.length/2)));
- words[item.verbIndex]=letters.slice(0,letters.length-count).join('')+'_'.repeat(count);
+ const supplied=String(raw??'').replace(/\s+/g,'').replace(/[.!?]+$/,'');
+ words[q.correction.wordIndex]=q.correction.prefix+supplied;
  return words.join(' ')+(item.nl.match(/[.!?]$/)?.[0]||'.');
 }
 // Compare normalized whole words so sentence case never obscures the grammatical difference.
@@ -38,7 +52,7 @@ export function sentenceDifference(actual,expected){
  return displayTokens(sentenceCase(expected)).map((text,i)=>({text,changed:normalize(text)!==got[i]}));
 }
 export function correctiveFeedback(q,item,raw,result){
- const fullAnswer=['gap','form'].includes(q.kind)?displayTokens(item.nl).map((w,i)=>i===item.verbIndex?raw:w).join(' '):raw;
+ const fullAnswer=q.kind==='correction'?completedCorrection(q,item,raw):['gap','form'].includes(q.kind)?displayTokens(item.nl).map((w,i)=>i===item.verbIndex?raw:w).join(' '):raw;
  const compare=q.direction==='en-nl'&&!(result.grammar===true&&result.spelling!==false);
  const words=sentenceDifference(compare?fullAnswer:item.nl,item.nl);
  const actual=displayTokens(fullAnswer);

@@ -1,0 +1,42 @@
+import {PRODUCTION_STAGE} from './flashcards.js';
+import {classifyProductionError} from './production-errors.js';
+
+const DAY_MS=86400000;
+const stages=[PRODUCTION_STAGE.SUPPORTED,PRODUCTION_STAGE.GUIDED,PRODUCTION_STAGE.INDEPENDENT,PRODUCTION_STAGE.CONTEXTUAL];
+const blankStage=()=>({correct:0,total:0,rate:null});
+const rate=(correct,total)=>total?correct/total:null;
+const dayNumber=value=>{const d=new Date(`${String(value).slice(0,10)}T12:00:00`);return Number.isNaN(d.getTime())?null:Math.floor(d.getTime()/DAY_MS);};
+const dateFromDay=day=>{const d=new Date(day*DAY_MS);return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;};
+const stableErrorType=attempt=>['spelling','recall'].includes(attempt?.errorType)?attempt.errorType:classifyProductionError(attempt?.expected||'',attempt?.answer||'');
+const attemptTime=attempt=>{const timestamp=Date.parse(attempt?.timestamp||'');if(Number.isFinite(timestamp))return timestamp;const date=Date.parse(`${String(attempt?.date||'').slice(0,10)}T12:00:00`);return Number.isFinite(date)?date:0;};
+
+export function productionProgress(state={}, {today,days=14}={}){
+ if(!today)throw new Error('Production progress requires a study day.');
+ const end=dayNumber(today),windowDays=Math.max(1,Math.trunc(Number(days)||14)),start=end-windowDays+1;
+ const history=Array.isArray(state.flashcardProduction?.attempts)?state.flashcardProduction.attempts:[];
+ const attempts=history.filter(a=>{
+  if(a?.meaningful!==true)return false;
+  const day=dayNumber(a.date||a.timestamp);
+  return day!==null&&day>=start&&day<=end;
+ });
+ const byStage=Object.fromEntries(stages.map(s=>[s,blankStage()]));
+ let correct=0;
+ for(const attempt of attempts){
+  const stage=byStage[attempt.stage]??(byStage[attempt.stage]=blankStage());
+  stage.total++;
+  if(attempt.correct===true){stage.correct++;correct++;}
+ }
+ for(const stage of Object.values(byStage))stage.rate=rate(stage.correct,stage.total);
+ const latestMissByCard=new Map();
+ const misses=attempts.filter(a=>a.correct===false).sort((a,b)=>attemptTime(b)-attemptTime(a));
+ for(const attempt of misses){
+  const id=String(attempt.cardId??'');
+  if(id&&!latestMissByCard.has(id))latestMissByCard.set(id,{cardId:id,date:String(attempt.date||'').slice(0,10),stage:attempt.stage,prompt:attempt.prompt||'',expected:attempt.expected||'',answer:attempt.answer||'',errorType:stableErrorType(attempt)});
+ }
+ const daily=[];
+ for(let day=Math.max(start,end-6);day<=end;day++){
+  const date=dateFromDay(day),items=attempts.filter(a=>String(a.date||a.timestamp).slice(0,10)===date),dayCorrect=items.filter(a=>a.correct===true).length;
+  daily.push({date,total:items.length,correct:dayCorrect,rate:rate(dayCorrect,items.length)});
+ }
+ return {days:windowDays,total:attempts.length,correct,rate:rate(correct,attempts.length),byStage,daily,recentMisses:[...latestMissByCard.values()].slice(0,3)};
+}

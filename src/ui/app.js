@@ -52,7 +52,7 @@ function renderLesson(id,continueSession){
  sessionChrome(true);
  const c=content.conceptById[id];if(!unlocked(c,state))return;
  el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to today')}</div></article></section>`;
- transaction(s=>teachConcept(s,id,content)).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',()=>continueSession?openQuestion():show('today'));
+ transaction(s=>teachConcept(s,id,content,{acknowledge:false})).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',async()=>{if(!continueSession){await show('today');return;}await transaction(s=>teachConcept(s,id,content));await openQuestion();});
 }
 async function proofPreparation(id){
  const type=phase(state.progress[id],dayKey(now()))==='proof-ready'?'mastery':'retention';

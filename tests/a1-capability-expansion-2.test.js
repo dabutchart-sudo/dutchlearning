@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {registerPacks} from '../src/content/registry.js';
+const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
+const content=registerPacks([base]);
+test('A1.19 and A1.20 continue the finite A1 capability sequence',()=>{assert.ok(content.conceptById['A1.19']);assert.ok(content.conceptById['A1.20']);assert.deepEqual(content.conceptById['A1.19'].prerequisites,['A1.18']);assert.deepEqual(content.conceptById['A1.20'].prerequisites,['A1.19']);assert.match(content.conceptById['A1.19'].rule,/kilo/);assert.match(content.conceptById['A1.20'].rule,/half negen/);});
+test('both concepts have substantial unique practice and proof pools',()=>{for(const id of ['A1.19','A1.20']){const p=content.sentences.filter(x=>x.concept===id&&x.pool==='practice');const proof=content.sentences.filter(x=>x.concept===id&&x.pool==='proof');assert.ok(p.length>=10);assert.ok(proof.length>=40);assert.equal(new Set(proof.map(x=>x.nl.toLowerCase())).size,proof.length);for(const row of [...p,...proof]){assert.ok(row.forms?.length);assert.ok(row.verbIndex>=0&&row.verbIndex<row.nl.trim().split(/\s+/).length);}}});
+test('A1.19 covers numbers, prices and practical quantities',()=>{const text=content.sentences.filter(x=>x.concept==='A1.19').map(x=>x.nl).join(' ');for(const form of ['euro','kilo','liter','flessen'])assert.match(text,new RegExp(`\\b${form}\\b`,'i'));assert.match(text,/twaalf|vijftien|twintig|vijftig|honderd/i);assert.match(text,/halve kilo|halve liter/i);});
+test('A1.20 covers clock time, weekdays and calendar dates',()=>{const text=content.sentences.filter(x=>x.concept==='A1.20').map(x=>x.nl).join(' ');assert.match(text,/half negen|kwart over|kwart voor/i);for(const day of ['maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag','zondag'])assert.match(text,new RegExp(`\\b${day}\\b`,'i'));assert.match(text,/drie april|vijftien juni|twintig augustus|twee september/i);});
+test('capability expansion 2 ships in the offline build',()=>{const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/a1-capability-expansion-2\.js/);});
