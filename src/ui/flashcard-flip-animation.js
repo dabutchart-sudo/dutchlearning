@@ -1,48 +1,52 @@
-const FLIP_MS=600;
+const HALF_FLIP_MS=300;
+let animating=false;
+let syntheticReveal=false;
 
-function installFlipStyle(){
- const style=document.createElement('style');
- style.textContent=`
-  .flashcard-review-card{transform-style:preserve-3d;backface-visibility:hidden;will-change:transform}
-  .flashcard-review-card.flashcard-flip-out{animation:zin-card-flip-out ${FLIP_MS/2}ms ease-in forwards}
-  .flashcard-review-card.flashcard-flip-in{animation:zin-card-flip-in ${FLIP_MS/2}ms ease-out both}
-  @keyframes zin-card-flip-out{from{transform:rotateY(0deg)}to{transform:rotateY(90deg)}}
-  @keyframes zin-card-flip-in{from{transform:rotateY(-90deg)}to{transform:rotateY(0deg)}}
-  @media(prefers-reduced-motion:reduce){.flashcard-review-card.flashcard-flip-out,.flashcard-review-card.flashcard-flip-in{animation-duration:1ms}}
- `;
- document.head.appendChild(style);
+function reducedMotion(){
+ return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches===true;
 }
 
-let animating=false,bypassNextClick=false,expectIncoming=false;
+async function animateHalf(card,from,to,easing){
+ if(reducedMotion()||typeof card.animate!=='function')return;
+ const animation=card.animate(
+  [
+   {transform:`perspective(1000px) rotateY(${from}deg)`},
+   {transform:`perspective(1000px) rotateY(${to}deg)`}
+  ],
+  {duration:HALF_FLIP_MS,easing,fill:'forwards'}
+ );
+ try{await animation.finished;}catch{}
+}
+
+async function flipReviewCard(card){
+ animating=true;
+ await animateHalf(card,0,90,'ease-in');
+
+ // Let flashcards-preview.js perform the real front/back state change.
+ // That keeps this module purely visual and leaves SRS/session behaviour untouched.
+ syntheticReveal=true;
+ card.click();
+ syntheticReveal=false;
+
+ const incoming=document.getElementById('review-card');
+ if(incoming)await animateHalf(incoming,-90,0,'ease-out');
+ animating=false;
+}
 
 document.addEventListener('click',event=>{
  const card=event.target.closest?.('#review-card');
  if(!card||event.target.closest('#speak-card'))return;
- if(bypassNextClick){bypassNextClick=false;return;}
- if(animating){event.preventDefault();event.stopImmediatePropagation();return;}
+
+ // The synthetic click must reach the existing Flashcard handler unchanged.
+ if(syntheticReveal)return;
+
+ if(animating){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  return;
+ }
+
  event.preventDefault();
  event.stopImmediatePropagation();
- animating=true;
- card.classList.add('flashcard-flip-out');
- const delay=matchMedia('(prefers-reduced-motion: reduce)').matches?1:FLIP_MS/2;
- setTimeout(()=>{
-  expectIncoming=true;
-  bypassNextClick=true;
-  card.click();
-  animating=false;
- },delay);
+ void flipReviewCard(card);
 },true);
-
-const host=document.getElementById('content');
-if(host){
- const observer=new MutationObserver(()=>{
-  if(!expectIncoming)return;
-  const card=document.getElementById('review-card');
-  if(!card)return;
-  expectIncoming=false;
-  card.classList.add('flashcard-flip-in');
- });
- observer.observe(host,{subtree:true,childList:true});
-}
-
-installFlipStyle();
