@@ -51,7 +51,7 @@ Deno.serve(async req=>{
  const supabaseUrl=Deno.env.get('SUPABASE_URL');
  const anonKey=Deno.env.get('SUPABASE_ANON_KEY');
  const serviceRole=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
- const openaiKey=Deno.env.get('OPENAI_API_KEY');
+ const geminiKey=Deno.env.get('GEMINI_API_KEY');
  if(!supabaseUrl||!anonKey||!serviceRole)return json({error:'Server configuration is incomplete.'},500);
 
  const authHeader=req.headers.get('Authorization')||'';
@@ -97,7 +97,7 @@ Deno.serve(async req=>{
   const {error:updateError}=await admin.from('cards').update({image_url:imageUrl}).eq('id',attempt.card_id);
   if(updateError){console.error('Card image approval failed',updateError);return json({error:'Approved image could not be attached to the card.'},500);}
   await finishAttempt(admin,attempt.id,'succeeded',{failure_reason:null});
-  return json({generationId:attempt.id,cardId:String(attempt.card_id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,status:'succeeded'});
+  return json({generationId:attempt.id,cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,status:'succeeded'});
  }
 
  const enabled=Deno.env.get('VISUAL_GENERATION_ENABLED')==='true';
@@ -105,7 +105,7 @@ Deno.serve(async req=>{
  const monthlyLimit=positiveLimit('VISUAL_GENERATION_MONTHLY_LIMIT',10);
  const estimatedCostGbp=positiveMoney('VISUAL_GENERATION_ESTIMATED_COST_GBP');
  const monthlyBudgetGbp=positiveMoney('VISUAL_GENERATION_MONTHLY_BUDGET_GBP');
- const model=Deno.env.get('OPENAI_IMAGE_MODEL')||'gpt-image-2';
+ const model='gemini-2.5-flash';
  const starts=budgetStarts();
 
  const [dailyResult,monthlyResult,bucketResult]=await Promise.all([
@@ -123,11 +123,11 @@ Deno.serve(async req=>{
  const monthlyRemaining=Math.max(0,monthlyLimit-usedMonth);
  const costRemainingGbp=roundMoney(Math.max(0,monthlyBudgetGbp-usedCostGbp));
  const costConfigured=estimatedCostGbp>0&&monthlyBudgetGbp>0;
- const configured=Boolean(openaiKey)&&dailyLimit>0&&monthlyLimit>0&&costConfigured&&auditReady&&storageReady;
+ const configured=Boolean(geminiKey)&&dailyLimit>0&&monthlyLimit>0&&costConfigured&&auditReady&&storageReady;
  const allowanceReady=dailyRemaining>0&&monthlyRemaining>0&&usedCostGbp+estimatedCostGbp<=monthlyBudgetGbp;
  let reason='ready';
  if(!enabled)reason='disabled';
- else if(!openaiKey)reason='missing-openai-key';
+ else if(!geminiKey)reason='missing-gemini-key';
  else if(dailyLimit===0||monthlyLimit===0)reason='usage-budget-disabled';
  else if(!costConfigured)reason='cost-budget-unconfigured';
  else if(!auditReady)reason='audit-log-unavailable';
@@ -143,7 +143,7 @@ Deno.serve(async req=>{
  }
 
  if(!enabled)return json({error:'Visual generation is not enabled.'},503);
- if(!openaiKey)return json({error:'OpenAI image generation is not configured.'},503);
+ if(!geminiKey)return json({error:'Gemini image generation is not configured.'},503);
  if(dailyLimit===0||monthlyLimit===0)return json({error:'Visual generation budget is disabled.'},429);
  if(!costConfigured)return json({error:'Visual generation cost budget is not configured.'},503);
  if(!auditReady){console.error('Visual budget lookup failed',dailyResult.error||monthlyResult.error);return json({error:'Visual generation budget could not be verified.'},500);}
@@ -163,9 +163,6 @@ Deno.serve(async req=>{
  await admin.from('visual_generation_log').update({status:'failed',failure_reason:'stale-reservation',completed_at:nowIso}).eq('card_id',cardId).eq('status','reserved').lt('created_at',reservationStaleBefore);
  await expireStaleReviews(admin,userData.user.id,bucket);
 
- // Final spending admission is atomic in Postgres. The per-user advisory lock in
- // reserve_visual_generation prevents concurrent requests for different cards from
- // both passing the same daily/monthly/GBP budget check.
  const {data:reservationRows,error:reservationError}=await admin.rpc('reserve_visual_generation',{
   p_user_id:userData.user.id,
   p_card_id:cardId,
@@ -194,28 +191,46 @@ Deno.serve(async req=>{
  const logRow={id:attemptId};
 
  try{
-  const openaiResponse=await fetch('https://api.openai.com/v1/images/generations',{
+  // Call Google Gemini API for image generation
+  const geminiResponse=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,{
    method:'POST',
-   headers:{Authorization:`Bearer ${openaiKey}`,'Content-Type':'application/json'},
-   body:JSON.stringify({model,prompt:educationalPrompt(card),n:1})
+   headers:{
+    'x-goog-api-key':geminiKey,
+    'Content-Type':'application/json'
+   },
+   body:JSON.stringify({
+    contents:[{
+     parts:[{text:educationalPrompt(card)}]
+    }],
+    generationConfig:{
+     responseModalities:["IMAGE"]
+    }
+   })
   });
-  if(!openaiResponse.ok){
-   const detail=await openaiResponse.text();
-   console.error('OpenAI visual generation failed',openaiResponse.status,detail.slice(0,500));
-   await finishAttempt(admin,logRow.id,'failed',{failure_reason:'openai-error'});
+
+  if(!geminiResponse.ok){
+   const detail=await geminiResponse.text();
+   console.error('Gemini visual generation failed',geminiResponse.status,detail.slice(0,500));
+   await finishAttempt(admin,logRow.id,'failed',{failure_reason:'gemini-error'});
    return json({error:'Image generation failed.'},502);
   }
-  const generated=await openaiResponse.json();
-  const item=generated?.data?.[0];
+
+  const generated=await geminiResponse.json();
+  const parts=generated?.candidates?.[0]?.content?.parts||[];
   let bytes:Uint8Array|null=null;
-  if(item?.b64_json){
-   const binary=atob(item.b64_json);
-   bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
-  }else if(item?.url){
-   const imageResponse=await fetch(item.url);
-   if(imageResponse.ok)bytes=new Uint8Array(await imageResponse.arrayBuffer());
+
+  for(const part of parts){
+   if(part?.inlineData?.data){
+    const binary=atob(part.inlineData.data);
+    bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
+    break;
+   }
   }
-  if(!bytes?.length){await finishAttempt(admin,logRow.id,'failed',{failure_reason:'empty-image'});return json({error:'Image generator returned no usable image.'},502);}
+
+  if(!bytes?.length){
+   await finishAttempt(admin,logRow.id,'failed',{failure_reason:'empty-image'});
+   return json({error:'Image generator returned no usable image.'},502);
+  }
 
   const path=`cards/${cardId}/${crypto.randomUUID()}.png`;
   const {error:uploadError}=await admin.storage.from(bucket).upload(path,bytes,{contentType:'image/png',upsert:false,cacheControl:'31536000'});
@@ -228,7 +243,7 @@ Deno.serve(async req=>{
   return json({generationId:logRow.id,cardId:String(card.id),imageUrl,alt:`Visual memory cue for ${clean(card.english)}`,model,estimatedCostGbp,status:'awaiting_review'});
  }catch(error){
   console.error('Unexpected visual generation failure',error);
-  await finishAttempt(admin,logRow.id,'failed',{failure_reason:'unexpected-error'});
+  await finishIdentifierError: try{await finishAttempt(admin,logRow.id,'failed',{failure_reason:'unexpected-error'});}catch(_){}
   return json({error:'Visual generation failed unexpectedly.'},500);
  }
 });
