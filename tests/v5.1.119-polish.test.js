@@ -15,11 +15,15 @@ test('V5.1.119 clearly tells missing-form learners to type only the missing word
 test('V5.1.119 restores a guarded 600ms rotating Flashcard reveal',()=>{
  const ui=read('../src/ui/flashcard-flip-animation.js');
  assert.match(ui,/FLIP_MS=600/);
- assert.match(ui,/rotateY\(90deg\)/);
- assert.match(ui,/rotateY\(-90deg\)/);
+ assert.match(ui,/HALF_FLIP_MS=FLIP_MS\/2/);
+ assert.match(ui,/rotateY\(\$\{from\}deg\)/);
+ assert.match(ui,/rotateY\(\$\{to\}deg\)/);
+ assert.match(ui,/animateHalf\(card,0,90,'ease-in'\)/);
+ assert.match(ui,/animateHalf\(incoming,-90,0,'ease-out'\)/);
  assert.match(ui,/bypassNextClick/);
  assert.match(ui,/prefers-reduced-motion/);
  assert.match(ui,/speak-card/);
+ assert.match(ui,/stopImmediatePropagation/);
 });
 
 test('V5.1.119 loads and caches both polish modules',()=>{
