@@ -16,6 +16,22 @@ Do not infer a new product direction merely from current implementation behaviou
 
 This is personal learning software with real learner history. Protect the learner's ability to study and protect existing progress before optimising architecture or adding features.
 
+The owner is the sole product owner and user. Only the owner can approve a change to product direction, learning policy, production architecture, or data model. A broad request such as "review and improve", "clean up", or "modernise" is not permission to redesign unrelated areas or expand scope.
+
+## Required working protocol
+
+For every agent/Cursor task:
+
+1. Inspect this file, `DESIGN.md`, `DEVELOPMENT.md`, the relevant implementation and tests, and the current Git status before proposing or editing.
+2. Confirm the source baseline and create a recoverable checkpoint or focused branch before substantial work. `main`/GitHub is the production source of truth; do not build on an unexplained dirty tree or unverified generated/deployed artifact.
+3. State the intended outcome and exact files expected to change. If discovery materially expands that list or the requested scope, stop and obtain owner approval.
+4. Make the smallest coherent, bounded change. Preserve all behaviour outside the explicit scope and do not bundle opportunistic refactors, dependency upgrades, redesigns, or backlog items.
+5. Add or update focused regression tests for behavioural changes where practical, then run the relevant focused tests and `npm test` before calling implementation work complete.
+6. Report the files changed, tests run and results, behaviour/data/deployment impact, remaining risks, and manual verification still needed. Show a concise diff-level scope for owner review.
+7. Do not merge, push, deploy, alter production data, or delete a recovery path merely because tests pass. Those actions require explicit scope or owner approval.
+
+When asked only to establish guardrails or documentation, do not change application behaviour to make the documentation true. Record any discovered mismatch as a risk or follow-up for owner review.
+
 ## Non-negotiable product constraints
 
 - The configured maximum-new-cards value is a hard upper limit. The current required value is 5 per day.
@@ -27,8 +43,23 @@ This is personal learning software with real learner history. Protect the learne
 - Repeated failure should lead to useful scaffolding or reduced immediate repetition, not an indefinite loop on the same spelling/item.
 - Answer-reveal assistance should promote recall; hold-to-show is preferred where revealing a word could otherwise encourage copying.
 - Feedback should show sufficient phrase/sentence context to make the relevant language pattern clear.
+- Speaking and listening are priority learning capabilities; preserve working speech and audio paths when changing exercises or interface structure.
+- The practice experience is one-screen, mobile-first, and iOS-like. Keep the primary Check Answer action pinned/easy to reach and avoid unnecessary scrolling during normal questions.
 - Mobile/PWA usability is a first-class requirement.
+- Do not add points, streak pressure, leagues, badges, rewards, or other gamification unless the owner explicitly changes the product direction.
 - The app is for one owner; do not add multi-user/commercial/product-growth complexity without explicit approval.
+
+## Change-control boundaries
+
+Do not replace or materially rework the following without explicit owner approval:
+
+- the AI provider or model strategy;
+- the application architecture or deployment/hosting platform;
+- Supabase as the database, persistence, or authentication platform;
+- the authentication flow or its trust boundaries;
+- the scheduling, daily-completion, flashcard, retention, or reporting model.
+
+Do not treat a new framework, provider, abstraction, or rewrite as an incidental implementation detail. If an approved task genuinely requires one of these changes, first document the reason, affected behaviour/data, migration and rollback plan, and validation required.
 
 ## Flashcards migration safety
 
@@ -46,16 +77,19 @@ Therefore:
 
 ## Supabase and data
 
-- Do not make casual schema changes.
+- Do not alter existing Supabase tables, schema, migrations, policies, functions, or production data unless that exact change is explicitly approved.
 - Never commit secrets, passwords, API keys, service-role keys, or private credentials.
 - Preserve backwards compatibility where practical.
 - For potentially destructive data changes, establish and document recovery/rollback before execution.
 - Real-device/cross-device behaviour must be tested when the change depends on Supabase synchronisation or PWA persistence.
 
+Production sentence generation currently uses OpenAI through the restored deployed `generate-sentences` Supabase Edge Function. It uses `OPENAI_API_KEY`, the OpenAI Responses API and owner/Google authentication plus daily quota controls; its `verify_jwt = false` setting is deliberate because authentication is enforced inside the function. Do not replace this path, change provider, weaken its checks, or infer the deployed function from unrelated local code without explicit owner approval and production-safe validation.
+
 ## Coding and testing
 
 - Prefer the smallest coherent change that satisfies the issue.
 - Preserve existing UI and behaviour unless the task requires changing them.
+- Treat existing passing behaviour as a compatibility surface, not an invitation to rewrite it.
 - Add/update regression tests for behavioural changes where practical.
 - Run the repository test suite (`npm test`) before declaring code complete.
 - Do not suppress failing tests merely to make CI green.

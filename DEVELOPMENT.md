@@ -5,9 +5,12 @@
 - Active Dutch Learning release: V5.1.5.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in progress: Supabase.
+- Known-good source baseline: commit `9460576d79828a0509f297322b2f9100f0ff259f` (`Merge unified Zin V5.1.118 into main`).
 - Automated engine tests run through GitHub Actions with `npm test`.
 - Real-device verification of V5.1.5 remains an outstanding tracked task.
 - The standalone Flashcards application remains the reliable production flashcard path while unified flashcard development is validated.
+
+The restored production `generate-sentences` Supabase Edge Function uses OpenAI (`OPENAI_API_KEY` and the Responses API) with owner/Google authentication and daily quota controls. The deployed function is a production boundary even though its source is not currently present in this repository. Do not recreate, replace, or redeploy it from assumptions or from `generate-visual`; inspect the deployed source and obtain explicit owner approval before any change. Its current `verify_jwt = false` configuration is deliberate because the function performs authentication internally.
 
 See `DESIGN.md` for product and learning requirements. This document describes implementation state, development priorities, and delivery discipline.
 
@@ -16,6 +19,25 @@ See `DESIGN.md` for product and learning requirements. This document describes i
 Dutch Learning is currently a lightweight web/PWA application with application logic, question generation, scheduling/learning state, tests, service-worker/PWA support, and Supabase-backed persistence for signed-in use.
 
 Development should preserve the deliberately small deployment footprint unless a larger architecture provides a clear learning or reliability benefit.
+
+Changing the AI provider, model strategy, application architecture, GitHub Pages hosting, Supabase database/persistence, or authentication design is an architectural decision requiring explicit owner approval. It is never an incidental cleanup or dependency choice.
+
+## Agent/Cursor change protocol
+
+Before editing:
+
+1. Read `AGENTS.md`, `DESIGN.md`, this document, the relevant code/tests, and `git status`.
+2. Confirm that the intended starting point is a known source/GitHub baseline. Create a focused branch or named checkpoint before substantial work; preserve unrelated owner changes if the tree is already dirty.
+3. State the bounded objective and intended file list. A broad "review and improve" request authorises analysis and proposals, not unrelated implementation.
+
+While editing, keep one coherent scope, preserve behaviour outside it, and avoid opportunistic refactors, dependency/provider swaps, schema work, deployments, or UI redesign. If new information requires a materially broader change, stop and ask the owner rather than silently expanding the task.
+
+Before handoff:
+
+1. Review the exact diff and confirm it contains only the agreed scope.
+2. Run focused tests plus `npm test` for implementation changes; documentation-only changes still require diff/whitespace validation and confirmation that no runtime files changed.
+3. Report changed files, tests and results, application/data/deployment impact, risks, and remaining manual checks.
+4. Leave the branch/checkpoint available for owner review. Do not merge, push, deploy, mutate Supabase, or remove recovery paths unless explicitly requested.
 
 ## Current active milestone
 
@@ -107,10 +129,13 @@ For behavioural changes:
 - Protect compatibility with existing learner state.
 - Use real-device testing for PWA installation/cache behaviour, mobile layout, and cross-device Supabase behaviour when relevant.
 - For migration work, validate that the old reliable study path remains available until the replacement is accepted.
+- Keep regression coverage for the hard adjustable new-card ceiling (currently 5), no extra normal cards after daily completion, the batch flashcard workflow, retention/reporting, gradual English-to-Dutch production, hold-to-show help, and mobile practice layout.
 
 ## Data and migration safety
 
 Changes involving Supabase schema, review history, scheduling fields, learner progress, or card identity are high-impact.
+
+Do not alter existing Supabase tables, schema, migrations, policies, production functions, authentication configuration, or data unless the owner explicitly approves that exact scope. Prefer an application-side compatible change when possible, but do not introduce a compatibility layer that silently changes behaviour or weakens access control.
 
 Before destructive or irreversible migration:
 

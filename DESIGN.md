@@ -73,18 +73,24 @@ Useful measures include review volume, new material, retention/performance trend
 
 ## User experience
 
-- Mobile-first and PWA-friendly.
-- Daily questions should fit comfortably on a phone without unnecessary scrolling.
-- Important actions such as checking an answer should remain easy to reach.
+- Mobile-first, PWA-friendly, and deliberately iOS-like in clarity and restraint.
+- Normal practice is a focused one-screen experience. Daily questions should fit comfortably on a phone without unnecessary scrolling.
+- The primary **Check Answer** action should remain pinned or otherwise continuously easy to reach during a question.
 - Dutch text, capitalization, and answer presentation should be consistent and unambiguous.
+- Hints and error tips should be specific enough to teach the learner what to try next, not generic encouragement or an unexplained correction.
+- Word reveal should use hold-to-show where immediate reveal would encourage copying.
+- Speaking and listening are priority capabilities. Interface changes should preserve easy access to Dutch pronunciation and should support increasing listening practice over time.
 - The main menu should make today's study state obvious, including when the normal daily session is complete.
 - The interface should remain focused; features should justify the complexity they add.
+- The product should not use points, streak pressure, leagues, badges, artificial rewards, or other gamification. Motivation should come from satisfying completed batches, learning progress, retention, and useful reporting.
 
 ## Data and synchronisation
 
 Supabase is the persistent cross-device data service for signed-in use. Local/offline behaviour should remain robust where supported.
 
 Changes to scheduling, learner state, review history, or schema must protect existing progress. Migration work must be designed so that learner data can be validated before an old production path is retired.
+
+Existing Supabase tables, schema, policies, stored data, and authentication boundaries are production contracts. They must not be altered merely to simplify a feature implementation; any change requires explicit owner agreement, a recovery plan, and validation against real learner data.
 
 Secrets and service credentials must never be committed to the repository.
 
@@ -104,3 +110,5 @@ Features needed only for multi-user productisation, commercialisation, broad onb
 This document records the intended product behaviour and learning principles. It should not be changed merely to match an implementation shortcut.
 
 When implementation and this design conflict, either the implementation should be corrected or the design change should be explicitly agreed with the owner and recorded here.
+
+The owner is the sole product owner and learner. Agents may identify trade-offs and propose bounded changes, but they must not infer permission for a broader redesign, provider/platform swap, gamification, commercialisation, or architectural rewrite from a general request to review or improve the application.
