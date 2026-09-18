@@ -1,6 +1,6 @@
 # Course & Progress — review preview
 
-Local branch: `feature/course-progress-preview`, based on main `5cf5422` (Zin V5.1.118).
+Local branch: `feature/course-progress-preview`, based on production main `3f8e147` (Zin V5.1.120 Learning sync-safety). Combined Course release: V5.1.121.
 Related work: #31 (understandable course progression) and #17 (sustained Foundation milestones). This preview is a focused follow-on; no GitHub issue status or production release has been changed.
 
 ## Scope
@@ -31,7 +31,7 @@ http://127.0.0.1:19085/preview/course-progress.html
 
 The preview contains synthetic learner history, labelled visibly. Its selector includes growing progress, fresh start, retention ready, all available topics retained, and the reported `Zij studeert` gap example. The preview refuses to replace unmarked learner data on its origin. Its server blocks external connections and service workers; Flashcards, Report and Words are deliberately disconnected in this local fixture. The production entry point retains those integrations.
 
-The changes are implemented in the actual application modules, not just a visual mockup. No storage schema, scheduling model, flashcard behaviour, authentication, production learner data or historical attempts are changed. The approved release is V5.1.119 with a fresh production cache identifier. The local sample fixture remains available for repeatable review.
+The changes are implemented in the actual application modules, not just a visual mockup. No storage schema, scheduling model, flashcard behaviour, Learning sync, authentication, production learner data or historical attempts are changed. The approved Course release is V5.1.121 (`dutch-v5.1.121-20260918`) with a fresh production cache identifier. The local sample fixture remains available for repeatable review.
 
 ## Validation
 
@@ -44,4 +44,4 @@ Browser checks at desktop and 390×844 covered navigation, the current-topic mar
 - Owner accepted the layout and wording, particularly Syllabus, and authorized release.
 - Real-history/device verification, especially sparse early history and iPhone readability. Preview data is synthetic, not a claim about the owner's learning.
 - Physical PWA update/offline verification. The local review fixture intentionally disables service workers; asset references are tested separately.
-- Release version: V5.1.119. Automated release suite: 279 passing tests, including simulated worker installation, offline Course asset retrieval and scoped cache cleanup. Publication status is recorded in the PR and task report.
+- Release version: V5.1.121. Automated release suite after rebase onto `3f8e147`: 290 passing tests, including simulated worker installation, offline Course asset retrieval and scoped cache cleanup. Publication status is recorded in the PR and task report.

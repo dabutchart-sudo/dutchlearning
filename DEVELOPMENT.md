@@ -2,10 +2,11 @@
 
 ## Current production state
 
-- Release prepared and owner-authorized: Zin V5.1.119 (Course progress and syllabus).
+- Active production: Zin V5.1.120 (merge `3f8e1472166b17fda5e688f8a63c537e8b68a17b`, Learning sync-safety).
+- Release prepared and owner-authorized: Zin V5.1.121 (Course progress and syllabus on that production main).
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in progress: Supabase.
-- Known-good source baseline: commit `9460576d79828a0509f297322b2f9100f0ff259f` (`Merge unified Zin V5.1.118 into main`).
+- Known-good source baseline: commit `3f8e1472166b17fda5e688f8a63c537e8b68a17b` (`Merge pull request #39 from dabutchart-sudo/feature/learning-sync-safety`).
 - Automated engine tests run through GitHub Actions with `npm test`.
 - Real-device verification of V5.1.5 remains an outstanding tracked task.
 - The standalone Flashcards application remains the reliable production flashcard path while unified flashcard development is validated.
@@ -166,19 +167,24 @@ A change is done when the relevant combination of the following is true:
 3. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
 4. Split subsequent Flashcards integration phases into focused, testable increments and place their work on the epic board.
 
+## Learning sync safety — 2026-09-18
+
+`feature/learning-sync-safety` hardens `v51.js` so a fresh/empty local Learning blob cannot overwrite or mask a populated `trainer_state` row. Populated remote state is downloaded regardless of revision after `validateState`; invalid remote JSON writes neither localStorage nor Supabase; an empty local open does not insert a `trainer_state` row. Flashcards, Course UI, schema and authentication providers are unchanged. Owner restoration of the existing populated remote row still requires a signed-in Learning session on the production origin after this fix is published; do not sign in from an empty browser until then.
+
+This is now production as Zin V5.1.120 (`dutch-v5.1.120-20260918`, merge `3f8e1472166b17fda5e688f8a63c537e8b68a17b`). The owner has confirmed genuine `trainer_state` restoration on Mac and iPhone. Preserve this behaviour exactly; Course UI work must not alter Learning sync.
+
 ## Course & Progress review preview — 2026-09-18
 
-A separate local branch, `feature/course-progress-preview`, starts from main `5cf5422` (V5.1.118 source). The owner requested a working preview of a syllabus map and learning-progress dashboard, plus the previously recorded missing-form/full-sentence fix. This follows the progression-clarity work in #17 and the course-understandability criterion in #31.
+`feature/course-progress-preview` is now based on production main `3f8e147` (V5.1.120 Learning sync-safety). The owner requested a working preview of a syllabus map and learning-progress dashboard, plus the previously recorded missing-form/full-sentence fix. This follows the progression-clarity work in #17 and the course-understandability criterion in #31.
 
-The implementation reads the existing Learning history and progression rules. It does not change scheduling, daily limits, Flashcards, learner-history records, database schema or migration state. Planned A1 content remains unavailable, and no fluency/CEFR certification claim is made.
+The implementation reads the existing Learning history and progression rules. It does not change scheduling, daily limits, Flashcards, Learning sync, learner-history records, database schema or migration state. Planned A1 content remains unavailable, and no fluency/CEFR certification claim is made.
 
-See `docs/course-progress-preview.md` for the precise file scope, local preview, evidence definitions and remaining manual checks. The isolated preview uses labelled sample history and has no live account connections. Production remains unchanged; owner review comes before publication. Final automated validation: 278 tests passed, zero failures; `git diff --check` passed. Desktop and phone-size browser checks passed for the reviewed scenarios.
+See `docs/course-progress-preview.md` for the precise file scope, local preview, evidence definitions and remaining manual checks. The isolated preview uses labelled sample history and has no live account connections. Production remains V5.1.120 until this PR is published; owner review comes before publication.
 
+## V5.1.121 release — 2026-09-18
 
-## V5.1.119 release — 2026-09-18
+The owner accepted the working Course preview, particularly the Syllabus tab, and explicitly authorized proceeding with release after rebasing onto protected main. The release adds progress charts and a browsable syllabus/current position, and fixes complete-sentence answers to missing-form exercises. Related issues: #31 and #17; their broader readiness requirements remain open.
 
-The owner accepted the working Course preview, particularly the Syllabus tab, and explicitly authorized proceeding with release. The release adds progress charts and a browsable syllabus/current position, and fixes complete-sentence answers to missing-form exercises. Related issues: #31 and #17; their broader readiness requirements remain open.
+Validation after updating onto `3f8e147`: 290 tests passed with `node --test tests/*.js`; `git diff --check` passed. The new worker regression executes installation, verifies every cached asset exists, simulates offline requests for the Course modules/style and versioned entry point, and confirms activation deletes only old caches within this app's scope. Desktop and phone-size preview checks passed in the preceding review. Physical iPhone installed-PWA update/offline behaviour still needs an owner device check; this is not claimed as verified.
 
-Validation: 279 tests passed using the package test command (`node --test`). The new worker regression executes installation, verifies every cached asset exists, simulates offline requests for the Course modules/style and versioned entry point, and confirms activation deletes only old caches within this app's scope. Desktop and phone-size preview checks passed in the preceding review. Physical iPhone installed-PWA update/offline behaviour still needs an owner device check; this is not claimed as verified.
-
-No learner records, persistence schema, authentication, scheduling or migration state change. Release/cache identifiers advance to 5.1.119. Rollback is a revert of this focused PR followed by a fresh cache identifier; retain the branch and prior main commit `5cf5422` as source recovery points. Publication status is recorded in the PR and task completion report.
+No learner records, persistence schema, authentication, scheduling, Learning sync or migration state change. Release/cache identifiers advance to 5.1.121 (`dutch-v5.1.121-20260918`). Rollback is a revert of this focused PR followed by a fresh cache identifier; retain the branch and production main `3f8e147` as source recovery points. Publication status is recorded in the PR and task completion report.
