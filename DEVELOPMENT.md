@@ -165,3 +165,9 @@ A change is done when the relevant combination of the following is true:
 2. Complete issue #8 real-device/Supabase checks when appropriate.
 3. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
 4. Split subsequent Flashcards integration phases into focused, testable increments and place their work on the epic board.
+
+## Learning sync safety — 2026-09-18
+
+`feature/learning-sync-safety` hardens `v51.js` so a fresh/empty local Learning blob cannot overwrite or mask a populated `trainer_state` row. Populated remote state is downloaded regardless of revision after `validateState`; invalid remote JSON writes neither localStorage nor Supabase; an empty local open does not insert a `trainer_state` row. Flashcards, Course UI, schema and authentication providers are unchanged. Owner restoration of the existing populated remote row still requires a signed-in Learning session on the production origin after this fix is published; do not sign in from an empty browser until then.
+
+Release/cache identifiers for this PR are Zin V5.1.120 (`dutch-v5.1.120-20260918`), a cache-busting patch of production V5.1.118 that skips the unmerged V5.1.119 Course release. Rollback is a revert of this focused PR followed by a fresh cache identifier.
