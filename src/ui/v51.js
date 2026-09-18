@@ -1,4 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import {registerPacks} from '../content/registry.js';
+import {applyLearningSync} from '../engine/learning-sync.js';
 
 const SUPABASE_URL='https://dntitlrtvkgisxwqjxch.supabase.co';
 const SUPABASE_KEY='sb_publishable_0QmYB4lwmjfJLkY3pH5dCQ_EVKC47Lb';
@@ -30,6 +32,22 @@ async function renderSyncPanel(){
  }
 }
 
+let courseContent=null;
+async function course(){
+ if(courseContent)return courseContent;
+ const manifestURL=new URL('../content/packs.json',import.meta.url);
+ const response=await fetch(manifestURL);
+ if(!response.ok)throw Error('The course could not load for sync.');
+ const manifest=await response.json();
+ const packs=await Promise.all(manifest.packs.map(async path=>{
+  const r=await fetch(new URL(path,manifestURL));
+  if(!r.ok)throw Error('A course pack could not load for sync.');
+  return r.json();
+ }));
+ courseContent=registerPacks(packs);
+ return courseContent;
+}
+
 async function pushAttempts(user,state){
  const rows=(state.attempts||[]).filter(a=>/^[0-9a-f-]{36}$/i.test(a.id||'')).map(a=>({
    id:a.id,user_id:user.id,attempted_at:a.occurredAt||new Date().toISOString(),day:a.date,concept_id:a.concept,direction:a.direction,exercise_type:a.kind,phase:a.phase,source_id:a.sourceId||null,answer:String(a.answer??''),correct_answer:String(a.expected??''),grammar_correct:a.grammar===true,spelling_correct:a.spelling==null?null:!!a.spelling,error_types:[...(a.errorType?[String(a.errorType)]:[]),...(a.capitalization===false?['capitalization']:[])],used_help:!!a.assisted
@@ -43,17 +61,22 @@ async function syncNow(manual=false){
  try{
    const {data:{user}}=await supabase.auth.getUser();
    if(!user){if(manual)setStatus('Progress saved locally · sign in in Settings to sync');return;}
-   const local=localState();if(!local)return;
+   const local=localState();
    const {data:remote,error}=await supabase.from('trainer_state').select('state,updated_at').eq('user_id',user.id).maybeSingle();if(error)throw error;
-   const lr=Number(local.revision||0),rr=Number(remote?.state?.revision||-1);
-   if(!remote){
+   let content=null;
+   try{content=await course();}catch(e){console.warn('Trainer sync content:',e);}
+   const result=applyLearningSync({user,local,remote,content});
+   if(result.action==='download'){
+     localStorage.setItem(STORAGE_KEY,JSON.stringify(result.state));setStatus('Newer progress downloaded — reloading…');setTimeout(()=>location.reload(),250);return;
+   }
+   if(result.action==='upload'){
      const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,local);
-   }else if(rr>lr){
-     localStorage.setItem(STORAGE_KEY,JSON.stringify(remote.state));setStatus('Newer progress downloaded — reloading…');setTimeout(()=>location.reload(),250);return;
-   }else if(lr>rr){
-     const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,local);
-   }else{
+   }else if(result.pushAttempts){
      await pushAttempts(user,local);
+   }else if(result.reason==='invalid-remote'||result.reason==='content-unavailable'){
+     setStatus('Progress saved locally');
+     if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Remote Learning state was not applied because it could not be validated.';}
+     return;
    }
    lastRevision=Number(localState()?.revision||0);setStatus('Progress synced');
    if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Synced just now.';renderSyncPanel();}
