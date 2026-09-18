@@ -5,6 +5,13 @@ const structural=new Set('ik jij hij zij wij jullie u de het een geen niet mijn 
 function alignAliases(got,expected){return got.map((w,i)=>{const e=expected[i];if(w==='we'&&e==='wij'||w==='ze'&&e==='zij'||w==='je'&&['jij','jouw'].includes(e))return e;return w})}
 export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
  if(q.phase!=='practice'&&q.phase!=='maintenance'&&assisted)throw Error('Proof cannot use assistance');
+ // A gap accepts its missing word or the complete sentence. Score all supplied
+ // surrounding words, but never turn a scaffolded gap into independent production.
+ if(q.kind==='gap'&&tokens(raw).length>1){
+  const sentence=q.prompt.replace(/_+/,q.answer);
+  const full=assess({...q,kind:'typed',answer:sentence,alternatives:[]},raw,{assisted,knownWords});
+  return {...full,independent:false,lexicalErrors:full.lexicalErrors.includes(q.verbIndex)?[0]:[]};
+ }
  const typed=['typed','gap','correction'].includes(q.kind);
  const lexicalErrors=[];
  const capitalization=q.kind==='typed'?/^[^\p{L}]*\p{Lu}/u.test(String(raw)):null;

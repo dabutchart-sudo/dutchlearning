@@ -4,12 +4,14 @@ import {createRepository,STORAGE_KEY} from '../engine/persistence.js';
 import {dayKey,addDays,pct} from '../engine/util.js';
 import {labels} from '../engine/scoring.js';
 import {chooseTile,removeTile,bankAnswer,correctiveFeedback} from '../engine/exercises.js';
+import {coursePage,topicPage} from './course-overview.js';
 import {bindPeek} from './peek.js';
 import {dutchVoice,speak} from './speech.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='today',dev=false,selectedConcept=null,lastFeedback=null;
 let disposePeek=()=>{};
+let coursePane='progress',courseDays=30,courseCohort='independent',courseConcept=null;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
 const statusLabels={'learning':'Learning','proof-ready':'Proof Ready','retention-wait':'Retention pending','retention-ready':'Retention Ready','mastered':'Mastered','reinforcement':'Reinforcement'};
 const status=id=>statusLabels[phase(state.progress[id],dayKey(now()))];
@@ -34,8 +36,8 @@ function render(){
 async function show(v){view=v;selectedConcept=null;lastFeedback=null;await transaction(s=>ensureDay(s,now()));render();}
 function renderToday(){
  const id=activeConcept(state,content),c=content.conceptById[id],p=state.progress[id],date=dayKey(now()),done=state.daily.count>=20;
- el.innerHTML=`<section class="stack"><div class="home-grid"><article class="card summary"><div class="eyebrow">Today's practice</div><div class="big">${state.daily.count} <span class="muted">/ 20</span></div><p class="muted">${done?'Today’s work is complete. Mistakes shape future practice.':'A finite daily session. Teaching is extra; scored questions stop at 20.'}</p><div class="progress-track" role="progressbar" aria-label="Daily questions" aria-valuenow="${state.daily.count}" aria-valuemin="0" aria-valuemax="20"><div class="progress-fill" style="width:${state.daily.count*5}%"></div></div>${button('start',state.proof?'Resume '+state.proof.type+' test':state.daily.count?'Continue today’s practice':'Start today’s practice',true,done)}</article><article class="card concept"><div class="row"><span class="eyebrow">${esc(c.level)} · ${esc(id)}</span><span class="status">${status(id)}</span></div><h2>${esc(c.title)}</h2><p class="muted">${p.practiceAttempts} practice attempts · ${p.independent} independent answers</p><div class="phase-steps">Teach → Recognise → Construct → Produce → Repeat → <strong>Prove</strong></div>${proofAction(id)}${button('lesson','Read the lesson',false)}${metrics(state.attempts.filter(x=>x.concept===id))}</article></div>${proofReport()}${done?`<article class="card evidence-card"><h2>Today’s evidence</h2>${metrics(state.attempts.filter(x=>x.date===date))}<p class="muted">You can read lessons and review mistakes at any time.</p></article>`:''}</section>`;
- on('start',()=>openQuestion());on('lesson',()=>renderLesson(id,false));bindProof(id);
+ el.innerHTML=`<section class="stack"><div class="home-grid"><article class="card summary"><div class="eyebrow">Today's practice</div><div class="big">${state.daily.count} <span class="muted">/ 20</span></div><p class="muted">${done?'Today’s work is complete. Mistakes shape future practice.':'A finite daily session. Teaching is extra; scored questions stop at 20.'}</p><div class="progress-track" role="progressbar" aria-label="Daily questions" aria-valuenow="${state.daily.count}" aria-valuemin="0" aria-valuemax="20"><div class="progress-fill" style="width:${state.daily.count*5}%"></div></div>${button('start',state.proof?'Resume '+state.proof.type+' test':state.daily.count?'Continue today’s practice':'Start today’s practice',true,done)}</article><article class="card concept"><div class="row"><span class="eyebrow">${esc(c.level)} · ${esc(id)}</span><span class="status">${status(id)}</span></div><h2>${esc(c.title)}</h2><p class="muted">${p.practiceAttempts} practice attempts · ${p.independent} independent answers</p><div class="phase-steps">Teach → Recognise → Construct → Produce → Repeat → <strong>Prove</strong></div>${proofAction(id)}${button('lesson','Read the lesson',false)}${button('course-progress','See your learning progress',false)}${metrics(state.attempts.filter(x=>x.concept===id))}</article></div>${proofReport()}${done?`<article class="card evidence-card"><h2>Today’s evidence</h2>${metrics(state.attempts.filter(x=>x.date===date))}<p class="muted">You can read lessons and review mistakes at any time.</p></article>`:''}</section>`;
+ on('course-progress',()=>show('curriculum'));on('start',()=>openQuestion());on('lesson',()=>renderLesson(id,false));bindProof(id);
 }
 function proofAction(id){const p=state.progress[id],ph=phase(p,dayKey(now()));
  if(ph==='proof-ready'||ph==='retention-ready'){
@@ -82,7 +84,7 @@ function renderQuestion(q){
  else if(q.kind==='wordbank'){
   area.innerHTML='<div id="built" class="built" aria-label="Your sentence"></div><div id="bank" class="wordbank" aria-label="Available words"></div><p class="muted small">Tap a chosen word to put it back. Extra words are deliberate.</p>';
   const draw=()=>{document.getElementById('built').innerHTML=selection.map(id=>`<button class="word" data-remove="${id}" aria-label="Remove ${esc(q.bank.find(x=>x.id===id).text)}">${esc(q.bank.find(x=>x.id===id).text)}</button>`).join('');document.getElementById('bank').innerHTML=q.bank.map(t=>`<button class="word ${selection.includes(t.id)?'used':''}" data-tile="${t.id}" ${selection.includes(t.id)?'disabled':''}>${esc(t.text)}</button>`).join('');area.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{selection=chooseTile(selection,b.dataset.tile,q.bank);draw()});area.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{selection=removeTile(selection,b.dataset.remove);draw()});raw=bankAnswer(selection,q.bank)};draw();
- }else{area.innerHTML='<label for="typed-answer" class="sr-only">Your Dutch answer</label><input id="typed-answer" class="input" lang="nl" placeholder="Type in Dutch" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false">';const input=document.getElementById('typed-answer');input.oninput=()=>raw=input.value;input.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing)check()};}
+ }else{area.innerHTML='<label for="typed-answer" class="sr-only">Your Dutch answer</label><input id="typed-answer" class="input" lang="nl" placeholder="Type in Dutch" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false">';const input=document.getElementById('typed-answer');if(q.kind==='gap'){input.placeholder='Missing word or full sentence';input.setAttribute('aria-label','Missing word or full sentence');}input.oninput=()=>raw=input.value;input.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing)check()};}
  if(q.direction==='en-nl'&&['typed','wordbank'].includes(q.kind)&&['practice','maintenance'].includes(q.phase)){
   const help=document.getElementById('help-area');help.innerHTML=`<div class="assist-row">${button('help','Hold for word',false)}<span id="hint" class="hint" aria-live="polite"></span></div>`;
   disposePeek=bindPeek(document.getElementById('help'),document.getElementById('hint'),{
@@ -101,10 +103,21 @@ function renderQuestion(q){
  on('check',check);on('pause',()=>show('today'));on('play',()=>speak(item.nl,notify));on('text-fallback',async()=>{await transaction(s=>{if(s.pending?.id===q.id){s.pending.kind='choice';s.pending.prompt=item.nl}});renderQuestion(state.pending)});
 }
 function renderCourse(){
- if(selectedConcept){const c=content.conceptById[selectedConcept],p=state.progress[c.id];el.innerHTML=`<section class="stack"><article class="card evidence-card"><div class="row"><h2>${esc(c.id)} · ${esc(c.title)}</h2><span class="status">${status(c.id)}</span></div>${metrics(state.attempts.filter(x=>x.concept===c.id))}<p>${p.practiceAttempts}/40 practice attempts · ${p.independent} independent answers</p>${proofAction(c.id)}${button('read-course','Read lesson',false)}<div class="spaced">${button('back-course','Back to course',false)}</div></article></section>`;on('read-course',()=>renderLesson(c.id,false));on('back-course',()=>{selectedConcept=null;renderCourse()});bindProof(c.id);return;}
- el.innerHTML=`<section class="stack"><article class="card evidence-card"><h2>Your course</h2><p class="muted">${content.concepts.filter(c=>state.progress[c.id].masteredAt).length} of ${content.concepts.length} concepts retained. A new concept opens after the previous retention test.</p></article><div class="course-grid">${[...new Set(content.concepts.map(c=>c.level))].map(level=>`<div class="course-group"><div class="eyebrow">${level}</div>${content.concepts.filter(c=>c.level===level).map(c=>`<button class="course-item" data-concept="${c.id}" ${unlocked(c,state)?'':'disabled'}><div class="row"><span class="eyebrow">${c.id}</span><span class="status">${unlocked(c,state)?status(c.id):'Locked'}</span></div><h3>${esc(c.title)}</h3><div class="muted small">${unlocked(c,state)?state.progress[c.id].practiceAttempts+' practice attempts':'After '+c.prerequisites.join(', ')+' retention'}</div></button>`).join('')}</div>`).join('')}</div><article class="card evidence-card"><h3>Room to grow: A2 → B1</h3><p class="muted">Future content packs can extend this course. These levels are not included in V5.</p></article></section>`;
- el.querySelectorAll('[data-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.concept;renderCourse()});
+ const today=dayKey(now());
+ if(selectedConcept){
+  el.innerHTML=topicPage(state,content,selectedConcept,{today,proofHTML:proofAction(selectedConcept)});
+  on('read-course',()=>renderLesson(selectedConcept,false));
+  on('back-course',()=>{selectedConcept=null;renderCourse();el.querySelector('h2')?.focus()});
+  bindProof(selectedConcept);return;
+ }
+ el.innerHTML=coursePage(state,content,{today,pane:coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept});
+ el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
+ el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
+ el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});
+ const period=document.getElementById('course-period');if(period)period.onchange=()=>{courseDays=period.value==='all'?null:Number(period.value);renderCourse();document.getElementById('course-period')?.focus()};
+ const topic=document.getElementById('course-topic-filter');if(topic)topic.onchange=()=>{courseConcept=topic.value||null;renderCourse();document.getElementById('course-topic-filter')?.focus()};
 }
+
 function renderMistakes(){
  const bad=state.attempts.filter(x=>x.grammar!==true||x.spelling===false||x.capitalization===false||x.assisted);const counts={};for(const a of bad){const type=a.errorType||(a.capitalization===false?'capitalization':'translation');counts[type]=(counts[type]||0)+1;}
  const weak=Object.entries(state.words).filter(([,w])=>w.weakness>0).sort((a,b)=>b[1].weakness-a[1].weakness).slice(0,10);const vocab=new Map(content.sentences.flatMap(x=>x.vocabulary).map(w=>[w.id,w]));
