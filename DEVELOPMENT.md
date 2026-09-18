@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active Dutch Learning release: V5.1.5.
+- Release prepared and owner-authorized: Zin V5.1.119 (Course progress and syllabus).
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in progress: Supabase.
 - Known-good source baseline: commit `9460576d79828a0509f297322b2f9100f0ff259f` (`Merge unified Zin V5.1.118 into main`).
@@ -165,3 +165,20 @@ A change is done when the relevant combination of the following is true:
 2. Complete issue #8 real-device/Supabase checks when appropriate.
 3. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
 4. Split subsequent Flashcards integration phases into focused, testable increments and place their work on the epic board.
+
+## Course & Progress review preview — 2026-09-18
+
+A separate local branch, `feature/course-progress-preview`, starts from main `5cf5422` (V5.1.118 source). The owner requested a working preview of a syllabus map and learning-progress dashboard, plus the previously recorded missing-form/full-sentence fix. This follows the progression-clarity work in #17 and the course-understandability criterion in #31.
+
+The implementation reads the existing Learning history and progression rules. It does not change scheduling, daily limits, Flashcards, learner-history records, database schema or migration state. Planned A1 content remains unavailable, and no fluency/CEFR certification claim is made.
+
+See `docs/course-progress-preview.md` for the precise file scope, local preview, evidence definitions and remaining manual checks. The isolated preview uses labelled sample history and has no live account connections. Production remains unchanged; owner review comes before publication. Final automated validation: 278 tests passed, zero failures; `git diff --check` passed. Desktop and phone-size browser checks passed for the reviewed scenarios.
+
+
+## V5.1.119 release — 2026-09-18
+
+The owner accepted the working Course preview, particularly the Syllabus tab, and explicitly authorized proceeding with release. The release adds progress charts and a browsable syllabus/current position, and fixes complete-sentence answers to missing-form exercises. Related issues: #31 and #17; their broader readiness requirements remain open.
+
+Validation: 279 tests passed using the package test command (`node --test`). The new worker regression executes installation, verifies every cached asset exists, simulates offline requests for the Course modules/style and versioned entry point, and confirms activation deletes only old caches within this app's scope. Desktop and phone-size preview checks passed in the preceding review. Physical iPhone installed-PWA update/offline behaviour still needs an owner device check; this is not claimed as verified.
+
+No learner records, persistence schema, authentication, scheduling or migration state change. Release/cache identifiers advance to 5.1.119. Rollback is a revert of this focused PR followed by a fresh cache identifier; retain the branch and prior main commit `5cf5422` as source recovery points. Publication status is recorded in the PR and task completion report.

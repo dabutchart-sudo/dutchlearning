@@ -47,6 +47,7 @@ function decorateToday(){
 }
 
 function decorateCourse(){
+  if(root?.querySelector('[data-course-overview]'))return;
   if(!root||root.querySelector('.course-journey-note'))return;
   const grid=root.querySelector('.course-grid');
   if(grid){

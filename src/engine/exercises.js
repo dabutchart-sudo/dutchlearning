@@ -52,7 +52,7 @@ export function sentenceDifference(actual,expected){
  return displayTokens(sentenceCase(expected)).map((text,i)=>({text,changed:normalize(text)!==got[i]}));
 }
 export function correctiveFeedback(q,item,raw,result){
- const fullAnswer=q.kind==='correction'?completedCorrection(q,item,raw):['gap','form'].includes(q.kind)?displayTokens(item.nl).map((w,i)=>i===item.verbIndex?raw:w).join(' '):raw;
+ const fullAnswer=q.kind==='correction'?completedCorrection(q,item,raw):q.kind==='gap'&&tokens(raw).length>1?raw:['gap','form'].includes(q.kind)?displayTokens(item.nl).map((w,i)=>i===item.verbIndex?raw:w).join(' '):raw;
  const compare=q.direction==='en-nl'&&!(result.grammar===true&&result.spelling!==false);
  const words=sentenceDifference(compare?fullAnswer:item.nl,item.nl);
  const actual=displayTokens(fullAnswer);
