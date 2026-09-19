@@ -4,12 +4,15 @@ const content=document.getElementById('content');
 const status=document.getElementById('system-message');
 
 function decorate(root=document){
- const listen=root.querySelector?.('#speak-card');
- if(listen){listen.dataset.icon='🔊';listen.setAttribute('aria-label','Listen to Dutch pronunciation');listen.title='Listen';}
- const flag=root.querySelector?.('#flag-sentence');
- if(flag){flag.dataset.icon=flag.classList.contains('flagged')?'⚑':'⚐';flag.setAttribute('aria-label',flag.classList.contains('flagged')?'Sentence flagged':'Flag sentence');flag.title=flag.getAttribute('aria-label');}
- const edit=root.querySelector?.('#edit-card');
- if(edit){edit.dataset.icon='✎';edit.setAttribute('aria-label','Edit flashcard');edit.title='Edit card';}
+ root.querySelectorAll?.('#speak-card,#speak-card-back,#sandbox-speak,#sandbox-speak-back').forEach(listen=>{
+  listen.dataset.icon='🔊';listen.setAttribute('aria-label','Listen to Dutch pronunciation');listen.title='Listen';
+ });
+ root.querySelectorAll?.('#flag-sentence,#flag-sentence-back,#sandbox-flag,#sandbox-flag-back').forEach(flag=>{
+  flag.dataset.icon=flag.classList.contains('flagged')?'⚑':'⚐';flag.setAttribute('aria-label',flag.classList.contains('flagged')?'Sentence flagged':'Flag sentence');flag.title=flag.getAttribute('aria-label');
+ });
+ root.querySelectorAll?.('#edit-card,#edit-card-back,#sandbox-edit,#sandbox-edit-back').forEach(edit=>{
+  edit.dataset.icon='✎';edit.setAttribute('aria-label','Edit flashcard');edit.title='Edit card';
+ });
 }
 
 function currentDutch(){
@@ -21,7 +24,7 @@ function currentDutch(){
 }
 
 document.addEventListener('click',event=>{
- const button=event.target.closest?.('#speak-card');
+ const button=event.target.closest?.('#speak-card,#speak-card-back,#sandbox-speak,#sandbox-speak-back');
  if(!button)return;
  event.preventDefault();
  event.stopImmediatePropagation();

@@ -2,8 +2,8 @@
 
 ## Current production state
 
-- Active production: Zin V5.1.120 (merge `3f8e1472166b17fda5e688f8a63c537e8b68a17b`, Learning sync-safety).
-- Release prepared and owner-authorized: Zin V5.1.121 (Course progress and syllabus on that production main).
+- Active production source: `origin/main`. Zin V5.1.122 adds a horizontal Flashcard flip; V5.1.121 Course/Syllabus remains included.
+- Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in progress: Supabase.
 - Known-good source baseline: commit `3f8e1472166b17fda5e688f8a63c537e8b68a17b` (`Merge pull request #39 from dabutchart-sudo/feature/learning-sync-safety`).
@@ -188,3 +188,7 @@ The owner accepted the working Course preview, particularly the Syllabus tab, an
 Validation after updating onto `3f8e147`: 290 tests passed with `node --test tests/*.js`; `git diff --check` passed. The new worker regression executes installation, verifies every cached asset exists, simulates offline requests for the Course modules/style and versioned entry point, and confirms activation deletes only old caches within this app's scope. Desktop and phone-size preview checks passed in the preceding review. Physical iPhone installed-PWA update/offline behaviour still needs an owner device check; this is not claimed as verified.
 
 No learner records, persistence schema, authentication, scheduling, Learning sync or migration state change. Release/cache identifiers advance to 5.1.121 (`dutch-v5.1.121-20260918`). Rollback is a revert of this focused PR followed by a fresh cache identifier; retain the branch and production main `3f8e147` as source recovery points. Publication status is recorded in the PR and task completion report.
+
+## V5.1.122 flashcard flip — 2026-09-19
+
+Owner-authorized production release. Tapping a Flashcard now flips it horizontally with `rotateY`; Listen, Flag sentence and Edit card sit on both faces and rotate with the card. Rating buttons stay below the card. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.122-20260919`. Confirm the header shows V5.1.122 after a fresh production load.
