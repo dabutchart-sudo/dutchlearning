@@ -18,6 +18,7 @@ test('review cards keep both faces and flip horizontally in place',()=>{
  assert.doesNotMatch(preview,/setSide\(!session\.flipped\)/);
  assert.match(css,/\.flashcard-flip-inner\.is-flipped\{transform:rotateY\(180deg\)\}/);
  assert.match(css,/backface-visibility:hidden/);
+ assert.match(css,/\.flashcard-face\.flashcard-review-card\{position:absolute;inset:0/);
 });
 
 test('Listen, Flag and Edit sit on each face so they rotate with the card',()=>{
