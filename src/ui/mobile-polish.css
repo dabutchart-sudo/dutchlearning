@@ -5,9 +5,12 @@
 
 @media(max-width:520px){
   .flashcard-review-card{padding-bottom:76px}
+  .flashcard-flip-inner{min-height:330px}
   .flashcard-listen{left:16px;bottom:14px;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:0}
+  .flashcard-face .flashcard-listen{position:static;left:auto;bottom:auto}
   .flashcard-listen::before{content:attr(data-icon);font-size:1.18rem;line-height:1}
   .flashcard-tool-row{height:50px;min-height:50px;margin:-66px 16px 16px;transform:none;justify-content:flex-end;align-items:center;gap:8px}
+  .flashcard-face .flashcard-tool-row{height:auto;min-height:0;margin:0;left:16px;right:16px;bottom:14px;transform:none;justify-content:space-between}
   .flashcard-tool-row button{width:46px;height:46px;min-height:46px;padding:0;border:1px solid var(--separator);border-radius:50%;background:rgba(255,255,255,.88);display:grid;place-items:center;font-size:0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
   .flashcard-tool-row button::before{content:attr(data-icon);font-size:1.22rem;line-height:1;color:var(--accent)}
   .flashcard-tool-row .flagged::before{color:#b54b00}
