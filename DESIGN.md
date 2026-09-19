@@ -83,6 +83,7 @@ Useful measures include review volume, new material, retention/performance trend
 - The main menu should make today's study state obvious, including when the normal daily session is complete.
 - The interface should remain focused; features should justify the complexity they add.
 - The product should not use points, streak pressure, leagues, badges, artificial rewards, or other gamification. Motivation should come from satisfying completed batches, learning progress, retention, and useful reporting.
+- GitHub Pages is the only normal origin for genuine study. Local and 192.168 origins are development copies, must remain visually distinct, and keep separate browser storage.
 
 ## Data and synchronisation
 

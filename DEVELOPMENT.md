@@ -4,12 +4,11 @@
 
 - Active production source: `origin/main`. Zin V5.1.122 adds a horizontal Flashcard flip; V5.1.121 Course/Syllabus remains included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
-- Delivery: GitHub Pages / installable PWA.
+- Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
 - Known-good source baseline: commit `3f8e1472166b17fda5e688f8a63c537e8b68a17b` (`Merge pull request #39 from dabutchart-sudo/feature/learning-sync-safety`).
 - Automated engine tests run through GitHub Actions with `npm test`.
-- Real-device verification of V5.1.5 remains an outstanding tracked task.
-- The standalone Flashcards application remains the reliable production flashcard path while unified flashcard development is validated.
+- Dutch Learning is the accepted normal Flashcards platform as of 2026-09-19 (DAB-83 / GitHub #32). The standalone Flashcards app remains a reversible fallback and has not been retired.
 
 The restored production `generate-sentences` Supabase Edge Function uses OpenAI (`OPENAI_API_KEY` and the Responses API) with owner/Google authentication and daily quota controls. The deployed function is a production boundary even though its source is not currently present in this repository. Do not recreate, replace, or redeploy it from assumptions or from `generate-visual`; inspect the deployed source and obtain explicit owner approval before any change. Its current `verify_jwt = false` configuration is deliberate because the function performs authentication internally.
 
@@ -162,10 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Continue validating Phase 1 without retiring the standalone Flashcards production path.
-2. Complete issue #8 real-device/Supabase checks when appropriate.
-3. Resolve issue #12 so daily-session completion matches `DESIGN.md`.
-4. Split subsequent Flashcards integration phases into focused, testable increments and place their work on the epic board.
+1. Land DAB-90 / #41 so local and GitHub Pages Zin cannot be mistaken for each other.
+2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
+3. Take the next Linear item only after the owner chooses it. A1 content milestones remain backlog.
 
 ## Learning sync safety — 2026-09-18
 
@@ -192,3 +190,7 @@ No learner records, persistence schema, authentication, scheduling, Learning syn
 ## V5.1.122 flashcard flip — 2026-09-19
 
 Owner-authorized production release. Tapping a Flashcard now flips it horizontally with `rotateY`; Listen, Flag sentence and Edit card sit on both faces and rotate with the card. Rating buttons stay below the card. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.122-20260919`. Confirm the header shows V5.1.122 after a fresh production load.
+
+## DAB-90 study-origin distinction — 2026-09-19
+
+Local/`192.168` copies now show an amber **Development** banner and header label. GitHub Pages keeps the normal production chrome. Browser storage, scheduling, Supabase, authentication and learner data are unchanged. This is not yet a production version bump; publish only after owner review.
