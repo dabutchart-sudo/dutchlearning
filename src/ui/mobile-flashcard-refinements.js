@@ -30,7 +30,7 @@ document.addEventListener('click',event=>{
  event.stopImmediatePropagation();
  const text=currentDutch();
  if(!text)return;
- speak(text,message=>{if(status)status.textContent=message;});
+ speak(text,message=>{if(status)status.innerHTML=`<div class="error-message">${String(message).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</div>`;});
 },true);
 
 if(content){

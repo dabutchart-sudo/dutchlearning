@@ -1,7 +1,7 @@
 const FEMALE_HINT=/(female|colette|ellen|femke|lotte|sofie|sophie|nora|sara|laura|emma|eva|fenna|fleur|ilse|iris|julia|lisa|marieke|noor|roos|saskia|tessa|yara|claire)/i;
 const MALE_HINT=/(male|maarten|xander|ruben|frank|bart|jeroen|pieter|daan)/i;
 const SYSTEM_DUTCH_FALLBACK=Object.freeze({lang:'nl-NL',__systemFallback:true});
-const PLAY_ERROR='Dutch audio could not play. Restart the Mac server, refresh this page, then tap Listen once.';
+const PRODUCTION_HOST='dabutchart-sudo.github.io';
 let player=null;
 
 function voiceScore(v){
@@ -29,15 +29,30 @@ export function dutchSpeechAvailable(){
  return Boolean(globalThis.speechSynthesis&&globalThis.SpeechSynthesisUtterance)||typeof Audio==='function';
 }
 
+function hostname(){
+ return String(globalThis.location?.hostname||'');
+}
+
 export function canUseServerListen(){
- const host=String(globalThis.location?.hostname||'');
- if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return true;
+ const host=hostname();
+ if(host===PRODUCTION_HOST||host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return true;
  return Boolean(globalThis.document?.body?.classList.contains('is-development'));
 }
 
 export function listenAudioUrl(text=''){
  const dutch=String(text||'').trim();
- return dutch?'/listen/tts?text='+encodeURIComponent(dutch):'/listen/tts';
+ const href=String(globalThis.location?.href||'');
+ let path='/listen/tts';
+ if(href){
+  try{path=new URL('listen/tts',href).pathname;}catch{}
+ }
+ return dutch?`${path}?text=${encodeURIComponent(dutch)}`:path;
+}
+
+function playErrorMessage(){
+ const host=hostname();
+ if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return 'Dutch audio could not play. Restart the Mac server, refresh this page, then tap Listen once.';
+ return 'Dutch audio could not play. Refresh the page and tap Listen once.';
 }
 
 function ensurePlayer(){
@@ -55,12 +70,20 @@ export function unlockListenAudio(){
 }
 
 async function explainPlayError(onError){
- try{
-  const res=await fetch('/listen/status');
-  const data=await res.json();
-  if(data?.error){onError(String(data.error));return;}
- }catch{}
- onError(PLAY_ERROR);
+ const host=hostname();
+ if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.')){
+  try{
+   const res=await fetch('/listen/status');
+   const data=await res.json();
+   if(data?.error){onError(String(data.error));return;}
+  }catch{}
+ }
+ onError(playErrorMessage());
+}
+
+function ignoreDeviceError(event){
+ const reason=String(event?.error||'');
+ return reason==='canceled'||reason==='interrupted';
 }
 
 function queueDutch(synth,Utterance,text,onError){
@@ -71,7 +94,7 @@ function queueDutch(synth,Utterance,text,onError){
  u.lang=voice?.lang||'nl-NL';
  u.rate=.85;
  u.volume=1;
- u.onerror=()=>onError(message);
+ u.onerror=event=>{if(!ignoreDeviceError(event))onError(message);};
  try{if(synth.paused)synth.resume();}catch{}
  synth.speak(u);
 }

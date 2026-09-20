@@ -1,0 +1,2 @@
+[functions.listen-tts]
+verify_jwt = false
