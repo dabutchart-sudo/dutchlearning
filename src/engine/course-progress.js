@@ -56,7 +56,7 @@ export function learningProgress(state,{today=dayKey(),days=30,cohort='independe
  const start=days===null?(attemptDay(all[0]||{})||today):addDays(today,1-days);
  const inRange=all.filter(a=>attemptDay(a)>=start);
  const independent=inRange.filter(isIndependentAttempt);
- const supportedKinds=new Set(['gap','correction','wordbank','choice','form','correct-sentence','listening']);
+ const supportedKinds=new Set(['gap','correction','wordbank','choice','form','correct-sentence','listening','speaking']);
  const supported=inRange.filter(a=>!isIndependentAttempt(a)&&(a.assisted===true||supportedKinds.has(a.kind)));
  const unclassified=inRange.length-independent.length-supported.length;
  const selected=cohort==='independent'?independent:supported;

@@ -12,10 +12,17 @@ export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
   const full=assess({...q,kind:'typed',answer:sentence,alternatives:[]},raw,{assisted,knownWords});
   return {...full,independent:false,lexicalErrors:full.lexicalErrors.includes(q.verbIndex)?[0]:[]};
  }
- const typed=['typed','gap','correction'].includes(q.kind);
+ const typed=['typed','gap','correction','speaking'].includes(q.kind);
  const lexicalErrors=[];
  const capitalization=q.kind==='typed'?/^[^\p{L}]*\p{Lu}/u.test(String(raw)):null;
  const result=(grammar,spelling,errorType=null)=>({grammar,capitalization,lexicalErrors,spelling:typed?spelling:null,vocabulary:grammar===true&&spelling!==false&&!assisted,independent:q.kind==='typed'&&q.direction==='en-nl'&&!assisted&&grammar===true,errorType:assisted&&!errorType?'assistance':errorType,tip:errorType==='verb_form'&&q.concept==='A1.6'?'Use the correct form of hebben, then a past participle at the end. Regular participles often end in -d or -t; learn irregular forms with their verb.':errorType==='verb_form'&&q.concept==='F6'?'Conjugate the modal to match the subject; leave the action verb as an infinitive at the end.':tips[assisted&&!errorType?'assistance':errorType]||null,assisted});
+ if(q.kind==='speaking'){
+  const got=normalize(raw),expected=normalize(q.answer);
+  if(!got)return result(false,false,'missing_word');
+  if(got===expected)return result(true,true);
+  if(distance(got,expected)<=2)return result(true,false,'spelling');
+  return result(false,false,'translation');
+ }
  if(q.direction==='nl-en'||['choice','form','correct-sentence'].includes(q.kind))return result(normalize(raw)===normalize(q.answer),null,normalize(raw)===normalize(q.answer)?null:'translation');
  if(q.kind==='correction'){
   const got=normalize(String(raw)).replace(/\s+/g,'');

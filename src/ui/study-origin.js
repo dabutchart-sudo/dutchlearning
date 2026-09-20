@@ -4,7 +4,7 @@ function readVersion(doc){
  const fromTitle=(doc.title||'').match(/V\d+\.\d+\.\d+/);
  if(fromTitle)return fromTitle[0];
  const fromBrand=(doc.querySelector('.brand p')?.textContent||'').match(/V\d+\.\d+\.\d+/);
- return fromBrand?fromBrand[0]:'V5.1.122';
+ return fromBrand?fromBrand[0]:'V5.1.123';
 }
 
 export function applyStudyOrigin(doc=document,hostname=globalThis.location?.hostname||''){

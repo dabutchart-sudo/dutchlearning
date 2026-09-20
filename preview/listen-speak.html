@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef5fb">
+<title>Zin · Listen and speak test area</title>
+<link rel="stylesheet" href="../src/ui/styles.css">
+<link rel="stylesheet" href="./listen-speak.css">
+</head>
+<body>
+<aside class="preview-bar">
+ <div>
+  <strong>Listen and speak test area</strong>
+  <span>Isolated sample · no live account · production Today is unchanged</span>
+ </div>
+ <p id="openai-status" class="preview-status">Checking OpenAI…</p>
+ <label class="preview-skip"><input id="skip-speak" type="checkbox"> Skip speaking and stay with listening</label>
+</aside>
+<main class="app">
+ <header class="topbar">
+  <div class="brand">
+   <h1>Zin</h1>
+   <p>Local listening and speaking preview</p>
+  </div>
+ </header>
+ <div id="system-message" role="status"></div>
+ <div id="content">
+  <article class="card evidence-card"><h2>Opening the test area…</h2></article>
+ </div>
+</main>
+<noscript>This preview needs JavaScript.</noscript>
+<script type="module" src="./listen-speak.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ export function classifyOrigin(hostname=''){
  return host===PRODUCTION_HOST?'production':'development';
 }
 
-export function environmentPresentation(hostname,version='V5.1.122'){
+export function environmentPresentation(hostname,version='V5.1.123'){
  const kind=classifyOrigin(hostname);
  const genuine=kind==='production';
  return {
