@@ -26,10 +26,13 @@ test('flipped cards do not steal taps meant for Again Hard Good Easy',()=>{
  assert.match(preview,/elementFromPoint/);
  assert.match(preview,/under\.click\(\)/);
  assert.match(preview,/\[data-rating\],\[data-sandbox-rating\]/);
+ assert.doesNotMatch(preview,/getBoundingClientRect\(\)/);
  assert.match(sandbox,/function ratingUnderCard\(/);
+ assert.doesNotMatch(sandbox,/getBoundingClientRect\(\)/);
+ assert.match(css,/\.flashcard-flip\{[^}]*pointer-events:none/);
  assert.match(css,/\.flashcard-flip-inner\{[^}]*pointer-events:none/);
  assert.match(css,/\.flashcard-face\{[^}]*pointer-events:auto/);
- assert.match(css,/\.flashcard-rating-grid\{[^}]*z-index:2/);
+ assert.match(css,/\.flashcard-rating-grid\{[^}]*z-index:5/);
 });
 
 test('Listen, Flag and Edit sit on each face so they rotate with the card',()=>{

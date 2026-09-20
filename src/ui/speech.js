@@ -6,8 +6,13 @@ const LISTEN_FUNCTION='https://dntitlrtvkgisxwqjxch.supabase.co/functions/v1/lis
 const FLASHCARD_CONSTANTS='https://dabutchart-sudo.github.io/flashcards/constants.js';
 const SILENT_WAV='data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 let player=null;
+let unlocker=null;
+let audioCtx=null;
 let listenAuth=null;
 let listenAuthPending=null;
+let listenGen=0;
+let lastBlobUrl='';
+const ttsCache=new Map();
 
 function voiceScore(v){
  const name=String(v?.name||'');
@@ -68,19 +73,30 @@ function playErrorMessage(){
   :'Dutch audio could not play. Refresh the page and tap Listen once.';
 }
 
+function makeAudio(){
+ const audio=new Audio();
+ audio.setAttribute('playsinline','');
+ audio.setAttribute('webkit-playsinline','');
+ audio.playsInline=true;
+ audio.preload='auto';
+ try{globalThis.document?.body?.appendChild(audio);}catch{}
+ return audio;
+}
+
 function ensurePlayer(){
  if(player||typeof Audio!=='function')return player;
- player=new Audio();
- player.setAttribute('playsinline','');
- player.setAttribute('webkit-playsinline','');
- player.playsInline=true;
- player.preload='auto';
- try{globalThis.document?.body?.appendChild(player);}catch{}
+ player=makeAudio();
  return player;
 }
 
+function ensureUnlocker(){
+ if(unlocker||typeof Audio!=='function')return unlocker;
+ unlocker=makeAudio();
+ return unlocker;
+}
+
 export function unlockListenAudio(){
- if(canUseServerListen())ensurePlayer();
+ if(canUseServerListen()){ensureUnlocker();ensurePlayer();}
  prefetchListenAuth();
 }
 
@@ -94,12 +110,19 @@ async function prefetchListenAuth(){
  return listenAuthPending;
 }
 
-function unlockSilent(audio){
- audio.pause();
- audio.muted=false;
- audio.volume=1;
- audio.src=SILENT_WAV;
- try{audio.play();}catch{}
+function unlockInGesture(){
+ const silent=ensureUnlocker();
+ if(silent){
+  silent.muted=false;
+  silent.volume=.01;
+  silent.src=SILENT_WAV;
+  try{silent.currentTime=0;}catch{}
+  try{silent.play();}catch{}
+ }
+ try{
+  const Ctx=globalThis.AudioContext||globalThis.webkitAudioContext;
+  if(Ctx){audioCtx=audioCtx||new Ctx();audioCtx.resume();}
+ }catch{}
 }
 
 async function explainPlayError(onError){
@@ -167,33 +190,61 @@ function speakLan(dutch,onError){
  }
 }
 
-async function playProductionAudio(audio,dutch,onError){
+function rememberBlob(dutch,blob){
+ if(ttsCache.has(dutch))ttsCache.delete(dutch);
+ ttsCache.set(dutch,blob);
+ if(ttsCache.size>24)ttsCache.delete(ttsCache.keys().next().value);
+}
+
+async function playBlob(audio,blob){
+ if(lastBlobUrl)try{URL.revokeObjectURL(lastBlobUrl);}catch{}
+ lastBlobUrl=(globalThis.URL||{}).createObjectURL?URL.createObjectURL(blob):'';
+ audio.pause();
+ audio.muted=false;
+ audio.volume=1;
+ audio.src=lastBlobUrl||listenAudioUrl('');
  try{
-  const headers=await prefetchListenAuth();
-  if(!headers){onError(playErrorMessage());return;}
-  const res=await fetch(LISTEN_FUNCTION,{method:'POST',headers,body:JSON.stringify({text:dutch})});
-  if(!res.ok){
-   let message=playErrorMessage();
-   try{message=String((await res.json())?.error||message);}catch{}
-   onError(message);
-   return;
-  }
-  const blob=await res.blob();
-  audio.onerror=()=>{explainPlayError(onError);};
-  audio.src=(globalThis.URL||{}).createObjectURL?URL.createObjectURL(blob):listenAudioUrl(dutch);
-  audio.muted=false;
-  audio.volume=1;
   await audio.play();
  }catch{
-  explainPlayError(onError);
+  await new Promise(resolve=>setTimeout(resolve,60));
+  await audio.play();
+ }
+}
+
+async function playProductionAudio(audio,dutch,onError,gen){
+ try{
+  let blob=ttsCache.get(dutch);
+  if(!blob){
+   const headers=await prefetchListenAuth();
+   if(gen!==listenGen)return;
+   if(!headers){onError(playErrorMessage());return;}
+   const res=await fetch(LISTEN_FUNCTION,{method:'POST',headers,body:JSON.stringify({text:dutch})});
+   if(gen!==listenGen)return;
+   if(!res.ok){
+    let message=playErrorMessage();
+    try{message=String((await res.json())?.error||message);}catch{}
+    onError(message);
+    return;
+   }
+   blob=await res.blob();
+   rememberBlob(dutch,blob);
+  }
+  if(gen!==listenGen)return;
+  audio.onerror=()=>{if(gen===listenGen)explainPlayError(onError);};
+  await playBlob(audio,blob);
+ }catch{
+  if(gen===listenGen)explainPlayError(onError);
  }
 }
 
 function speakProduction(dutch,onError){
  const audio=ensurePlayer();
  if(!audio)return speakDevice(dutch,onError);
- unlockSilent(audio);
- playProductionAudio(audio,dutch,onError);
+ const status=globalThis.document?.getElementById?.('system-message');
+ if(status)status.innerHTML='';
+ unlockInGesture();
+ const gen=++listenGen;
+ playProductionAudio(audio,dutch,onError,gen);
  return true;
 }
 
