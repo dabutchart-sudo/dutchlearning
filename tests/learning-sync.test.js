@@ -118,10 +118,30 @@ test('remote trainer_attempts rows are mapped and merged into local Learning his
  assert.equal(mergeRemoteAttempts(null,[row]).added,0);
 });
 
+test('saved trainer_state attempts keep their dates and grammar when merged',()=>{
+ const local=empty();
+ const saved={id:'33333333-3333-3333-3333-333333333333',date:'2026-09-20T00:00:00+00:00',occurredAt:'2026-09-20T16:00:00.000Z',concept:'A1.TEST',kind:'listening',direction:'nl-en',grammar:true,spelling:null,assisted:false};
+ assert.equal(mapTrainerAttempt(saved).date,'2026-09-20');
+ assert.equal(mapTrainerAttempt(saved).grammar,true);
+ const merged=mergeRemoteAttempts(local,[saved]);
+ assert.equal(merged.added,1);
+ assert.equal(merged.state.attempts[0].kind,'listening');
+});
+
+test('a populated remote with a stale pending question still downloads',()=>{
+ const remoteState=populated(50);
+ remoteState.pending={id:'stale',sourceId:'missing-item',kind:'typed'};
+ const result=apply(empty(),{state:remoteState,updated_at:'2026-09-10T12:00:00.000Z'});
+ assert.equal(result.action,'download');
+ assert.equal(result.state.pending,null);
+ assert.equal(result.state.attempts.length,1);
+});
+
 test('v51 uses the Learning sync safety policy and no longer returns before a download',()=>{
  const source=readFileSync(new URL('../src/ui/v51.js',import.meta.url),'utf8');
  assert.match(source,/applyLearningSync/);
  assert.match(source,/mergeRemoteAttempts/);
+ assert.match(source,/remote\?\.state\?\.attempts/);
  assert.match(source,/from\('trainer_attempts'\)\.select\(/);
  assert.doesNotMatch(source,/const local=localState\(\);if\(!local\)return/);
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');

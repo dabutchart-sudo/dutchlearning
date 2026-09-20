@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {registerPacks} from '../content/registry.js';
-import {applyLearningSync,mergeRemoteAttempts} from '../engine/learning-sync.js';
+import {applyLearningSync,attemptMergeBase,mergeRemoteAttempts} from '../engine/learning-sync.js';
 
 const SUPABASE_URL='https://dntitlrtvkgisxwqjxch.supabase.co';
 const SUPABASE_KEY='sb_publishable_0QmYB4lwmjfJLkY3pH5dCQ_EVKC47Lb';
@@ -79,13 +79,13 @@ async function syncNow(manual=false){
    try{content=await course();}catch(e){console.warn('Trainer sync content:',e);}
    const result=applyLearningSync({user,local,remote,content});
    let next=result.action==='download'?result.state:local;
-   if(result.action==='download'||result.action==='upload'||result.pushAttempts||result.action==='none'){
-    try{
-     const remoteAttempts=await pullAttempts(user);
-     const merged=mergeRemoteAttempts(next,remoteAttempts);
-     if(merged.added){next=merged.state;result.writeLocal=true;}
-    }catch(e){console.warn('Trainer attempt pull:',e);}
-   }
+   try{
+    let tableAttempts=[];
+    try{tableAttempts=await pullAttempts(user);}catch(e){console.warn('Trainer attempt pull:',e);}
+    const extras=[...(Array.isArray(remote?.state?.attempts)?remote.state.attempts:[]),...tableAttempts];
+    const merged=mergeRemoteAttempts(attemptMergeBase(next,content),extras);
+    if(merged.added){next=merged.state;result.writeLocal=true;}
+   }catch(e){console.warn('Trainer history merge:',e);}
    if(result.action==='download'||(result.writeLocal&&next)){
      localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setStatus('Learning history updated — reloading…');setTimeout(()=>location.reload(),250);return;
    }
