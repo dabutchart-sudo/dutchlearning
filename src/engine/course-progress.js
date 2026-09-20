@@ -43,7 +43,7 @@ export function accuracy(attempts,field){
 function aggregate(attempts){return {total:attempts.length,grammar:accuracy(attempts,'grammar'),spelling:accuracy(attempts,'spelling')};}
 export function learningProgress(state,{today=dayKey(),days=30,cohort='independent',concept=null}={}){
  if(!validDay(today))throw Error('A valid study day is required.');
- if(!['independent','supported'].includes(cohort))throw Error('Unknown evidence group.');
+ if(!['independent','supported','all'].includes(cohort))throw Error('Unknown evidence group.');
  if(days!==null&&(!Number.isInteger(days)||days<1||days>3660))throw Error('Invalid reporting window.');
  // Older success-only `independent` flags are intentionally not used as the
  // denominator. Failed independent attempts belong in this group too.
@@ -60,7 +60,7 @@ export function learningProgress(state,{today=dayKey(),days=30,cohort='independe
  const supportedKinds=new Set(['gap','correction','wordbank','choice','form','correct-sentence','listening','speaking']);
  const supported=inRange.filter(a=>!isIndependentAttempt(a)&&(a.assisted===true||supportedKinds.has(a.kind)));
  const unclassified=inRange.length-independent.length-supported.length;
- const selected=cohort==='independent'?independent:supported;
+ const selected=cohort==='independent'?independent:cohort==='supported'?supported:inRange;
  const byDay=new Map();
  for(const a of selected){const date=attemptDay(a);if(!byDay.has(date))byDay.set(date,[]);byDay.get(date).push(a);}
  const daily=[...byDay.entries()].map(([date,attempts])=>({date,...aggregate(attempts)}));
