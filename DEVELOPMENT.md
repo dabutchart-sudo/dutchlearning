@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.125 production Listen uses OpenAI audio through a same-origin service-worker proxy. V5.1.124 rating taps remain included.
+- Active production source: `origin/main`. Zin V5.1.126 production Listen fetches OpenAI audio in the same tap and plays a blob, because iPhone often skips the service worker for `<audio>`. V5.1.124 rating taps remain included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm production Listen on a fresh V5.1.125 load, especially iPhone Flashcards. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm production Listen on a fresh V5.1.126 load, especially iPhone Flashcards. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -216,3 +216,7 @@ Owner-authorized production release. The flipped 3D Flashcard no longer steals A
 ## V5.1.125 production Listen — 2026-09-20
 
 Production Listen was showing “check that speech is enabled” because GitHub Pages used device voices; iPhone rejects that path. V5.1.125 starts the same same-tap `GET /listen/tts` audio used on the LAN. The service worker proxies that request to a new `listen-tts` Edge Function that uses the existing server-side `OPENAI_API_KEY`. The OpenAI key stays off the browser. Device `canceled`/`interrupted` events are ignored so they do not show a false error. Scheduling, Flashcard ratings, Learning sync, authentication and schema are unchanged. Cache identifier: `dutch-v5.1.125-20260920`. The `listen-tts` function is deployed on the existing Supabase project and uses the server-side `OPENAI_API_KEY`. Confirm the header shows V5.1.125 after a fresh production load.
+
+## V5.1.126 production Listen blob playback — 2026-09-20
+
+Owner report: V5.1.125 still showed “Dutch audio could not play” after refresh. GitHub Pages has no `/listen/tts` file, iPhone often does not send `<audio>` requests through the service worker, and a URL without a trailing slash resolved Listen outside `/dutchlearning/`. V5.1.126 unlocks audio in the tap, POSTs to `listen-tts` from the page, and plays the returned MP3 blob. The OpenAI key stays on the server. Cache identifier: `dutch-v5.1.126-20260920`. Confirm the header shows V5.1.126 after a fresh production load.

@@ -2,7 +2,12 @@ const FEMALE_HINT=/(female|colette|ellen|femke|lotte|sofie|sophie|nora|sara|laur
 const MALE_HINT=/(male|maarten|xander|ruben|frank|bart|jeroen|pieter|daan)/i;
 const SYSTEM_DUTCH_FALLBACK=Object.freeze({lang:'nl-NL',__systemFallback:true});
 const PRODUCTION_HOST='dabutchart-sudo.github.io';
+const LISTEN_FUNCTION='https://dntitlrtvkgisxwqjxch.supabase.co/functions/v1/listen-tts';
+const FLASHCARD_CONSTANTS='https://dabutchart-sudo.github.io/flashcards/constants.js';
+const SILENT_WAV='data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 let player=null;
+let listenAuth=null;
+let listenAuthPending=null;
 
 function voiceScore(v){
  const name=String(v?.name||'');
@@ -33,26 +38,34 @@ function hostname(){
  return String(globalThis.location?.hostname||'');
 }
 
-export function canUseServerListen(){
+export function canUseLanListen(){
  const host=hostname();
- if(host===PRODUCTION_HOST||host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return true;
+ if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return true;
  return Boolean(globalThis.document?.body?.classList.contains('is-development'));
+}
+
+export function canUseProductionListen(){
+ return hostname()===PRODUCTION_HOST;
+}
+
+export function canUseServerListen(){
+ return canUseLanListen()||canUseProductionListen();
 }
 
 export function listenAudioUrl(text=''){
  const dutch=String(text||'').trim();
- const href=String(globalThis.location?.href||'');
  let path='/listen/tts';
- if(href){
-  try{path=new URL('listen/tts',href).pathname;}catch{}
- }
+ try{
+  const resolved=new URL('../../listen/tts',import.meta.url);
+  if(resolved.protocol==='http:'||resolved.protocol==='https:')path=resolved.pathname;
+ }catch{}
  return dutch?`${path}?text=${encodeURIComponent(dutch)}`:path;
 }
 
 function playErrorMessage(){
- const host=hostname();
- if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.'))return 'Dutch audio could not play. Restart the Mac server, refresh this page, then tap Listen once.';
- return 'Dutch audio could not play. Refresh the page and tap Listen once.';
+ return canUseLanListen()
+  ?'Dutch audio could not play. Restart the Mac server, refresh this page, then tap Listen once.'
+  :'Dutch audio could not play. Refresh the page and tap Listen once.';
 }
 
 function ensurePlayer(){
@@ -62,16 +75,35 @@ function ensurePlayer(){
  player.setAttribute('webkit-playsinline','');
  player.playsInline=true;
  player.preload='auto';
+ try{globalThis.document?.body?.appendChild(player);}catch{}
  return player;
 }
 
 export function unlockListenAudio(){
  if(canUseServerListen())ensurePlayer();
+ prefetchListenAuth();
+}
+
+async function prefetchListenAuth(){
+ if(listenAuth||listenAuthPending||!canUseProductionListen())return listenAuth;
+ listenAuthPending=fetch(FLASHCARD_CONSTANTS,{cache:'no-store'}).then(res=>res.text()).then(src=>{
+  const key=(src.match(/SUPABASE_ANON_KEY\s*=\s*['"]([^'"]+)['"]/)||[])[1]||'';
+  listenAuth=key?{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'}:null;
+  return listenAuth;
+ }).catch(()=>null).finally(()=>{listenAuthPending=null;});
+ return listenAuthPending;
+}
+
+function unlockSilent(audio){
+ audio.pause();
+ audio.muted=false;
+ audio.volume=1;
+ audio.src=SILENT_WAV;
+ try{audio.play();}catch{}
 }
 
 async function explainPlayError(onError){
- const host=hostname();
- if(host==='localhost'||host==='127.0.0.1'||host.startsWith('192.168.')){
+ if(canUseLanListen()){
   try{
    const res=await fetch('/listen/status');
    const data=await res.json();
@@ -117,7 +149,7 @@ function speakDevice(text,onError){
  }
 }
 
-function speakServer(dutch,onError){
+function speakLan(dutch,onError){
  const audio=ensurePlayer();
  if(!audio)return speakDevice(dutch,onError);
  audio.pause();
@@ -135,8 +167,42 @@ function speakServer(dutch,onError){
  }
 }
 
+async function playProductionAudio(audio,dutch,onError){
+ try{
+  const headers=await prefetchListenAuth();
+  if(!headers){onError(playErrorMessage());return;}
+  const res=await fetch(LISTEN_FUNCTION,{method:'POST',headers,body:JSON.stringify({text:dutch})});
+  if(!res.ok){
+   let message=playErrorMessage();
+   try{message=String((await res.json())?.error||message);}catch{}
+   onError(message);
+   return;
+  }
+  const blob=await res.blob();
+  audio.onerror=()=>{explainPlayError(onError);};
+  audio.src=(globalThis.URL||{}).createObjectURL?URL.createObjectURL(blob):listenAudioUrl(dutch);
+  audio.muted=false;
+  audio.volume=1;
+  await audio.play();
+ }catch{
+  explainPlayError(onError);
+ }
+}
+
+function speakProduction(dutch,onError){
+ const audio=ensurePlayer();
+ if(!audio)return speakDevice(dutch,onError);
+ unlockSilent(audio);
+ playProductionAudio(audio,dutch,onError);
+ return true;
+}
+
 export function speak(text,onError=()=>{}){
  const dutch=String(text??'').trim();
- if(canUseServerListen()&&dutch)return speakServer(dutch,onError);
+ if(!dutch)return false;
+ if(canUseLanListen())return speakLan(dutch,onError);
+ if(canUseProductionListen())return speakProduction(dutch,onError);
  return speakDevice(dutch,onError);
 }
+
+if(typeof document!=='undefined')prefetchListenAuth();
