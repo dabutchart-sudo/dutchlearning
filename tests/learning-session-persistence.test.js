@@ -126,9 +126,11 @@ test('an explicit Learning reset is not undone by the recovery copy',()=>{
  assert.equal(reopened.attempts.length,0);
 });
 
-test('today screen has an explicit finished state and disables normal start after 20',async()=>{
+test('the course path has an explicit finished state after 20 and no Today start button',async()=>{
  const source=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/ui/app.js',import.meta.url),'utf8'));
- assert.match(source,/Today’s work is complete/);
- assert.match(source,/const .*done=state\.daily\.count>=20/);
- assert.match(source,/button\('start',[\s\S]*?,true,done\)/);
+ const overview=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/ui/course-overview.js',import.meta.url),'utf8'));
+ assert.match(overview,/Today’s 20 are done/);
+ assert.match(overview,/daily\?\.done/);
+ assert.match(source,/view='curriculum'/);
+ assert.doesNotMatch(source,/function renderToday/);
 });

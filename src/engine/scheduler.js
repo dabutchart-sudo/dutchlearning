@@ -38,6 +38,20 @@ export function spreadPracticePool(pool,state,{keepVerb=false}={}){
  }
  return pool;
 }
+export function selectExtraPractice(state,content,concept,canListen=false,canSpeak=false){
+ let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
+ pool=spreadPracticePool(pool,state);
+ let kind=practiceKind(state.progress[concept]||{},canListen,canSpeak);
+ const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
+ if(eligible.length)pool=eligible;
+ else{
+  const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
+  if(alternatives.length)pool=spreadPracticePool(alternatives,state);else kind='wordbank';
+ }
+ const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
+ if(!item)throw Error('No practice content available');
+ return {item,kind,phase:'extra'};
+}
 export function selectPractice(state,content,current,date,canListen,canSpeak=false){
  const allMastered=content.concepts.every(c=>state.progress[c.id].masteredAt);
  const maintenance=content.concepts.filter(c=>state.progress[c.id].masteredAt&&(allMastered||state.progress[c.id].nextMaintenance<=date));

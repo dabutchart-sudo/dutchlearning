@@ -31,9 +31,9 @@ function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(
 
 function restoreTodayAndStart(){
  bypassStart=true;
- document.querySelector('[data-view="today"]')?.click();
+ document.querySelector('[data-view="curriculum"]')?.click();
  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  document.getElementById('start')?.click();
+  document.querySelector('[data-course-start], #start-course')?.click();
   bypassStart=false;
  }));
 }
@@ -91,7 +91,7 @@ function observe(){
 function interceptClicks(){
  document.addEventListener('click',event=>{
   if(inSandbox())return;
-  const start=event.target.closest?.('#start');
+  const start=event.target.closest?.('#start,#start-course,[data-course-start]');
   if(start&&!bypassStart){
    const state=currentState();if(!state)return;
    const conceptId=activeConcept(state,content),date=dayKey(new Date());

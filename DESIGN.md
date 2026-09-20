@@ -23,7 +23,7 @@ The app generates one normal daily learning session. Completing that generated s
 
 Mastery (20 questions) and retention (10 questions) proofs use that same daily session. When a proof is ready and the day still has enough unused questions, the app must tell the learner before ordinary practice starts, so practice does not silently postpone the test until the next study day.
 
-Explicit features such as Review Ahead, or optional open “keep talking” conversation, may provide extra study, but they must remain clearly separate from the completed normal daily session.
+Explicit features such as Review Ahead, extra Free Practice of a retained topic, or optional open “keep talking” conversation, may provide extra study, but they must remain clearly separate from the completed normal daily session. Extra practice must not refill unused daily capacity, start a second normal session, change mastery or retention status, or leak retries into the next daily queue.
 
 ### New-card limit
 The user setting for maximum new cards is a hard, adjustable upper limit.
@@ -60,11 +60,11 @@ Answer assistance should be deliberately frictionful enough to promote recall. W
 Hints, images, partial words, phrases, and other scaffolding may be used where they improve learning without trivialising the question.
 
 ### Listening and speaking
-Owner direction 2026-09-20: listening and speaking are a **high development priority**. After the isolated test area was accepted, practice on an existing topic may include a listening beat and a short speaking beat. Those beats reuse the topic’s own sentences. They must be closed activities that finish with the rest of Today. They must not teach unbounded new grammar, refill unused new-card capacity, or raise the new-card ceiling.
+Owner direction 2026-09-20: listening and speaking are a **high development priority**. After the isolated test area was accepted, practice on an existing topic may include a listening beat and a short speaking beat. Those beats reuse the topic’s own sentences. They must be closed activities that finish with the rest of the daily session. They must not teach unbounded new grammar, refill unused new-card capacity, or raise the new-card ceiling.
 
 Speaking is optional whenever talking is inconvenient. A spoken question can be skipped and answered as the same typed English-to-Dutch item. That skip does not add work or replace the day’s 20-question close. Existing learner history defaults speaking off until the owner opts in.
 
-Early listening and speaking may be scripted: listen and choose a meaning, repeat, or answer a known question. Later turns may adapt through OpenAI. Open-ended chat that can continue after Today is complete remains optional extra study, like Review Ahead.
+Early listening and speaking may be scripted: listen and choose a meaning, repeat, or answer a known question. Later turns may adapt through OpenAI. Open-ended chat that can continue after the daily session is complete remains optional extra study, like Review Ahead.
 
 Mastery and retention proofs remain finite, scored written checks. Spoken turns are not a substitute for those proofs.
 
@@ -87,9 +87,15 @@ The integrated system should preserve the useful qualities of the standalone fla
 
 ## Progress and reporting
 
-Reporting should help the learner see that retention is being maintained and that learning is progressing over time.
+The Course path is the home screen. The learner should see the whole syllabus, where they are, and be able to start study from that screen. The current topic’s Start or Continue opens the normal daily Learning session, using the same 20-question rules and proof offer. A retained topic may offer extra Free Practice, labelled as extra.
 
-Useful measures include review volume, new material, retention/performance trends, and day/month/year views where appropriate. Reporting changes should prioritise clarity and motivation over adding large quantities of metrics.
+A slim header counter shows Learning `x / 20` and whether Flashcards are ready or done. That counter stays visible during questions. When a test is ready, the current node must offer it before ordinary practice. When the day’s 20 are finished, the path must make that ending as obvious as Start.
+
+Reporting should help the learner see that retention is being maintained and that learning is progressing over time. Evidence charts and counts live inside Progress, not on the home path. Flashcard Report stays on the Flashcards screen.
+
+Useful measures include review volume, new material, retention/performance trends, and day/month/year views where appropriate. Reporting changes should prioritise a few meaningful facts over adding large quantities of metrics.
+
+Later extras, not required for the current path: optional daily weak-area suggestions, and an optional short matching drill of known pairs. Those must not introduce points, streaks, leagues, or other gamification.
 
 ## User experience
 
@@ -100,9 +106,10 @@ Useful measures include review volume, new material, retention/performance trend
 - Hints and error tips should be specific enough to teach the learner what to try next, not generic encouragement or an unexplained correction.
 - Word reveal should use hold-to-show where immediate reveal would encourage copying.
 - Speaking and listening are high-priority capabilities. Practice may include a short listening beat and a short speaking beat from the current topic. Speaking can be skipped and typed when talking is inconvenient. Interface changes should preserve easy access to Dutch pronunciation.
-- The main menu should make today's study state obvious, including when the normal daily session is complete. The top bar has four destinations: Today, Flashcards, Progress, and Settings. Course, Flashcard Report, Learning mistakes, and the word browser live inside Progress.
+- The main menu should make today's study state obvious, including when the normal daily session is complete. The top bar has four destinations: Course, Flashcards, Progress, and Settings. Course is home and shows the syllabus path. Learning `x / 20` and Flashcards ready/done sit in the header. Evidence, Learning mistakes, and the word browser live inside Progress. The Flashcard report lives on the Flashcards screen. There is no separate Today destination.
 - The interface should remain focused; features should justify the complexity they add.
-- The product should not use points, streak pressure, leagues, badges, artificial rewards, or other gamification. Motivation should come from satisfying completed batches, learning progress, retention, and useful reporting.
+- The product should not use points, streak pressure, leagues, badges, artificial rewards, or other gamification. Motivation should come from a clear course path, satisfying completed batches, learning progress, retention, and a few useful facts — not screens of numbers.
+- The interface should feel welcoming and a little more characterful than a form, while staying clean and iOS-like. Character comes from the path, warmer colour, and human copy, not a mascot, chests, or game chrome.
 - GitHub Pages is the only normal origin for genuine study. Local and 192.168 origins are development copies, must remain visually distinct, and keep separate browser storage.
 
 ## Data and synchronisation

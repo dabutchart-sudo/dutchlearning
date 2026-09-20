@@ -49,4 +49,5 @@ test('the current installable build includes the course-start curriculum offline
  assert.match(index,/manifest\.webmanifest/);
  assert.match(sw,/a1-capability-expansion-1\.js/);
  assert.match(sw,/a1-capability-expansion-2\.js/);
+ assert.match(sw,/a1-capability-expansion-3\.js/);
 });

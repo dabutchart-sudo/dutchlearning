@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.136 uses a four-tab top menu: Today, Flashcards, Progress, and Settings. Course, Report, Mistakes and Words stay inside Progress. V5.1.135 mastery-before-practice remains included.
+- Active production source: `origin/main`. This release prepares Zin V5.1.137: Course is home, Today is retired, extra retained-topic practice is available, and A1.21 is in the course. Previous production: V5.1.136 four-tab menu.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,9 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm V5.1.136: the top bar shows Today, Flashcards, Progress and Settings. Progress opens Course and can switch to Report, Mistakes and Words. Do not delete browsing data to pick up the new menu.
+1. After V5.1.137 is live, hard-refresh until the header shows V5.1.137. Course should be home. The mirrored Flashcard English face is a known leftover from the current flip and is not part of this release.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
+3. A1.22–A1.26 remain planned. The mirrored English Flashcard face is a separate follow-up.
 
 ## Learning sync safety — 2026-09-18
 
@@ -260,3 +260,9 @@ Owner report: Course said F1 was test-ready, but Start Mastery Test was grey bec
 ## V5.1.136 four-tab menu — 2026-09-20
 
 Owner report: the seven-item top menu was too cluttered. V5.1.136 keeps Today, Flashcards, Progress and Settings in the top bar. Course, Flashcard Report, Learning mistakes and the word browser open from a Progress switcher, defaulting to Course. Study rules, Flashcards ratings and Learning sync are unchanged. Cache identifier: `dutch-v5.1.136-20260920`. Confirm the header shows V5.1.136 after a fresh production load. Do not delete browsing data to pick up the menu. Learner history was not rewritten.
+
+## V5.1.137 Course is home — 2026-09-20
+
+Owner-authorized production release. The Course path is the home screen. Today is no longer a destination. A header counter shows Learning `x / 20` and Flashcards ready/done, including during questions. The current topic starts the normal daily 20. A retained topic can offer a five-question extra batch that does not use the daily 20, change mastery, or write retries. Progress holds Evidence, Mistakes and Words. Flashcard Report stays on Flashcards. A1.21 place-and-movement content is included; A1.22–A1.26 remain planned. The four top-tab labels stay even, and Progress no longer stays highlighted after leaving. Cache identifier: `dutch-v5.1.137-20260920`. Confirm the header shows V5.1.137 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
+
+The mirrored Flashcard English face is unchanged from V5.1.136 and is not fixed in this release.

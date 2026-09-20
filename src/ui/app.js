@@ -1,20 +1,19 @@
 import {registerPacks} from '../content/registry.js';
-import {freshState,ensureDay,activeConcept,unlocked,phase,teachConcept,prepareQuestion,markWordsTaught,startProof,dailyProofOffer,releaseUnscoredPractice,submit,skipSpeaking,useHelp,statistics} from '../engine/learner.js';
+import {freshState,ensureDay,unlocked,phase,teachConcept,prepareQuestion,prepareExtraQuestion,startExtraPractice,releaseExtraPractice,markWordsTaught,startProof,dailyProofOffer,releaseUnscoredPractice,submit,skipSpeaking,useHelp,EXTRA_PRACTICE_SIZE} from '../engine/learner.js';
 import {createRepository,STORAGE_KEY} from '../engine/persistence.js';
-import {dayKey,addDays,pct} from '../engine/util.js';
+import {dayKey,addDays} from '../engine/util.js';
 import {labels} from '../engine/scoring.js';
 import {chooseTile,removeTile,bankAnswer,correctiveFeedback} from '../engine/exercises.js';
 import {coursePage,topicPage} from './course-overview.js';
+import {paintDailyChrome} from './daily-chrome.js';
 import {bindPeek} from './peek.js';
 import {dutchVoice,speak} from './speech.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let content,state,repo,view='today',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
+let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
 let disposePeek=()=>{};
-let coursePane='progress',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
+let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
-const statusLabels={'learning':'Learning','proof-ready':'Proof Ready','retention-wait':'Retention pending','retention-ready':'Retention Ready','mastered':'Mastered','reinforcement':'Reinforcement'};
-const status=id=>statusLabels[phase(state.progress[id],dayKey(now()))];
 function notify(t){message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';}
 function button(id,label,primary=true,disabled=false){return `<button id="${id}" class="${primary?'primary':'secondary'}" ${disabled?'disabled':''}>${esc(label)}</button>`;}
 function on(id,fn){document.getElementById(id)?.addEventListener('click',()=>{try{const result=fn();if(result&&typeof result.then==='function')result.catch(e=>notify(e.message));}catch(e){notify(e.message);}});}
@@ -24,24 +23,34 @@ async function transaction(fn){
  if(navigator.locks)return navigator.locks.request(dev?STORAGE_KEY+'-sandbox':STORAGE_KEY,run);
  return run();
 }
-function metrics(list){const s=statistics(list);return `<div class="metrics"><div class="metric"><span class="eyebrow">Grammar</span><span class="n">${pct(s.grammar,s.total)}</span></div><div class="metric"><span class="eyebrow">Spelling</span><span class="n">${pct(s.spelling,s.spellingTotal)}</span></div><div class="metric"><span class="eyebrow">Independent</span><span class="n">${s.independent}</span></div><div class="metric"><span class="eyebrow">Word recall</span><span class="n">${pct(s.recall,s.total)}</span></div></div>`}
 function proofReport(){const r=state.lastProof;if(!r)return '';return `<article class="card evidence-card proof-report"><div class="eyebrow">Latest ${esc(r.type)} result · ${esc(r.concept)}</div><h2>${r.passed?'Grammar proven in both directions':'More practice before the next test'}</h2><p>NL → EN: ${r.directions['nl-en'].correct}/${r.directions['nl-en'].total} · EN → NL: ${r.directions['en-nl'].correct}/${r.directions['en-nl'].total}</p><p class="muted small">${r.passed?(r.type==='mastery'?'Retention opens '+esc(state.progress[r.concept].retentionDue)+'.':'The next concept is unlocked. This one will return for maintenance.'):'Complete eight successful practice questions before trying fresh proof material again.'}</p></article>`}
 function sessionChrome(active){document.body.classList.toggle('session-active',active);const footer=document.querySelector('footer');if(active)footer.setAttribute('aria-hidden','true');else footer.removeAttribute('aria-hidden');}
+function markTopTab(){
+ document.querySelectorAll('.tabs > .tab').forEach(tab=>{
+  const onCourse=view==='curriculum'&&tab.id==='course-tab';
+  const onSettings=view==='settings'&&tab.dataset.view==='settings';
+  const onProgress=(view==='evidence'||view==='mistakes')&&tab.id==='progress-tab';
+  tab.classList.toggle('active',onCourse||onSettings||onProgress);
+ });
+}
+function refreshChrome({extra=false}={}){
+ const offer=state&&content?dailyProofOffer(state,content,now()):null;
+ paintDailyChrome({
+  count:state?.daily?.count||0,
+  done:(state?.daily?.count||0)>=20,
+  testReady:!!offer?.canStartToday,
+  extra:extra||state?.pending?.phase==='extra'
+ });
+}
+function goHome(){selectedConcept=null;view='curriculum';render();}
 function render(){
  disposePeek();sessionChrome(false);
- notify('');document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
- if(view==='today')renderToday();else if(view==='curriculum')renderCourse();else if(view==='mistakes')renderMistakes();else if(view==='settings')renderSettings();
+ notify('');markTopTab();
+ if(view==='curriculum'||view==='evidence')renderCourse();else if(view==='mistakes')renderMistakes();else if(view==='settings')renderSettings();
+ refreshChrome();
  if(dev)el.insertAdjacentHTML('afterbegin',`<div class="debug-banner">Developer sandbox · ${dayKey(now())} · Real learning progress is separate.</div>`);
 }
-async function show(v){view=v;selectedConcept=null;lastFeedback=null;skipProofGate=false;await transaction(s=>ensureDay(s,now()));render();}
-function renderToday(){
- const id=activeConcept(state,content),c=content.conceptById[id],p=state.progress[id],date=dayKey(now()),done=state.daily.count>=20;
- const offer=dailyProofOffer(state,content,now());
- const startLabel=state.proof?'Resume '+state.proof.type+' test':state.daily.count?'Continue today’s practice':'Start today’s practice';
- const summaryStart=offer?.canStartToday?`${button('proof',offer.type==='mastery'?'Start Mastery Test':'Start Retention Test')}<p class="small muted">This uses today’s ${offer.needed} questions. Ordinary practice now postpones the test until tomorrow.</p>${button('start','Practice instead',false)}`:button('start',startLabel,true,done);
- el.innerHTML=`<section class="stack"><div class="home-grid"><article class="card summary"><div class="eyebrow">${offer?.canStartToday?(offer.type==='mastery'?'Mastery ready today':'Retention ready today'):"Today's practice"}</div><div class="big">${state.daily.count} <span class="muted">/ 20</span></div><p class="muted">${offer?.canStartToday?`${esc(offer.id)} can use this day’s session. Take the test before practice if you want it today.` : done?'Today’s work is complete. Mistakes shape future practice.':'A finite daily session. Teaching is extra; scored questions stop at 20.'}</p><div class="progress-track" role="progressbar" aria-label="Daily questions" aria-valuenow="${state.daily.count}" aria-valuemin="0" aria-valuemax="20"><div class="progress-fill" style="width:${state.daily.count*5}%"></div></div>${summaryStart}</article><article class="card concept"><div class="row"><span class="eyebrow">${esc(c.level)} · ${esc(id)}</span><span class="status">${status(id)}</span></div><h2>${esc(c.title)}</h2><p class="muted">${p.practiceAttempts} practice attempts · ${p.independent} independent answers</p><div class="phase-steps">Teach → Recognise → Construct → Produce → Repeat → <strong>Prove</strong></div>${proofAction(id,offer)}${button('lesson','Read the lesson',false)}${button('course-progress','See your learning progress',false)}${metrics(state.attempts.filter(x=>x.concept===id))}</article></div>${proofReport()}${done?`<article class="card evidence-card"><h2>Today’s evidence</h2>${metrics(state.attempts.filter(x=>x.date===date))}<p class="muted">You can read lessons and review mistakes at any time.</p></article>`:''}</section>`;
- on('course-progress',()=>show('curriculum'));on('start',()=>{skipProofGate=true;openQuestion()});on('lesson',()=>renderLesson(id,false));bindProof(id);
-}
+async function show(v){view=v;selectedConcept=null;lastFeedback=null;skipProofGate=false;if(v==='curriculum')coursePane='path';if(v==='evidence')coursePane='evidence';await transaction(s=>ensureDay(s,now()));render();}
 function proofAction(id,offer=dailyProofOffer(state,content,now())){const p=state.progress[id],ph=phase(p,dayKey(now()));
  if(ph==='proof-ready'||ph==='retention-ready'){
  const type=ph==='proof-ready'?'mastery':'retention',reason=offer&&offer.id===id?offer.reason:null,hideButton=offer?.canStartToday&&offer.id===id;
@@ -56,15 +65,16 @@ function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(
 function renderLesson(id,continueSession){
  sessionChrome(true);
  const c=content.conceptById[id];if(!unlocked(c,state))return;
- el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to today')}</div></article></section>`;
- transaction(s=>teachConcept(s,id,content,{acknowledge:false})).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',async()=>{if(!continueSession){await show('today');return;}await transaction(s=>teachConcept(s,id,content));await openQuestion();});
+ el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to the path')}</div></article></section>`;
+ transaction(s=>teachConcept(s,id,content,{acknowledge:false})).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',async()=>{if(!continueSession){await show('curriculum');return;}await transaction(s=>teachConcept(s,id,content));await openQuestion();});
+ refreshChrome();
 }
 async function proofPreparation(id){
  const type=phase(state.progress[id],dayKey(now()))==='proof-ready'?'mastery':'retention';
  const words=vocabularyFor(id).filter(w=>!state.words[w.id]?.taughtAt);
  if(words.length){
-  el.innerHTML=`<section class="session"><article class="card evidence-card"><span class="direction">Vocabulary reminder · not scored</span><h2>Before your ${type} test</h2><p>Here is the remaining vocabulary for this concept. The test uses unseen sentences, with no assistance once it starts.</p>${vocabularyHTML(words)}${button('begin-proof','Ready — start the test')}<div class="spaced">${button('cancel-proof','Back to today',false)}</div></article></section>`;
-  on('begin-proof',async()=>{await transaction(s=>{releaseUnscoredPractice(s);for(const w of words)markWordsTaught(s,{vocabulary:[w]},dayKey(now()));startProof(s,content,id,type,now())});await openQuestion()});on('cancel-proof',()=>show('today'));
+  el.innerHTML=`<section class="session"><article class="card evidence-card"><span class="direction">Vocabulary reminder · not scored</span><h2>Before your ${type} test</h2><p>Here is the remaining vocabulary for this concept. The test uses unseen sentences, with no assistance once it starts.</p>${vocabularyHTML(words)}${button('begin-proof','Ready — start the test')}<div class="spaced">${button('cancel-proof','Back to the path',false)}</div></article></section>`;
+  on('begin-proof',async()=>{await transaction(s=>{releaseUnscoredPractice(s);for(const w of words)markWordsTaught(s,{vocabulary:[w]},dayKey(now()));startProof(s,content,id,type,now())});await openQuestion()});on('cancel-proof',()=>show('curriculum'));
  }else{await transaction(s=>{releaseUnscoredPractice(s);startProof(s,content,id,type,now())});await openQuestion();}
 }
 function renderProofGate(offer){
@@ -73,6 +83,25 @@ function renderProofGate(offer){
  el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">${esc(offer.id)} · ready today</span><h2>Take the ${title} before practice</h2><p>This test uses ${offer.needed} of today’s 20 questions. Practising first uses the day, and the test then waits until tomorrow.</p><div class="actions">${button('gate-proof','Start '+title)}${button('gate-practice','Practice anyway',false)}</div></article></section>`;
  on('gate-proof',()=>proofPreparation(offer.id));
  on('gate-practice',()=>{skipProofGate=true;openQuestion()});
+ refreshChrome();
+}
+async function beginDaily({skipGate=false}={}){
+ skipProofGate=skipGate;
+ await transaction(s=>{if(s.pending?.phase==='extra')releaseExtraPractice(s)});
+ await openQuestion();
+}
+async function beginExtra(id){
+ skipProofGate=false;
+ try{
+  await transaction(s=>startExtraPractice(s,id,now()));
+  await openExtraQuestion();
+ }catch(e){notify(e.message)}
+}
+async function openExtraQuestion(){
+ lastFeedback=null;
+ const q=await transaction(s=>prepareExtraQuestion(s,content,now(),s.settings.listening&&!!dutchVoice(),!!s.settings.speaking));
+ if(!q){goHome();return;}
+ renderQuestion(q);
 }
 async function openQuestion(){
  lastFeedback=null;
@@ -81,7 +110,7 @@ async function openQuestion(){
   if(offer?.canStartToday){renderProofGate(offer);return;}
  }
  const q=await transaction(s=>prepareQuestion(s,content,now(),s.settings.listening&&!!dutchVoice(),!!s.settings.speaking));
- if(!q){view='today';render();return;}if(q.teachingConcept){renderLesson(q.teachingConcept,true);return;}
+ if(!q){goHome();return;}if(q.teachingConcept){renderLesson(q.teachingConcept,true);return;}
  const item=content.byId[q.sourceId];const unknown=item.vocabulary.filter(w=>!state.words[w.id]?.taughtAt||(state.words[w.id].weakness>=3&&state.words[w.id].taughtAt<dayKey(now())));
  if(['practice','maintenance'].includes(q.phase)&&unknown.length){
   el.innerHTML=`<section class="session"><article class="card question-card"><span class="direction">Vocabulary reminder · not scored</span><h2>A few words before you practise</h2>${vocabularyHTML(unknown)}<p class="muted">You still have ${20-state.daily.count} scored questions today.</p><div class="actions">${button('words-learned','Got it — practise')}</div></article></section>`;
@@ -91,11 +120,14 @@ async function openQuestion(){
 }
 function renderQuestion(q){
  disposePeek();sessionChrome(true);
+ refreshChrome({extra:q.phase==='extra'});
  const item=content.byId[q.sourceId];let selection=[],raw='',locked=false;
  const titles={choice:'Choose the English meaning',wordbank:'Build the Dutch sentence',typed:'Write the Dutch sentence',gap:'Fill the missing form',form:'Choose the correct form','correct-sentence':'Choose the matching Dutch sentence',correction:'Correct the Dutch sentence',listening:'Listen and choose the meaning',speaking:'Say the Dutch sentence'};
- const offer=state.proof?null:dailyProofOffer(state,content,now());
+ const extra=q.phase==='extra';
+ const extraIndex=extra?EXTRA_PRACTICE_SIZE-(state.extra?.remaining||0)+1:0;
+ const offer=state.proof||extra?null:dailyProofOffer(state,content,now());
  const proofNote=offer?.canStartToday?`<p class="muted small">The ${esc(offer.id)} ${offer.type} test is ready and needs ${offer.needed} free questions today. Take it before you finish this practice question, or it waits until tomorrow.</p>`:offer?`<p class="muted small">The ${esc(offer.id)} ${offer.type} test is ready. It needs ${offer.needed} free questions, so it opens tomorrow.</p>`:'';
- el.innerHTML=`<section class="session"><div class="session-head"><strong>Question ${state.daily.count+1} of 20 today</strong><span class="pill">${esc(q.concept)} · ${esc(q.phase)}</span></div>${state.proof?`<p class="muted small">Test: ${state.proof.index+1} / ${state.proof.questions.length}. Each direction must reach 100% grammar.</p>`:proofNote}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article><button id="pause" class="text-link">Pause — progress is saved</button></section>`;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>${extra?`Extra practice ${extraIndex} of ${EXTRA_PRACTICE_SIZE}`:`Question ${state.daily.count+1} of 20 today`}</strong><span class="pill">${esc(q.concept)} · ${extra?'extra practice':esc(q.phase)}</span></div>${state.proof?`<p class="muted small">Test: ${state.proof.index+1} / ${state.proof.questions.length}. Each direction must reach 100% grammar.</p>`:extra?'<p class="muted small">Extra practice. This does not use today’s 20 questions.</p>':proofNote}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article><button id="pause" class="text-link">Pause — progress is saved</button></section>`;
  const area=document.getElementById('answer-area');
  if(q.options){area.innerHTML=`<div class="answers">${q.options.map((o,i)=>`<button class="choice" data-choice="${i}" aria-pressed="false">${esc(o)}</button>`).join('')}</div>`;area.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{raw=q.options[Number(b.dataset.choice)];area.querySelectorAll('button').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b))})});}
  else if(q.kind==='speaking'){
@@ -115,7 +147,7 @@ function renderQuestion(q){
   area.innerHTML='<div id="built" class="built" aria-label="Your sentence"></div><div id="bank" class="wordbank" aria-label="Available words"></div><p class="muted small">Tap a chosen word to put it back. Extra words are deliberate.</p>';
   const draw=()=>{document.getElementById('built').innerHTML=selection.map(id=>`<button class="word" data-remove="${id}" aria-label="Remove ${esc(q.bank.find(x=>x.id===id).text)}">${esc(q.bank.find(x=>x.id===id).text)}</button>`).join('');document.getElementById('bank').innerHTML=q.bank.map(t=>`<button class="word ${selection.includes(t.id)?'used':''}" data-tile="${t.id}" ${selection.includes(t.id)?'disabled':''}>${esc(t.text)}</button>`).join('');area.querySelectorAll('[data-tile]').forEach(b=>b.onclick=()=>{selection=chooseTile(selection,b.dataset.tile,q.bank);draw()});area.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{selection=removeTile(selection,b.dataset.remove);draw()});raw=bankAnswer(selection,q.bank)};draw();
  }else{area.innerHTML='<label for="typed-answer" class="sr-only">Your Dutch answer</label><input id="typed-answer" class="input" lang="nl" placeholder="Type in Dutch" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false">';const input=document.getElementById('typed-answer');if(q.kind==='gap'){input.placeholder='Missing word or full sentence';input.setAttribute('aria-label','Missing word or full sentence');}input.oninput=()=>raw=input.value;input.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing)check()};}
- if(q.direction==='en-nl'&&['typed','wordbank'].includes(q.kind)&&['practice','maintenance'].includes(q.phase)){
+ if(q.direction==='en-nl'&&['typed','wordbank'].includes(q.kind)&&['practice','maintenance','extra'].includes(q.phase)){
   const help=document.getElementById('help-area');help.innerHTML=`<div class="assist-row">${button('help','Hold for word',false)}<span id="hint" class="hint" aria-live="polite"></span></div>`;
   disposePeek=bindPeek(document.getElementById('help'),document.getElementById('hint'),{
    reveal:item.vocabulary.map(w=>w.nl+' — '+w.en).join(' · '),
@@ -124,26 +156,41 @@ function renderQuestion(q){
   });
  }
  async function check(){if(locked)return;if(!raw.trim()){notify('Enter or choose an answer first.');return;}locked=true;disposePeek();
-  try{const rec=await transaction(s=>submit(s,content,q.id,raw,now()));lastFeedback=rec;const feedback=correctiveFeedback(q,item,raw,rec);
+  try{const rec=await transaction(s=>submit(s,content,q.id,raw,now()));lastFeedback=rec;refreshChrome({extra:q.phase==='extra'});const feedback=correctiveFeedback(q,item,raw,rec);
    el.querySelectorAll('input,button').forEach(b=>b.disabled=true);document.getElementById('feedback').innerHTML=`<div class="feedback ${rec.grammar===true?(rec.spelling===false?'warn':'ok'):'bad'}"><strong>${rec.grammar===true?(rec.spelling===false?'Grammar correct · spelling to revisit':'Grammar correct'):rec.grammar===null?'Vocabulary needs review':'Let’s revisit this pattern'}</strong><span class="correct" lang="nl">${feedback.words.map(part=>part.changed?`<mark class="problem-char">${esc(part.text)}</mark>`:esc(part.text)).join(' ')}${esc(feedback.punctuation)}</span><span class="meaning">${esc(feedback.meaning)}</span>${feedback.differences.length?`<p lang="nl">${feedback.differences.map(esc).join(' · ')}</p>`:''}${feedback.explanation?`<p>${esc(feedback.explanation)}</p>`:''}${rec.capitalization===false?'<p>Start the sentence with a capital letter. This is separate from grammar.</p>':''}<div class="badges"><span class="badge">Grammar ${rec.grammar===true?'✓':rec.grammar===null?'unproven':'review'}</span>${rec.spelling!==null?`<span class="badge">Spelling ${rec.spelling?'✓':'review'}</span>`:''}${rec.capitalization!==null?`<span class="badge">Capitalisation ${rec.capitalization?'✓':'review'}</span>`:''}${rec.assisted?'<span class="badge">Word help used</span>':''}</div></div>`;
-   document.querySelector('.actions').innerHTML=button('next',state.daily.count===20?'Finish today':!state.proof&&['mastery','retention'].includes(q.phase)?'View test result':'Continue');
-   on('next',()=>state.daily.count===20||!state.proof&&['mastery','retention'].includes(q.phase)?show('today'):openQuestion());document.getElementById('next').focus();
+   const extraDone=q.phase==='extra'&&!state.extra;
+   document.querySelector('.actions').innerHTML=button('next',extraDone?'Back to the path':state.daily.count===20?'Finish today’s 20':!state.proof&&['mastery','retention'].includes(q.phase)?'View test result':'Continue');
+   on('next',()=>{
+    if(q.phase==='extra'){if(state.extra)openExtraQuestion();else{selectedConcept=q.concept;view='curriculum';render();}}
+    else if(state.daily.count===20||!state.proof&&['mastery','retention'].includes(q.phase))show('curriculum');
+    else openQuestion();
+   });document.getElementById('next').focus();
   }catch(e){locked=false;notify(e.message)}
  }
- on('check',check);on('pause',()=>show('today'));on('play',()=>speak(item.nl,notify));on('text-fallback',async()=>{await transaction(s=>{if(s.pending?.id===q.id){s.pending.kind='choice';s.pending.prompt=item.nl}});renderQuestion(state.pending)});
+ on('check',check);on('pause',()=>{
+  if(q.phase==='extra'){transaction(s=>releaseExtraPractice(s)).then(()=>{selectedConcept=q.concept;view='curriculum';render();});return;}
+  show('curriculum');
+ });on('play',()=>speak(item.nl,notify));on('text-fallback',async()=>{await transaction(s=>{if(s.pending?.id===q.id){s.pending.kind='choice';s.pending.prompt=item.nl}});renderQuestion(state.pending)});
 }
 function renderCourse(){
  const today=dayKey(now());
  if(selectedConcept){
-  el.innerHTML=topicPage(state,content,selectedConcept,{today,proofHTML:proofAction(selectedConcept)});
+  el.innerHTML=topicPage(state,content,selectedConcept,{today,proofHTML:proofAction(selectedConcept),dailyCount:state.daily.count,dailyDone:state.daily.count>=20});
   on('read-course',()=>renderLesson(selectedConcept,false));
   on('back-course',()=>{selectedConcept=null;renderCourse();el.querySelector('h2')?.focus()});
+  on('start-course',()=>beginDaily({skipGate:false}));
+  on('extra-course',()=>beginExtra(selectedConcept));
   bindProof(selectedConcept);return;
  }
- el.innerHTML=coursePage(state,content,{today,pane:coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept});
+ el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});
+ if(view!=='evidence'&&state.lastProof)el.querySelector('.course-heading')?.insertAdjacentHTML('afterend',proofReport());
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
  el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});
+ el.querySelectorAll('[data-course-start]').forEach(b=>b.onclick=()=>beginDaily({skipGate:false}));
+ el.querySelectorAll('[data-course-extra]').forEach(b=>b.onclick=()=>beginExtra(b.dataset.courseExtra));
+ const currentNode=el.querySelector('[data-course-current]');
+ if(currentNode)currentNode.scrollIntoView({block:'center',behavior:'auto'});
  const period=document.getElementById('course-period');if(period)period.onchange=()=>{courseDays=period.value==='all'?null:Number(period.value);renderCourse();document.getElementById('course-period')?.focus()};
  const topic=document.getElementById('course-topic-filter');if(topic)topic.onchange=()=>{courseConcept=topic.value||null;renderCourse();document.getElementById('course-topic-filter')?.focus()};
 }
@@ -162,12 +209,12 @@ function renderSettings(){
  on('toggle-dev',()=>{dev=!dev;repo=createRepository(localStorage,content,{key:dev?STORAGE_KEY+'-sandbox':STORAGE_KEY});state=repo.load();repo.save(state);render()});
  on('next-day',async()=>{await transaction(s=>{s.settings.debugDate=addDays(dayKey(now()),1);ensureDay(s,new Date(s.settings.debugDate+'T12:00:00'))});render()});
  on('reset-sandbox',()=>{state=freshState(content);repo.save(state);render()});
- on('jump',async()=>{const id=document.getElementById('dev-concept').value,ph=document.getElementById('dev-state').value;await transaction(s=>{const idx=content.concepts.findIndex(c=>c.id===id);for(const [i,c]of content.concepts.entries()){s.progress[c.id]=freshState(content).progress[c.id];if(i<idx)Object.assign(s.progress[c.id],{status:'mastered',masteredAt:dayKey(now()),nextMaintenance:addDays(dayKey(now()),7),taught:true});}const p=s.progress[id];Object.assign(p,{taught:ph!=='learning',recognised:ph==='learning'?0:4,constructed:['learning','construct'].includes(ph)?0:4,practiceAttempts:['learning','construct','produce'].includes(ph)?0:40,independent:['learning','construct','produce'].includes(ph)?0:8,status:['construct','produce'].includes(ph)?'learning':ph});if(ph.startsWith('retention'))p.retentionDue=addDays(dayKey(now()),ph==='retention-ready'?0:3);if(['mastered','reinforcement'].includes(ph)){p.masteredAt=dayKey(now());p.nextMaintenance=dayKey(now())}s.daily={date:dayKey(now()),count:0};s.pending=null;s.proof=null;s.lastProof=null;s.retries=[];});view='today';render()});
+ on('jump',async()=>{const id=document.getElementById('dev-concept').value,ph=document.getElementById('dev-state').value;await transaction(s=>{const idx=content.concepts.findIndex(c=>c.id===id);for(const [i,c]of content.concepts.entries()){s.progress[c.id]=freshState(content).progress[c.id];if(i<idx)Object.assign(s.progress[c.id],{status:'mastered',masteredAt:dayKey(now()),nextMaintenance:addDays(dayKey(now()),7),taught:true});}const p=s.progress[id];Object.assign(p,{taught:ph!=='learning',recognised:ph==='learning'?0:4,constructed:['learning','construct'].includes(ph)?0:4,practiceAttempts:['learning','construct','produce'].includes(ph)?0:40,independent:['learning','construct','produce'].includes(ph)?0:8,status:['construct','produce'].includes(ph)?'learning':ph});if(ph.startsWith('retention'))p.retentionDue=addDays(dayKey(now()),ph==='retention-ready'?0:3);if(['mastered','reinforcement'].includes(ph)){p.masteredAt=dayKey(now());p.nextMaintenance=dayKey(now())}s.daily={date:dayKey(now()),count:0};s.pending=null;s.proof=null;s.lastProof=null;s.retries=[];});view='curriculum';render()});
 }
 async function init(){
  const manifestURL=new URL('../content/packs.json',import.meta.url);const response=await fetch(manifestURL);if(!response.ok)throw Error('The course could not load. Reconnect and refresh once.');const manifest=await response.json();const packs=await Promise.all(manifest.packs.map(async path=>{const r=await fetch(new URL(path,manifestURL));if(!r.ok)throw Error('A course pack could not load. Reconnect and refresh.');return r.json()}));content=registerPacks(packs);repo=createRepository(localStorage,content);state=repo.load();repo.save(state);await transaction(s=>ensureDay(s));render();
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view).catch(e=>notify(e.message)));
- window.addEventListener('storage',e=>{if(e.key===(dev?STORAGE_KEY+'-sandbox':STORAGE_KEY)){state=repo.load();view='today';render();notify('Progress updated in another tab. Continue from the saved question.')}});
+ window.addEventListener('storage',e=>{if(e.key===(dev?STORAGE_KEY+'-sandbox':STORAGE_KEY)){state=repo.load();view='curriculum';render();notify('Progress updated in another tab. Continue from the saved question.')}});
  if(document.body.classList.contains('is-development')){
   if('serviceWorker'in navigator){try{const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}catch{}}
   document.getElementById('offline-status').textContent='Development copy · not cached for genuine study';
