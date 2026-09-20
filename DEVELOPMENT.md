@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.135 warns before ordinary practice when a mastery or retention test can still use today’s 20. V5.1.134 Course restore remains included.
+- Active production source: `origin/main`. Zin V5.1.136 uses a four-tab top menu: Today, Flashcards, Progress, and Settings. Course, Report, Mistakes and Words stay inside Progress. V5.1.135 mastery-before-practice remains included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm V5.1.135: when F1 (or another topic) is test-ready and today’s 20 is still free, Today offers the test first and practice warns that it will postpone the test. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm V5.1.136: the top bar shows Today, Flashcards, Progress and Settings. Progress opens Course and can switch to Report, Mistakes and Words. Do not delete browsing data to pick up the new menu.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -256,3 +256,7 @@ Owner report: Course was still empty after V5.1.133 even though the saved Learni
 ## V5.1.135 offer a ready test before practice — 2026-09-20
 
 Owner report: Course said F1 was test-ready, but Start Mastery Test was grey because today’s 20 had already been used on ordinary practice. V5.1.135 makes a ready mastery or retention test the Today primary action while the day still has enough unused questions, and it warns if practice is started instead. The test still uses the normal daily 20; it does not add extra work. Cache identifier: `dutch-v5.1.135-20260920`. Confirm the header shows V5.1.135 after a fresh production load. Learner history was not rewritten.
+
+## V5.1.136 four-tab menu — 2026-09-20
+
+Owner report: the seven-item top menu was too cluttered. V5.1.136 keeps Today, Flashcards, Progress and Settings in the top bar. Course, Flashcard Report, Learning mistakes and the word browser open from a Progress switcher, defaulting to Course. Study rules, Flashcards ratings and Learning sync are unchanged. Cache identifier: `dutch-v5.1.136-20260920`. Confirm the header shows V5.1.136 after a fresh production load. Do not delete browsing data to pick up the menu. Learner history was not rewritten.
