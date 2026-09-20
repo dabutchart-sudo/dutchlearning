@@ -45,6 +45,23 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false,canSpeak=fals
  s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason:'question',questionId:q.id});
  return q;
 }
+export function dailyProofOffer(s,c,now=new Date()){
+ const id=activeConcept(s,c);
+ const date=dayKey(now);
+ const status=phase(s.progress[id],date);
+ if(status!=='proof-ready'&&status!=='retention-ready')return null;
+ const type=status==='proof-ready'?'mastery':'retention';
+ const needed=type==='mastery'?20:10;
+ const count=date>s.daily.date?0:s.daily.count;
+ const remaining=Math.max(0,DAY_SIZE-count);
+ if(s.proof)return {id,type,needed,remaining,canStartToday:false,reason:'Finish the test already in progress.'};
+ if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
+ return {id,type,needed,remaining,canStartToday:true,reason:null};
+}
+export function releaseUnscoredPractice(s){
+ if(s.pending&&!s.proof&&['practice','maintenance'].includes(s.pending.phase)){s.pending=null;s.revision++;}
+ return s;
+}
 export function proofEligibility(s,c,id,type,now=new Date()){
  const p=s.progress[id],date=dayKey(now),status=phase(p,date),n=type==='mastery'?20:10;
  const count=date>s.daily.date?0:s.daily.count;

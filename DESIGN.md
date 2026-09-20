@@ -21,6 +21,8 @@ The application is not intended to become a general-purpose commercial language-
 ### One normal session per study day
 The app generates one normal daily learning session. Completing that generated session completes normal study for the day. Reopening or refreshing the app must not offer unused new-card capacity as a second normal session.
 
+Mastery (20 questions) and retention (10 questions) proofs use that same daily session. When a proof is ready and the day still has enough unused questions, the app must tell the learner before ordinary practice starts, so practice does not silently postpone the test until the next study day.
+
 Explicit features such as Review Ahead, or optional open “keep talking” conversation, may provide extra study, but they must remain clearly separate from the completed normal daily session.
 
 ### New-card limit
