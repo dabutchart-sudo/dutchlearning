@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.128 keeps Again/Hard/Good/Easy on a flat layer so the 3D flip cannot steal those taps. V5.1.127 Listen reliability remains included.
+- Active production source: `origin/main`. Zin V5.1.129 puts Listen / Flag / Edit back on the card, then flattens the answer face before Again / Hard / Good / Easy appear. V5.1.127 Listen reliability remains included. V5.1.128's detached-button overlay was withdrawn.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm a full Flashcard batch on V5.1.128: ratings stay tappable after 15+ cards. Listen should stay as reliable as V5.1.127. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm a full Flashcard batch on V5.1.129: Listen, Flag and Edit sit on the card, audio plays, and ratings stay tappable after 15+ cards. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -228,3 +228,7 @@ Owner report: after about 15 live cards, Again/Hard/Good/Easy stopped again, and
 ## V5.1.128 rating hit layer — 2026-09-20
 
 Owner report: V5.1.127 Listen stayed consistent, but Again/Hard/Good/Easy still died after several cards. iOS promotes the 3D card into its own layer; children with pointer events still receive taps, so looking “under” the card was not enough. V5.1.128 moves flip and Listen/Flag/Edit onto a flat layer, leaves the spinning card display-only, and times out a hung save so one slow write cannot freeze the rest of the batch. Cache identifier: `dutch-v5.1.128-20260920`. Confirm the header shows V5.1.128 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh.
+
+## V5.1.129 flatten the answer face — 2026-09-20
+
+Owner report: V5.1.128 detached Listen / Flag / Edit from the card, broke audio, and left the rating buttons unusable. That overlay is withdrawn. V5.1.129 restores the on-card controls and V5.1.127 Listen path. After the flip animation, the answer face becomes a normal flat card and only then do Again / Hard / Good / Easy appear, so the spinning layer cannot cover them. Cache identifier: `dutch-v5.1.129-20260920`. Confirm the header shows V5.1.129 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh. If GitHub Pages has not updated yet, finish remaining cards in the standalone Flashcards app.
