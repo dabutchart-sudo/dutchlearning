@@ -43,3 +43,11 @@ test('origin distinction is shipped, cached and documented',()=>{
  assert.match(docs,/dabutchart-sudo\.github\.io\/dutchlearning/);
  assert.match(design,/GitHub Pages is the only normal origin for genuine study/);
 });
+
+test('the Development banner stays out of the tab row so Flashcards remains usable',()=>{
+ assert.match(ui,/insertAdjacentElement\('beforebegin',banner\)/);
+ assert.doesNotMatch(ui,/topbar\.prepend\(banner\)/);
+ assert.match(css,/body\.is-development \.tabs\{[^}]*flex:1 0 100%/);
+ assert.doesNotMatch(css,/body\.is-development \.tabs\{order:1\}/);
+ assert.match(css,/\.study-origin-banner\{[^}]*display:block/);
+});

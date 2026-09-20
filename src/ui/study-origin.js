@@ -20,7 +20,7 @@ export function applyStudyOrigin(doc=document,hostname=globalThis.location?.host
   banner.setAttribute('role','status');
   banner.textContent=view.banner;
   const topbar=doc.querySelector('.topbar');
-  if(topbar)topbar.prepend(banner);
+  if(topbar)topbar.insertAdjacentElement('beforebegin',banner);
   else doc.body?.prepend?.(banner);
  }
  if(!view.genuine){
