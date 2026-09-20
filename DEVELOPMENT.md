@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.123 adds optional listening and skippable speaking in practice. V5.1.122 Flashcard flip and V5.1.121 Course/Syllabus remain included.
+- Active production source: `origin/main`. Zin V5.1.124 restores Again/Hard/Good/Easy taps after a flip and makes Listen start in the same tap. V5.1.123 listen/speak, V5.1.122 Flashcard flip and V5.1.121 Course/Syllabus remain included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,10 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Publish the Flashcard rating-button hit-target fix after owner review. Production can still swallow Again/Hard/Good/Easy taps after several flips; the standalone Flashcards app remains the safety path until then.
-2. A production OpenAI speech Edge Function remains later work. Until then, spoken questions use on-device recognition where available and can always be skipped and typed.
-3. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-4. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
+1. A production OpenAI speech Edge Function remains later work. GitHub Pages Listen still uses device voices; the LAN development server is the OpenAI MP3 path that works on iPhone. Spoken questions use on-device recognition where available and can always be skipped and typed.
+2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
+3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
 ## Learning sync safety — 2026-09-18
 
@@ -209,3 +208,7 @@ after `python3 preview/serve-listen-speak.py` with `OPENAI_API_KEY` in the proce
 ## V5.1.123 listen and speak — 2026-09-20
 
 Owner-authorized production release after the isolated test area and skip-to-type were accepted. Practice on an existing topic can include optional listening and a spoken sentence. Existing learner history defaults speaking off. A spoken question can be skipped and typed without adding work or changing the daily 20. Mastery and retention proofs stay written. Cache identifier: `dutch-v5.1.123-20260920`. Confirm the header shows V5.1.123 after a fresh production load. No OpenAI speech Edge Function is deployed; production recording uses on-device recognition where available.
+
+## V5.1.124 rating taps and Listen — 2026-09-20
+
+Owner-authorized production release. The flipped 3D Flashcard no longer steals Again/Hard/Good/Easy taps. Listen starts in the same tap so iPhone can play audio. On GitHub Pages, Listen still uses device voices (Mac works; iPhone device TTS can stay silent). OpenAI MP3 Listen stays on the LAN development server (`preview/serve-dev.py`, key only in that process). Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.124-20260920`. Confirm the header shows V5.1.124 after a fresh production load.

@@ -17,7 +17,7 @@ const statusLabels={'learning':'Learning','proof-ready':'Proof Ready','retention
 const status=id=>statusLabels[phase(state.progress[id],dayKey(now()))];
 function notify(t){message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';}
 function button(id,label,primary=true,disabled=false){return `<button id="${id}" class="${primary?'primary':'secondary'}" ${disabled?'disabled':''}>${esc(label)}</button>`;}
-function on(id,fn){document.getElementById(id)?.addEventListener('click',()=>Promise.resolve().then(fn).catch(e=>notify(e.message)));}
+function on(id,fn){document.getElementById(id)?.addEventListener('click',()=>{try{const result=fn();if(result&&typeof result.then==='function')result.catch(e=>notify(e.message));}catch(e){notify(e.message);}});}
 async function transaction(fn){
  const run=async()=>{const next=repo.load();const result=fn(next);repo.save(next);state=next;return result};
  // Web Locks serialise writes from tabs on this origin. Fallback stays functional in older browsers.
@@ -151,7 +151,10 @@ async function init(){
  const manifestURL=new URL('../content/packs.json',import.meta.url);const response=await fetch(manifestURL);if(!response.ok)throw Error('The course could not load. Reconnect and refresh once.');const manifest=await response.json();const packs=await Promise.all(manifest.packs.map(async path=>{const r=await fetch(new URL(path,manifestURL));if(!r.ok)throw Error('A course pack could not load. Reconnect and refresh.');return r.json()}));content=registerPacks(packs);repo=createRepository(localStorage,content);state=repo.load();repo.save(state);await transaction(s=>ensureDay(s));render();
  document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>show(b.dataset.view).catch(e=>notify(e.message)));
  window.addEventListener('storage',e=>{if(e.key===(dev?STORAGE_KEY+'-sandbox':STORAGE_KEY)){state=repo.load();view='today';render();notify('Progress updated in another tab. Continue from the saved question.')}});
- if('serviceWorker'in navigator){try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});await navigator.serviceWorker.ready;document.getElementById('offline-status').textContent='Ready offline · progress saved locally';}catch{document.getElementById('offline-status').textContent='Offline cache unavailable — keep this page online';}}
+ if(document.body.classList.contains('is-development')){
+  if('serviceWorker'in navigator){try{const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}catch{}}
+  document.getElementById('offline-status').textContent='Development copy · not cached for genuine study';
+ }else if('serviceWorker'in navigator){try{await navigator.serviceWorker.register('./sw.js',{scope:'./'});await navigator.serviceWorker.ready;document.getElementById('offline-status').textContent='Ready offline · progress saved locally';}catch{document.getElementById('offline-status').textContent='Offline cache unavailable — keep this page online';}}
  else document.getElementById('offline-status').textContent='Offline installation needs HTTPS hosting';
 }
 init().catch(e=>{el.innerHTML='<article class="card evidence-card"><h2>The app could not open safely</h2><p>Your stored progress has not been cleared. Export or preserve the existing browser data before recovery.</p><p>Refresh after reconnecting if the course could not load.</p></article>';notify(e.message)});
