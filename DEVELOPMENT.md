@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.131 keeps a single Dutch → English flip. V5.1.130 card height and Course today-count remain included.
+- Active production source: `origin/main`. Zin V5.1.132 shows today’s completed Learning session on Course as All practice, including a one-day chart. V5.1.131 single-flip remains included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm V5.1.131: one tap flips Dutch → English and stays on English. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm V5.1.132: Course shows today’s Learning answers under All practice, including listening. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -240,3 +240,7 @@ Owner report: after V5.1.129 the Dutch face was slightly short and grew on flip,
 ## V5.1.131 single flip — 2026-09-20
 
 Owner report: V5.1.130 sizes were right, but every card flipped to English then flipped again back to Dutch. Flattening was resetting the spin to 0°, which plays as a second flip. V5.1.131 keeps the card at 180° after the first flip. Cache identifier: `dutch-v5.1.131-20260920`. Confirm the header shows V5.1.131 after a fresh production load.
+
+## V5.1.132 Course shows today’s Learning — 2026-09-20
+
+Owner report: today’s completed Learning session was still not populated on Course. The chart waited for two study days and defaulted to typed-only “On my own”, so a listening/guided day looked empty. V5.1.132 defaults to All practice and plots a point from the first study day. Cache identifier: `dutch-v5.1.132-20260920`. Confirm the header shows V5.1.132 after a fresh production load. Learner history was not rewritten. If Today still shows 0 / 20, say so — that would be a save/sync issue rather than a Course display issue.
