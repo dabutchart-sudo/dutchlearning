@@ -1,14 +1,12 @@
 const panes=[
- {id:'course',label:'Course',trigger:'#course-tab'},
- {id:'report',label:'Report',trigger:'#report-tab'},
+ {id:'evidence',label:'Evidence',trigger:'#evidence-tab'},
  {id:'mistakes',label:'Mistakes',trigger:'[data-view="mistakes"]'},
  {id:'words',label:'Words',trigger:'#words-tab'}
 ];
 
 function detectPane(content){
  if(!content)return null;
- if(content.querySelector('.course-dashboard'))return 'course';
- if(content.querySelector('.report-view'))return 'report';
+ if(content.querySelector('[data-course-evidence]'))return 'evidence';
  if(content.querySelector('.word-browser'))return 'words';
  if(content.querySelector('.mistakes-view'))return 'mistakes';
  return null;
@@ -30,16 +28,27 @@ function switcherMarkup(current){
  return panes.map(pane=>`<button type="button" data-progress-pane="${pane.id}" aria-pressed="${pane.id===current}">${pane.label}</button>`).join('');
 }
 
+function markPrimary(id){
+ const primary=document.getElementById(id);
+ document.querySelectorAll('.tabs > .tab').forEach(tab=>tab.classList.toggle('active',tab===primary));
+}
+
 function syncProgressChrome(){
  const content=document.getElementById('content');
  const progressTab=document.getElementById('progress-tab');
+ const report=content?.querySelector('.report-view');
  const pane=detectPane(content);
- if(!pane){
-  content?.querySelector('[data-progress-switch]')?.remove();
+ if(report){
+  content.querySelector('[data-progress-switch]')?.remove();
+  markPrimary('flashcards-preview-tab');
   return;
  }
- progressTab?.classList.add('active');
- document.querySelectorAll('.tabs > .tab').forEach(tab=>{if(tab!==progressTab)tab.classList.remove('active')});
+ if(!pane){
+  content?.querySelector('[data-progress-switch]')?.remove();
+  progressTab?.classList.remove('active');
+  return;
+ }
+ markPrimary('progress-tab');
  let bar=content.querySelector('[data-progress-switch]');
  if(!bar){
   bar=document.createElement('div');
@@ -57,7 +66,7 @@ function syncProgressChrome(){
  });
 }
 
-document.getElementById('progress-tab')?.addEventListener('click',()=>openPane('course'));
+document.getElementById('progress-tab')?.addEventListener('click',()=>openPane('evidence'));
 const root=document.getElementById('content');
 if(root)new MutationObserver(syncProgressChrome).observe(root,{childList:true,subtree:true});
 syncProgressChrome();

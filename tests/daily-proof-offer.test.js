@@ -50,10 +50,10 @@ test('starting a proof can drop an unscored practice question',()=>{
  assert.equal(s.pending,null);
 });
 
-test('Today and practice warn before a ready test uses the day',()=>{
+test('the path and practice warn before a ready test uses the day',()=>{
  const source=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
  assert.match(source,/dailyProofOffer/);
  assert.match(source,/Take the \$\{title\} before practice/);
- assert.match(source,/Practice instead/);
+ assert.match(source,/Practice anyway/);
  assert.match(source,/releaseUnscoredPractice/);
 });

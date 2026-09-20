@@ -1,12 +1,13 @@
 import {uid,dayKey,addDays,normalize} from './util.js';
-import {selectPractice,selectProof} from './scheduler.js';
+import {selectPractice,selectProof,selectExtraPractice} from './scheduler.js';
 import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
 export const DAY_SIZE=20;
+export const EXTRA_PRACTICE_SIZE=5;
 export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
-export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,settings:{listening:false,speaking:false},migration:null};}
-export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date)s.daily={date,count:0};return s.daily;}
+export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,extra:null,settings:{listening:false,speaking:false},migration:null};}
+export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date){s.daily={date,count:0};if(s.pending?.phase==='extra')s.pending=null;s.extra=null;}return s.daily;}
 export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
 export function activeConcept(s,c){return c.concepts.find(x=>unlocked(x,s)&&!s.progress[x.id].masteredAt)?.id||c.concepts.at(-1).id;}
@@ -25,6 +26,7 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false,canSpeak=fals
    return {teachingConcept:current};
   }
  }
+ if(s.pending?.phase==='extra')throw Error('Finish extra practice first, or leave it.');
  if(s.pending){
   if(s.pending.presentationVersion!==515&&['practice','maintenance'].includes(s.pending.phase)){
    const old=s.pending;s.pending={...makeExercise(c.byId[old.sourceId],old.kind,c,{phase:old.phase,direction:old.direction,seed:old.id}),id:old.id,assisted:old.assisted,retryId:old.retryId};
@@ -58,8 +60,38 @@ export function dailyProofOffer(s,c,now=new Date()){
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
  return {id,type,needed,remaining,canStartToday:true,reason:null};
 }
+export function extraPracticeEligibility(s,id){
+ if(!s.progress[id]?.masteredAt)return 'Extra practice is for topics you have already retained.';
+ if(s.proof)return 'Finish the test already in progress.';
+ if(s.pending&&s.pending.phase!=='extra')return 'Finish the current question first.';
+ return null;
+}
+export function startExtraPractice(s,id,now=new Date()){
+ ensureDay(s,now);
+ const reason=extraPracticeEligibility(s,id);if(reason)throw Error(reason);
+ if(s.pending?.phase==='extra')s.pending=null;
+ s.extra={concept:id,remaining:EXTRA_PRACTICE_SIZE,date:dayKey(now)};
+ s.revision++;
+ return s.extra;
+}
+export function releaseExtraPractice(s){
+ if(s.pending?.phase==='extra')s.pending=null;
+ if(s.extra){s.extra=null;s.revision++;}
+ return s;
+}
+export function prepareExtraQuestion(s,c,now=new Date(),canListen=false,canSpeak=false){
+ ensureDay(s,now);
+ if(!s.extra||s.extra.remaining<=0)return null;
+ const reason=extraPracticeEligibility(s,s.extra.concept);if(reason)throw Error(reason);
+ if(s.pending?.phase==='extra')return s.pending;
+ const selected=selectExtraPractice(s,c,s.extra.concept,canListen,canSpeak);
+ const q=makeExercise(selected.item,selected.kind,c,{phase:'extra'});
+ s.pending=q;expose(s,selected.item,'extra');
+ s.exposures.push({id:selected.item.id,nl:normalize(selected.item.nl),verb:selected.item.verb,subject:selected.item.subject,family:selected.item.family,words:selected.item.vocabulary.map(w=>w.id),reason:'extra',questionId:q.id});
+ return q;
+}
 export function releaseUnscoredPractice(s){
- if(s.pending&&!s.proof&&['practice','maintenance'].includes(s.pending.phase)){s.pending=null;s.revision++;}
+ if(s.pending&&!s.proof&&['practice','maintenance','extra'].includes(s.pending.phase)){s.pending=null;s.revision++;}
  return s;
 }
 export function proofEligibility(s,c,id,type,now=new Date()){
@@ -89,15 +121,22 @@ function finishProof(s,now){
  s.proof=null;
 }
 export function submit(s,c,questionId,raw,now=new Date()){
- ensureDay(s,now);if(s.daily.count>=DAY_SIZE)throw Error('Today’s 20 questions are complete.');
+ ensureDay(s,now);
  const q=s.pending;if(!q||q.id!==questionId)throw Error('This question has already been answered or changed.');
+ const extra=q.phase==='extra';
+ if(!extra&&s.daily.count>=DAY_SIZE)throw Error('Today’s 20 questions are complete.');
  if(!String(raw).trim())throw Error('Enter or choose an answer first.');
  const item=c.byId[q.sourceId],p=s.progress[q.concept];
  const knownWords=new Set(c.sentences.flatMap(x=>normalize(x.nl).split(' ')));
  const a=assess(q,raw,{assisted:q.assisted,knownWords});
  const wordEvidence=recallEvidence(q,item,a);
  const rec={...a,wordEvidence,id:uid(),learnerId:s.learnerId,deviceId:s.deviceId,occurredAt:now.toISOString(),date:s.daily.date,questionId:q.id,sourceId:q.sourceId,concept:q.concept,phase:q.phase,kind:q.kind,direction:q.direction,prompt:q.prompt,answer:raw,expected:q.answer,correctSentence:item.nl,englishMeaning:item.en,verb:item.verb,words:item.vocabulary.map(w=>w.id)};
- s.attempts.push(rec);recordRecall(s,q,wordEvidence);s.daily.count++;s.pending=null;
+ s.attempts.push(rec);s.pending=null;
+ if(extra){
+  if(s.extra){s.extra.remaining=Math.max(0,s.extra.remaining-1);if(s.extra.remaining<=0)s.extra=null;}
+  s.revision++;return rec;
+ }
+ recordRecall(s,q,wordEvidence);s.daily.count++;
  p.weakness=Math.max(0,Math.min(12,p.weakness+(a.grammar===true?-1:a.grammar===false?2:0)));
  if(q.phase==='practice'){
   p.practiceAttempts++;
@@ -122,5 +161,5 @@ export function skipSpeaking(s){
  s.revision++;
  return s.pending;
 }
-export function useHelp(s){if(!s.pending||!['practice','maintenance'].includes(s.pending.phase))throw Error('Word help is unavailable during proof.');s.pending.assisted=true;s.revision++;}
+export function useHelp(s){if(!s.pending||!['practice','maintenance','extra'].includes(s.pending.phase))throw Error('Word help is unavailable during proof.');s.pending.assisted=true;s.revision++;}
 export function statistics(attempts){const spelled=attempts.filter(x=>x.spelling!==null);return {total:attempts.length,grammar:attempts.filter(x=>x.grammar===true).length,spelling:spelled.filter(x=>x.spelling).length,spellingTotal:spelled.length,independent:attempts.filter(x=>x.independent).length,recall:attempts.filter(x=>x.vocabulary).length};}

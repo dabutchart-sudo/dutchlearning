@@ -14,3 +14,46 @@
 @media(max-width:600px){.course-trend-chart .chart-axis{font-size:20px}}
 
 @media(max-width:600px){.course-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.course-path{display:grid;gap:28px}
+.course-day-banner{margin:0;padding:14px 16px;border-radius:14px;font-size:.95rem;font-weight:650;line-height:1.4}
+.course-day-banner.is-done{background:#e7f6ef;color:#146b54}
+.course-day-banner.is-test{background:#fff3df;color:#9a4d0a}
+.course-path-here{margin:0;font-size:1.05rem;font-weight:650;color:#1b3d5c;line-height:1.45}
+.course-unit{display:grid;gap:0}
+.course-unit-banner{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;padding:16px 18px;border-radius:18px;color:white;margin-bottom:8px}
+.course-unit-banner span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.course-unit-banner h3{margin:0;flex:1;font-size:1.2rem;letter-spacing:-.03em}
+.course-unit-banner small{opacity:.8;font-size:.75rem}
+.course-unit-banner.is-foundation{background:linear-gradient(135deg,#1f6f8b,#2f8f7a)}
+.course-unit-banner.is-a1{background:linear-gradient(135deg,#d9782a,#e3a03a)}
+.course-unit-banner.is-planned{background:linear-gradient(135deg,#7d8b99,#9aa6b2)}
+.course-path-list{list-style:none;margin:0;padding:12px 0 8px;display:grid;gap:18px;position:relative}
+.course-path-list::before{content:'';position:absolute;left:26px;top:8px;bottom:8px;width:3px;border-radius:3px;background:linear-gradient(#d7e3ee,#e8edf2)}
+.course-path-node{display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:center;position:relative;z-index:1}
+.course-path-node:nth-child(even){grid-template-columns:minmax(0,1fr) 56px}
+.course-path-node:nth-child(even) .course-node-wrap{order:2}
+.course-path-node:nth-child(even) .course-path-card{order:1;text-align:right}
+.course-path-node:nth-child(even) .course-path-card button,.course-path-node:nth-child(even) .course-planned-label{align-items:flex-end}
+.course-node-wrap{width:56px;height:56px;display:grid;place-items:center;position:relative}
+.course-path-node .course-node{width:36px;height:36px;border-radius:50%;border:3px solid #c5d3df;background:#fff;color:#16796c;display:grid;place-items:center;font-size:1rem;font-weight:750;box-shadow:0 2px 8px #102f4914}
+.course-node-progress{position:absolute;inset:0;width:56px;height:56px}
+.course-node-progress .ring-track{fill:none;stroke:#e4edf4;stroke-width:4}
+.course-node-progress .ring-value{fill:none;stroke:#e3a03a;stroke-width:4;stroke-linecap:round}
+.course-path-node.is-retained .course-node{background:#def3ea;border-color:#7dccb0;color:#146b54}
+.course-path-node.is-current .course-node{background:#fff6e8;border-color:#e3a03a;color:#b45a12;box-shadow:0 0 0 6px #f6e4c4}
+.course-path-node.is-locked .course-node,.course-path-node.is-planned .course-node{background:#f3f6f8;border-color:#d5dee6;box-shadow:none}
+.course-path-card{display:grid;gap:8px}
+.course-path-card>button,.course-planned-label{display:grid;gap:4px;padding:12px 14px;border:0;border-radius:16px;background:#fff;text-align:left;min-height:64px;box-shadow:0 6px 18px #16324a10;color:inherit}
+.course-path-card>button:hover{background:#f7fafc}
+.course-path-card .primary,.course-path-card .secondary{justify-self:start;min-height:44px}
+.course-path-node:nth-child(even) .course-path-card .primary,.course-path-node:nth-child(even) .course-path-card .secondary{justify-self:end}
+.course-node-note{margin:0;font-size:.8rem;color:var(--muted)}
+.course-topic-detail .primary{margin-top:10px}
+@media(max-width:600px){
+ .course-path-node,.course-path-node:nth-child(even){grid-template-columns:56px minmax(0,1fr)}
+ .course-path-node:nth-child(even) .course-node-wrap{order:0}
+ .course-path-node:nth-child(even) .course-path-card{order:0;text-align:left}
+ .course-path-node:nth-child(even) .course-path-card button,.course-path-node:nth-child(even) .course-planned-label{align-items:flex-start}
+ .course-path-node:nth-child(even) .course-path-card .primary,.course-path-node:nth-child(even) .course-path-card .secondary{justify-self:start}
+}

@@ -4,7 +4,7 @@ import {blankProgress,phase,unlocked,proofEligibility} from './learner.js';
 // Display-only roadmap, sourced from docs/a1-completion-target.md. These entries
 // never enter the exercise registry, scheduler, or completion denominator.
 export const plannedTopics=[
- ['A1.21','Place and movement'],['A1.22','Simple directions and location'],
+ ['A1.22','Simple directions and location'],
  ['A1.23','Requests and service Dutch'],['A1.24','Connecting ideas'],
  ['A1.25','Daily-life consolidation'],['A1.26','A1 integrated checkpoint']
 ].map(([id,title])=>({id,title,level:'A1',status:'planned'}));
@@ -51,6 +51,7 @@ export function learningProgress(state,{today=dayKey(),days=30,cohort='independe
  const all=(state.attempts||[]).filter(a=>{
   if(!a||!attemptDay(a)||attemptDay(a)>today)return false;
   if(a.id&&seen.has(a.id))return false;if(a.id)seen.add(a.id);
+  if(a.phase==='extra')return false;
   return !concept||a.concept===concept;
  }).sort((a,b)=>attemptDay(a).localeCompare(attemptDay(b))||String(a.occurredAt||'').localeCompare(String(b.occurredAt||'')));
  const start=days===null?(attemptDay(all[0]||{})||today):addDays(today,1-days);

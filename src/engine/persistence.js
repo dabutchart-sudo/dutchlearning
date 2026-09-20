@@ -33,7 +33,7 @@ export function migrateLegacy(old,content,now=new Date()){
 }
 function parseStored(raw,content){return raw?validateState(JSON.parse(raw),content):null;}
 function restoreCountFromAttempts(state){
- const attemptsToday=state.attempts.filter(a=>a.date===state.daily.date).length;
+ const attemptsToday=state.attempts.filter(a=>a.date===state.daily.date&&a.phase!=='extra').length;
  if(attemptsToday>state.daily.count)state.daily.count=Math.min(20,attemptsToday);
  return state;
 }

@@ -4,7 +4,7 @@ export const tips={spelling:'The sentence pattern is right. Compare the letters 
 const structural=new Set('ik jij hij zij wij jullie u de het een geen niet mijn jouw zijn haar ons onze jullie ben bent is heb hebt heeft wil wilt willen kan kunt kunnen moet moeten'.split(' '));
 function alignAliases(got,expected){return got.map((w,i)=>{const e=expected[i];if(w==='we'&&e==='wij'||w==='ze'&&e==='zij'||w==='je'&&['jij','jouw'].includes(e))return e;return w})}
 export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
- if(q.phase!=='practice'&&q.phase!=='maintenance'&&assisted)throw Error('Proof cannot use assistance');
+ if(q.phase!=='practice'&&q.phase!=='maintenance'&&q.phase!=='extra'&&assisted)throw Error('Proof cannot use assistance');
  // A gap accepts its missing word or the complete sentence. Score all supplied
  // surrounding words, but never turn a scaffolded gap into independent production.
  if(q.kind==='gap'&&tokens(raw).length>1){
