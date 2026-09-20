@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.132 shows today’s completed Learning session on Course as All practice, including a one-day chart. V5.1.131 single-flip remains included.
+- Active production source: `origin/main`. Zin V5.1.133 pulls saved `trainer_attempts` into local Learning history so Course can show the session already stored in Supabase. V5.1.132 All-practice Course display and V5.1.131 single-flip remain included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm V5.1.132: Course shows today’s Learning answers under All practice, including listening. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm V5.1.133: after a signed-in production load or Sync now, Course shows the Learning answers already saved in `trainer_attempts`. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -244,3 +244,7 @@ Owner report: V5.1.130 sizes were right, but every card flipped to English then 
 ## V5.1.132 Course shows today’s Learning — 2026-09-20
 
 Owner report: today’s completed Learning session was still not populated on Course. The chart waited for two study days and defaulted to typed-only “On my own”, so a listening/guided day looked empty. V5.1.132 defaults to All practice and plots a point from the first study day. Cache identifier: `dutch-v5.1.132-20260920`. Confirm the header shows V5.1.132 after a fresh production load. Learner history was not rewritten. If Today still shows 0 / 20, say so — that would be a save/sync issue rather than a Course display issue.
+
+## V5.1.133 pull saved Learning attempts — 2026-09-20
+
+Owner report: Course still had no training data after V5.1.132, while the same answers were visible in Supabase. Sync uploaded `trainer_attempts` but never read them back; Course only plots local `state.attempts`. V5.1.133 downloads those rows and adds any missing attempt ids into the local Learning blob. Empty local still cannot overwrite a populated `trainer_state`. Schema, authentication and Flashcards are unchanged. Cache identifier: `dutch-v5.1.133-20260920`. Confirm the header shows V5.1.133 after a fresh production load, then open Course (or tap Sync now in Settings). Learner history was not rewritten.

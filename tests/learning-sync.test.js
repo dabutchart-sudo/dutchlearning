@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {freshState} from '../src/engine/learner.js';
-import {applyLearningSync,isPopulatedLearningState} from '../src/engine/learning-sync.js';
+import {applyLearningSync,isPopulatedLearningState,mapTrainerAttempt,mergeRemoteAttempts} from '../src/engine/learning-sync.js';
 
 function contentFixture(){
  const concept={id:'A1.TEST',level:'A1',title:'Test concept',rule:'A simple rule.',example:'Ik werk.',translation:'I work.',exampleId:'p1',prerequisites:[],minPractice:40};
@@ -107,9 +107,22 @@ test('equal populated revisions only push attempts',()=>{
  assert.equal(result.pushAttempts,true);
 });
 
+test('remote trainer_attempts rows are mapped and merged into local Learning history',()=>{
+ const local=populated(8);
+ const row={id:'22222222-2222-2222-2222-222222222222',day:'2026-09-20',attempted_at:'2026-09-20T16:00:00.000Z',concept_id:'A1.TEST',exercise_type:'listening',direction:'nl-en',phase:'practice',source_id:'p1',answer:'I work.',correct_answer:'I work.',grammar_correct:true,spelling_correct:null,used_help:false};
+ assert.deepEqual(mapTrainerAttempt(row),{id:row.id,date:'2026-09-20',occurredAt:row.attempted_at,concept:'A1.TEST',kind:'listening',direction:'nl-en',phase:'practice',sourceId:'p1',answer:'I work.',expected:'I work.',grammar:true,spelling:null,assisted:false});
+ const merged=mergeRemoteAttempts(local,[row,{id:local.attempts[0].id,day:'2026-09-10'}]);
+ assert.equal(merged.added,1);
+ assert.equal(merged.state.attempts.length,2);
+ assert.equal(merged.state.attempts.at(-1).kind,'listening');
+ assert.equal(mergeRemoteAttempts(null,[row]).added,0);
+});
+
 test('v51 uses the Learning sync safety policy and no longer returns before a download',()=>{
  const source=readFileSync(new URL('../src/ui/v51.js',import.meta.url),'utf8');
  assert.match(source,/applyLearningSync/);
+ assert.match(source,/mergeRemoteAttempts/);
+ assert.match(source,/from\('trainer_attempts'\)\.select\(/);
  assert.doesNotMatch(source,/const local=localState\(\);if\(!local\)return/);
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
  assert.match(sw,/src\/engine\/learning-sync\.js/);

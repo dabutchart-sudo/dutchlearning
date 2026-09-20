@@ -31,6 +31,43 @@ export function decideLearningSync({user,local,remote}={}){
  return {type:'push-attempts',state:local};
 }
 
+export function mapTrainerAttempt(row){
+ if(!row||!row.id)return null;
+ const date=/^\d{4}-\d{2}-\d{2}$/.test(row.day||'')?row.day:String(row.attempted_at||'').slice(0,10);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;
+ return {
+  id:row.id,
+  date,
+  occurredAt:row.attempted_at||null,
+  concept:row.concept_id||row.concept||null,
+  kind:row.exercise_type||row.kind||null,
+  direction:row.direction||null,
+  phase:row.phase||null,
+  sourceId:row.source_id||row.sourceId||null,
+  answer:row.answer??'',
+  expected:row.correct_answer??row.expected??'',
+  grammar:row.grammar_correct==null?null:!!row.grammar_correct,
+  spelling:row.spelling_correct==null?null:!!row.spelling_correct,
+  assisted:!!row.used_help
+ };
+}
+
+export function mergeRemoteAttempts(local,rows=[]){
+ if(!local||typeof local!=='object'||local.schemaVersion!==5)return {state:local,added:0};
+ const base=local;
+ const attempts=[...(Array.isArray(base.attempts)?base.attempts:[])];
+ const seen=new Set(attempts.map(a=>a&&a.id).filter(Boolean));
+ let added=0;
+ for(const row of rows){
+  const attempt=mapTrainerAttempt(row);
+  if(!attempt||seen.has(attempt.id))continue;
+  attempts.push(attempt);
+  seen.add(attempt.id);
+  added++;
+ }
+ return {state:{...base,attempts},added};
+}
+
 export function applyLearningSync({user,local,remote,content}={}){
  const decision=decideLearningSync({user,local,remote});
  if(decision.type==='download'){
