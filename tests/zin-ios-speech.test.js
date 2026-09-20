@@ -17,7 +17,9 @@ test('the first Listen does not cancel, so iOS can start audio in the same tap',
 
 test('a later Listen waits after cancel so iOS does not drop the new utterance',async()=>{let cancelled=0;const spoken=[];mockSynth(spoken,{speaking:true,cancel(){cancelled++;this.speaking=false;}});const speech=await import(`${speechUrl.href}?later=${Date.now()}`);assert.equal(speech.speak('Dag'),true);await nextTurn();assert.equal(cancelled,1);assert.equal(spoken.length,0);await new Promise(resolve=>setTimeout(resolve,80));assert.equal(spoken.length,1);assert.equal(spoken[0].text,'Dag');delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;});
 
-test('production Listen keeps device voices instead of a missing /listen/tts path',async()=>{const played=[];class FakeAudio{constructor(){this.src='';this.volume=1;this.muted=false;this.playsInline=false;this.preload='';}setAttribute(){}pause(){}play(){played.push(this.src);return Promise.resolve();}}globalThis.Audio=FakeAudio;globalThis.location={hostname:'dabutchart-sudo.github.io'};const spoken=[];mockSynth(spoken);const speech=await import(`${speechUrl.href}?prod=${Date.now()}`);assert.equal(speech.canUseServerListen(),false);assert.equal(speech.speak('Ik drink koffie.'),true);assert.equal(played.length,0);assert.equal(spoken.length,1);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.location;});
+test('production Listen starts same-origin OpenAI audio in the same tap',async()=>{const played=[];class FakeAudio{constructor(){this.src='';this.volume=1;this.muted=false;this.playsInline=false;this.preload='';}setAttribute(){}pause(){}play(){played.push(this.src);return Promise.resolve();}}globalThis.Audio=FakeAudio;globalThis.location={hostname:'dabutchart-sudo.github.io',href:'https://dabutchart-sudo.github.io/dutchlearning/'};const spoken=[];mockSynth(spoken);const speech=await import(`${speechUrl.href}?prod=${Date.now()}`);assert.equal(speech.canUseServerListen(),true);assert.equal(speech.speak('Ik drink koffie.'),true);assert.match(played[0]||'',/\/dutchlearning\/listen\/tts\?text=/);assert.match(decodeURIComponent(played[0]||''),/Ik drink koffie/);assert.equal(spoken.length,0);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.location;});
+
+test('device Listen ignores canceled speech events so iPhone does not show a false error',async()=>{const errors=[];const spoken=[];mockSynth(spoken);const speech=await import(`${speechUrl.href}?canceled=${Date.now()}`);speech.speak('Hallo',message=>errors.push(message));await nextTurn();spoken[0].onerror({error:'canceled'});assert.deepEqual(errors,[]);spoken[0].onerror({error:'synthesis-failed'});assert.match(errors[0]||'',/speech is enabled/);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;});
 
 test('LAN Listen starts OpenAI audio in the same tap',async()=>{const played=[];class FakeAudio{constructor(){this.muted=false;this.src='';this.playsInline=false;this.volume=1;this.preload='';}setAttribute(){}pause(){}play(){played.push(this.src);return Promise.resolve();}}globalThis.Audio=FakeAudio;globalThis.location={hostname:'192.168.0.41'};const spoken=[];mockSynth(spoken);const speech=await import(`${speechUrl.href}?lan=${Date.now()}`);assert.equal(speech.canUseServerListen(),true);assert.match(speech.listenAudioUrl('Ik drink koffie.'),/\/listen\/tts\?text=/);assert.equal(speech.speak('Ik drink koffie.'),true);assert.match(played[0]||'',/\/listen\/tts\?text=/);assert.match(decodeURIComponent(played[0]||''),/Ik drink koffie/);assert.equal(spoken.length,0);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.location;});
 
@@ -37,4 +39,18 @@ test('the LAN development server keeps the OpenAI key off the phone and disables
  assert.match(app,/is-development/);
  assert.match(app,/serviceWorker\.getRegistrations/);
  assert.doesNotMatch(app,/sk-|Authorization|Bearer /);
+});
+
+const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
+const listenFn=readFileSync(new URL('../supabase/functions/listen-tts/index.ts',import.meta.url),'utf8');
+const listenConfig=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
+test('production service worker proxies Listen to the OpenAI function without caching it',()=>{
+ assert.match(sw,/pathname\.endsWith\('\/listen\/tts'\)/);
+ assert.match(sw,/functions\/v1\/listen-tts/);
+ assert.match(sw,/flashcards\/constants\.js/);
+ assert.match(sw,/Cache-Control':'no-store/);
+ assert.doesNotMatch(sw,/OPENAI_API_KEY|sk-/);
+ assert.match(listenFn,/api.openai.com\/v1\/audio\/speech/);
+ assert.match(listenFn,/tts-1/);
+ assert.match(listenConfig,/verify_jwt = false/);
 });
