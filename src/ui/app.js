@@ -1,5 +1,5 @@
 import {registerPacks} from '../content/registry.js';
-import {freshState,ensureDay,activeConcept,unlocked,phase,teachConcept,prepareQuestion,markWordsTaught,startProof,proofEligibility,submit,skipSpeaking,useHelp,statistics} from '../engine/learner.js';
+import {freshState,ensureDay,activeConcept,unlocked,phase,teachConcept,prepareQuestion,markWordsTaught,startProof,dailyProofOffer,releaseUnscoredPractice,submit,skipSpeaking,useHelp,statistics} from '../engine/learner.js';
 import {createRepository,STORAGE_KEY} from '../engine/persistence.js';
 import {dayKey,addDays,pct} from '../engine/util.js';
 import {labels} from '../engine/scoring.js';
@@ -9,7 +9,7 @@ import {bindPeek} from './peek.js';
 import {dutchVoice,speak} from './speech.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let content,state,repo,view='today',dev=false,selectedConcept=null,lastFeedback=null;
+let content,state,repo,view='today',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
 let disposePeek=()=>{};
 let coursePane='progress',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
@@ -33,16 +33,19 @@ function render(){
  if(view==='today')renderToday();else if(view==='curriculum')renderCourse();else if(view==='mistakes')renderMistakes();else if(view==='settings')renderSettings();
  if(dev)el.insertAdjacentHTML('afterbegin',`<div class="debug-banner">Developer sandbox · ${dayKey(now())} · Real learning progress is separate.</div>`);
 }
-async function show(v){view=v;selectedConcept=null;lastFeedback=null;await transaction(s=>ensureDay(s,now()));render();}
+async function show(v){view=v;selectedConcept=null;lastFeedback=null;skipProofGate=false;await transaction(s=>ensureDay(s,now()));render();}
 function renderToday(){
  const id=activeConcept(state,content),c=content.conceptById[id],p=state.progress[id],date=dayKey(now()),done=state.daily.count>=20;
- el.innerHTML=`<section class="stack"><div class="home-grid"><article class="card summary"><div class="eyebrow">Today's practice</div><div class="big">${state.daily.count} <span class="muted">/ 20</span></div><p class="muted">${done?'Today’s work is complete. Mistakes shape future practice.':'A finite daily session. Teaching is extra; scored questions stop at 20.'}</p><div class="progress-track" role="progressbar" aria-label="Daily questions" aria-valuenow="${state.daily.count}" aria-valuemin="0" aria-valuemax="20"><div class="progress-fill" style="width:${state.daily.count*5}%"></div></div>${button('start',state.proof?'Resume '+state.proof.type+' test':state.daily.count?'Continue today’s practice':'Start today’s practice',true,done)}</article><article class="card concept"><div class="row"><span class="eyebrow">${esc(c.level)} · ${esc(id)}</span><span class="status">${status(id)}</span></div><h2>${esc(c.title)}</h2><p class="muted">${p.practiceAttempts} practice attempts · ${p.independent} independent answers</p><div class="phase-steps">Teach → Recognise → Construct → Produce → Repeat → <strong>Prove</strong></div>${proofAction(id)}${button('lesson','Read the lesson',false)}${button('course-progress','See your learning progress',false)}${metrics(state.attempts.filter(x=>x.concept===id))}</article></div>${proofReport()}${done?`<article class="card evidence-card"><h2>Today’s evidence</h2>${metrics(state.attempts.filter(x=>x.date===date))}<p class="muted">You can read lessons and review mistakes at any time.</p></article>`:''}</section>`;
- on('course-progress',()=>show('curriculum'));on('start',()=>openQuestion());on('lesson',()=>renderLesson(id,false));bindProof(id);
+ const offer=dailyProofOffer(state,content,now());
+ const startLabel=state.proof?'Resume '+state.proof.type+' test':state.daily.count?'Continue today’s practice':'Start today’s practice';
+ const summaryStart=offer?.canStartToday?`${button('proof',offer.type==='mastery'?'Start Mastery Test':'Start Retention Test')}<p class="small muted">This uses today’s ${offer.needed} questions. Ordinary practice now postpones the test until tomorrow.</p>${button('start','Practice instead',false)}`:button('start',startLabel,true,done);
+ el.innerHTML=`<section class="stack"><div class="home-grid"><article class="card summary"><div class="eyebrow">${offer?.canStartToday?(offer.type==='mastery'?'Mastery ready today':'Retention ready today'):"Today's practice"}</div><div class="big">${state.daily.count} <span class="muted">/ 20</span></div><p class="muted">${offer?.canStartToday?`${esc(offer.id)} can use this day’s session. Take the test before practice if you want it today.` : done?'Today’s work is complete. Mistakes shape future practice.':'A finite daily session. Teaching is extra; scored questions stop at 20.'}</p><div class="progress-track" role="progressbar" aria-label="Daily questions" aria-valuenow="${state.daily.count}" aria-valuemin="0" aria-valuemax="20"><div class="progress-fill" style="width:${state.daily.count*5}%"></div></div>${summaryStart}</article><article class="card concept"><div class="row"><span class="eyebrow">${esc(c.level)} · ${esc(id)}</span><span class="status">${status(id)}</span></div><h2>${esc(c.title)}</h2><p class="muted">${p.practiceAttempts} practice attempts · ${p.independent} independent answers</p><div class="phase-steps">Teach → Recognise → Construct → Produce → Repeat → <strong>Prove</strong></div>${proofAction(id,offer)}${button('lesson','Read the lesson',false)}${button('course-progress','See your learning progress',false)}${metrics(state.attempts.filter(x=>x.concept===id))}</article></div>${proofReport()}${done?`<article class="card evidence-card"><h2>Today’s evidence</h2>${metrics(state.attempts.filter(x=>x.date===date))}<p class="muted">You can read lessons and review mistakes at any time.</p></article>`:''}</section>`;
+ on('course-progress',()=>show('curriculum'));on('start',()=>{skipProofGate=true;openQuestion()});on('lesson',()=>renderLesson(id,false));bindProof(id);
 }
-function proofAction(id){const p=state.progress[id],ph=phase(p,dayKey(now()));
+function proofAction(id,offer=dailyProofOffer(state,content,now())){const p=state.progress[id],ph=phase(p,dayKey(now()));
  if(ph==='proof-ready'||ph==='retention-ready'){
- const type=ph==='proof-ready'?'mastery':'retention',reason=proofEligibility(state,content,id,type,now());
- return `<div class="rule"><strong>${type==='mastery'?'Ready for mastery proof':'Ready to check retention'}</strong><p class="small">${type==='mastery'?'10 unseen Dutch → English and 10 unseen typed English → Dutch.':'5 unseen Dutch → English and 5 unseen typed English → Dutch.'} 100% grammar in each direction. No word help.</p>${button('proof',type==='mastery'?'Start Mastery Test':'Start Retention Test',true,!!reason)}${reason?`<p class="small muted">${esc(reason)}</p>`:''}</div>`;
+ const type=ph==='proof-ready'?'mastery':'retention',reason=offer&&offer.id===id?offer.reason:null,hideButton=offer?.canStartToday&&offer.id===id;
+ return `<div class="rule"><strong>${type==='mastery'?'Ready for mastery proof':'Ready to check retention'}</strong><p class="small">${type==='mastery'?'10 unseen Dutch → English and 10 unseen typed English → Dutch.':'5 unseen Dutch → English and 5 unseen typed English → Dutch.'} 100% grammar in each direction. No word help. The test uses this day’s questions, so start it before ordinary practice if you want it today.</p>${hideButton?'':button('proof',type==='mastery'?'Start Mastery Test':'Start Retention Test',true,!!reason)}${!hideButton&&reason?`<p class="small muted">${esc(reason)}</p>`:''}</div>`;
  }
  if(ph==='retention-wait')return `<div class="rule"><strong>Retention test opens ${esc(p.retentionDue)}</strong><p class="small">Three days after mastery. Until then, practise and revisit vocabulary within your daily 20.</p></div>`;
  return `<p class="muted small">${p.masteredAt?'Retained and in maintenance.':`Proof opens after 40 practice attempts. Independent production is tracked separately.${p.remedial?' '+p.remedial+' successful remedial questions remain.':''}`}</p>`;
@@ -61,11 +64,23 @@ async function proofPreparation(id){
  const words=vocabularyFor(id).filter(w=>!state.words[w.id]?.taughtAt);
  if(words.length){
   el.innerHTML=`<section class="session"><article class="card evidence-card"><span class="direction">Vocabulary reminder · not scored</span><h2>Before your ${type} test</h2><p>Here is the remaining vocabulary for this concept. The test uses unseen sentences, with no assistance once it starts.</p>${vocabularyHTML(words)}${button('begin-proof','Ready — start the test')}<div class="spaced">${button('cancel-proof','Back to today',false)}</div></article></section>`;
-  on('begin-proof',async()=>{await transaction(s=>{for(const w of words)markWordsTaught(s,{vocabulary:[w]},dayKey(now()));startProof(s,content,id,type,now())});await openQuestion()});on('cancel-proof',()=>show('today'));
- }else{await transaction(s=>startProof(s,content,id,type,now()));await openQuestion();}
+  on('begin-proof',async()=>{await transaction(s=>{releaseUnscoredPractice(s);for(const w of words)markWordsTaught(s,{vocabulary:[w]},dayKey(now()));startProof(s,content,id,type,now())});await openQuestion()});on('cancel-proof',()=>show('today'));
+ }else{await transaction(s=>{releaseUnscoredPractice(s);startProof(s,content,id,type,now())});await openQuestion();}
+}
+function renderProofGate(offer){
+ sessionChrome(true);
+ const title=offer.type==='mastery'?'Mastery Test':'Retention Test';
+ el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">${esc(offer.id)} · ready today</span><h2>Take the ${title} before practice</h2><p>This test uses ${offer.needed} of today’s 20 questions. Practising first uses the day, and the test then waits until tomorrow.</p><div class="actions">${button('gate-proof','Start '+title)}${button('gate-practice','Practice anyway',false)}</div></article></section>`;
+ on('gate-proof',()=>proofPreparation(offer.id));
+ on('gate-practice',()=>{skipProofGate=true;openQuestion()});
 }
 async function openQuestion(){
- lastFeedback=null;const q=await transaction(s=>prepareQuestion(s,content,now(),s.settings.listening&&!!dutchVoice(),!!s.settings.speaking));
+ lastFeedback=null;
+ if(!state.proof&&!skipProofGate){
+  const offer=dailyProofOffer(state,content,now());
+  if(offer?.canStartToday){renderProofGate(offer);return;}
+ }
+ const q=await transaction(s=>prepareQuestion(s,content,now(),s.settings.listening&&!!dutchVoice(),!!s.settings.speaking));
  if(!q){view='today';render();return;}if(q.teachingConcept){renderLesson(q.teachingConcept,true);return;}
  const item=content.byId[q.sourceId];const unknown=item.vocabulary.filter(w=>!state.words[w.id]?.taughtAt||(state.words[w.id].weakness>=3&&state.words[w.id].taughtAt<dayKey(now())));
  if(['practice','maintenance'].includes(q.phase)&&unknown.length){
@@ -78,7 +93,9 @@ function renderQuestion(q){
  disposePeek();sessionChrome(true);
  const item=content.byId[q.sourceId];let selection=[],raw='',locked=false;
  const titles={choice:'Choose the English meaning',wordbank:'Build the Dutch sentence',typed:'Write the Dutch sentence',gap:'Fill the missing form',form:'Choose the correct form','correct-sentence':'Choose the matching Dutch sentence',correction:'Correct the Dutch sentence',listening:'Listen and choose the meaning',speaking:'Say the Dutch sentence'};
- el.innerHTML=`<section class="session"><div class="session-head"><strong>Question ${state.daily.count+1} of 20 today</strong><span class="pill">${esc(q.concept)} · ${esc(q.phase)}</span></div>${state.proof?`<p class="muted small">Test: ${state.proof.index+1} / ${state.proof.questions.length}. Each direction must reach 100% grammar.</p>`:''}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article><button id="pause" class="text-link">Pause — progress is saved</button></section>`;
+ const offer=state.proof?null:dailyProofOffer(state,content,now());
+ const proofNote=offer?.canStartToday?`<p class="muted small">The ${esc(offer.id)} ${offer.type} test is ready and needs ${offer.needed} free questions today. Take it before you finish this practice question, or it waits until tomorrow.</p>`:offer?`<p class="muted small">The ${esc(offer.id)} ${offer.type} test is ready. It needs ${offer.needed} free questions, so it opens tomorrow.</p>`:'';
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Question ${state.daily.count+1} of 20 today</strong><span class="pill">${esc(q.concept)} · ${esc(q.phase)}</span></div>${state.proof?`<p class="muted small">Test: ${state.proof.index+1} / ${state.proof.questions.length}. Each direction must reach 100% grammar.</p>`:proofNote}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article><button id="pause" class="text-link">Pause — progress is saved</button></section>`;
  const area=document.getElementById('answer-area');
  if(q.options){area.innerHTML=`<div class="answers">${q.options.map((o,i)=>`<button class="choice" data-choice="${i}" aria-pressed="false">${esc(o)}</button>`).join('')}</div>`;area.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{raw=q.options[Number(b.dataset.choice)];area.querySelectorAll('button').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b))})});}
  else if(q.kind==='speaking'){
