@@ -1,6 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {registerPacks} from '../content/registry.js';
-import {applyLearningSync} from '../engine/learning-sync.js';
+import {applyLearningSync,mergeRemoteAttempts} from '../engine/learning-sync.js';
 
 const SUPABASE_URL='https://dntitlrtvkgisxwqjxch.supabase.co';
 const SUPABASE_KEY='sb_publishable_0QmYB4lwmjfJLkY3pH5dCQ_EVKC47Lb';
@@ -56,6 +56,18 @@ async function pushAttempts(user,state){
  const {error}=await supabase.from('trainer_attempts').upsert(rows,{onConflict:'id',ignoreDuplicates:true});if(error)throw error;
 }
 
+async function pullAttempts(user){
+ const rows=[],size=1000;
+ for(let from=0;;from+=size){
+  const {data,error}=await supabase.from('trainer_attempts').select('id,attempted_at,day,concept_id,direction,exercise_type,phase,source_id,answer,correct_answer,grammar_correct,spelling_correct,used_help').eq('user_id',user.id).order('attempted_at',{ascending:true}).range(from,from+size-1);
+  if(error)throw error;
+  const page=data||[];
+  rows.push(...page);
+  if(page.length<size)break;
+ }
+ return rows;
+}
+
 async function syncNow(manual=false){
  if(syncing)return;syncing=true;
  try{
@@ -66,13 +78,21 @@ async function syncNow(manual=false){
    let content=null;
    try{content=await course();}catch(e){console.warn('Trainer sync content:',e);}
    const result=applyLearningSync({user,local,remote,content});
-   if(result.action==='download'){
-     localStorage.setItem(STORAGE_KEY,JSON.stringify(result.state));setStatus('Newer progress downloaded — reloading…');setTimeout(()=>location.reload(),250);return;
+   let next=result.action==='download'?result.state:local;
+   if(result.action==='download'||result.action==='upload'||result.pushAttempts||result.action==='none'){
+    try{
+     const remoteAttempts=await pullAttempts(user);
+     const merged=mergeRemoteAttempts(next,remoteAttempts);
+     if(merged.added){next=merged.state;result.writeLocal=true;}
+    }catch(e){console.warn('Trainer attempt pull:',e);}
+   }
+   if(result.action==='download'||(result.writeLocal&&next)){
+     localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setStatus('Learning history updated — reloading…');setTimeout(()=>location.reload(),250);return;
    }
    if(result.action==='upload'){
-     const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,local);
+     const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:next||local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,next||local);
    }else if(result.pushAttempts){
-     await pushAttempts(user,local);
+     await pushAttempts(user,next||local);
    }else if(result.reason==='invalid-remote'||result.reason==='content-unavailable'){
      setStatus('Progress saved locally');
      if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Remote Learning state was not applied because it could not be validated.';}
