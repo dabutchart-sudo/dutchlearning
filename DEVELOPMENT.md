@@ -161,9 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.137 is live, hard-refresh until the header shows V5.1.137. Course should be home. The mirrored Flashcard English face is a known leftover from the current flip and is not part of this release.
+1. After V5.1.137 is live, hard-refresh until the header shows V5.1.137. Course should be home. Production is still V5.1.137 until the owner accepts the mirrored-face follow-up.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. A1.22–A1.26 remain planned. The mirrored English Flashcard face is a separate follow-up.
+3. A1.22–A1.26 remain planned. The mirrored English Flashcard face is prepared as V5.1.138 on `cursor/unmirror-english-face-cb31` (issue #62); do not publish until accepted.
 
 ## Learning sync safety — 2026-09-18
 
@@ -266,3 +266,7 @@ Owner report: the seven-item top menu was too cluttered. V5.1.136 keeps Today, F
 Owner-authorized production release. The Course path is the home screen. Today is no longer a destination. A header counter shows Learning `x / 20` and Flashcards ready/done, including during questions. The current topic starts the normal daily 20. A retained topic can offer a five-question extra batch that does not use the daily 20, change mastery, or write retries. Progress holds Evidence, Mistakes and Words. Flashcard Report stays on Flashcards. A1.21 place-and-movement content is included; A1.22–A1.26 remain planned. The four top-tab labels stay even, and Progress no longer stays highlighted after leaving. Cache identifier: `dutch-v5.1.137-20260920`. Confirm the header shows V5.1.137 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
 
 The mirrored Flashcard English face is unchanged from V5.1.136 and is not fixed in this release.
+
+## V5.1.138 un-mirror the English Flashcard face — 2026-09-20
+
+Prepared on `cursor/unmirror-english-face-cb31` for issue #62. After the rotateY flip settles, flattening still keeps the card at 180° so it does not spin back to Dutch. The Dutch face is then hidden, and the English face gets `scaleX(-1)` so the leftover parent `rotateY(180deg)` no longer reads backwards. Listen, Flag, Edit and Again / Hard / Good / Easy are unchanged. Cache identifier: `dutch-v5.1.138-20260920`. This is not production; do not publish until the owner accepts. Learner history, scheduling, Learning sync, authentication and schema are unchanged.
