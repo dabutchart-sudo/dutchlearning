@@ -21,15 +21,14 @@ test('review cards keep both faces and flip horizontally in place',()=>{
  assert.match(css,/\.flashcard-face\.flashcard-review-card\{position:absolute;inset:0/);
 });
 
-test('the answer face flattens before Again Hard Good Easy appear',()=>{
+test('flattening the answer does not animate the card back to Dutch',()=>{
  assert.match(preview,/function settleFlip\(/);
  assert.match(preview,/classList\.toggle\('is-flat',session\.flipped\)/);
  assert.match(preview,/if\(ratings\)ratings\.hidden=true/);
  assert.match(sandbox,/function settleSandboxFlip\(/);
- assert.match(css,/\.flashcard-flip-inner\.is-flat\{transform:none/);
- assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-front\{display:none/);
- assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{transform:none;position:absolute;inset:0/);
- assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{[^}]*height:auto/);
+ assert.match(css,/\.flashcard-flip-inner\.is-flipped\.is-flat\{transform:rotateY\(180deg\)\}/);
+ assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat\{[^}]*transform:none/);
+ assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{[^}]*transform:none/);
  assert.doesNotMatch(preview,/flashcard-flip-hit/);
  assert.doesNotMatch(preview,/flashcard-stage/);
  assert.doesNotMatch(css,/\.flashcard-flip-hit\{/);
