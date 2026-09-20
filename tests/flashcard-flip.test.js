@@ -21,6 +21,17 @@ test('review cards keep both faces and flip horizontally in place',()=>{
  assert.match(css,/\.flashcard-face\.flashcard-review-card\{position:absolute;inset:0/);
 });
 
+test('flipped cards do not steal taps meant for Again Hard Good Easy',()=>{
+ assert.match(preview,/function ratingUnderCard\(/);
+ assert.match(preview,/elementFromPoint/);
+ assert.match(preview,/under\.click\(\)/);
+ assert.match(preview,/\[data-rating\],\[data-sandbox-rating\]/);
+ assert.match(sandbox,/function ratingUnderCard\(/);
+ assert.match(css,/\.flashcard-flip-inner\{[^}]*pointer-events:none/);
+ assert.match(css,/\.flashcard-face\{[^}]*pointer-events:auto/);
+ assert.match(css,/\.flashcard-rating-grid\{[^}]*z-index:2/);
+});
+
 test('Listen, Flag and Edit sit on each face so they rotate with the card',()=>{
  assert.match(preview,/function cardToolRow\(/);
  assert.match(preview,/cardToolRow\(flagged\)/);

@@ -1,6 +1,6 @@
 # Listen and speak — isolated test area
 
-Production as Zin V5.1.123. Linear: DAB-146. Owner direction 2026-09-20.
+Production as Zin V5.1.124. Linear: DAB-146. Owner direction 2026-09-20. GitHub Pages Listen uses device voices. OpenAI MP3 Listen is the LAN development server only until a speech Edge Function exists.
 
 ## Aim for today
 
