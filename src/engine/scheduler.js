@@ -14,11 +14,11 @@ export function practiceContextWeight(item){
  if(count<=2)return -6;
  return 0;
 }
-export function practiceKind(p,canListen=false){
+export function practiceKind(p,canListen=false,canSpeak=false){
  if(p.recognised<4)return p.practiceAttempts%2?'correct-sentence':'choice';
  if(p.constructed<4)return ['wordbank','gap','form'][p.practiceAttempts%3];
  if(p.weakness>=4)return ['wordbank','gap','typed'][p.practiceAttempts%3];
- const cycle=['typed','typed','wordbank','typed','correction','form','typed','gap','correct-sentence',canListen?'listening':'choice'];
+ const cycle=['typed',canSpeak?'speaking':'typed','wordbank','typed','correction','form','typed','gap','correct-sentence',canListen?'listening':'choice'];
  return cycle[p.practiceAttempts%cycle.length];
 }
 export function spreadPracticePool(pool,state,{keepVerb=false}={}){
@@ -38,7 +38,7 @@ export function spreadPracticePool(pool,state,{keepVerb=false}={}){
  }
  return pool;
 }
-export function selectPractice(state,content,current,date,canListen){
+export function selectPractice(state,content,current,date,canListen,canSpeak=false){
  const allMastered=content.concepts.every(c=>state.progress[c.id].masteredAt);
  const maintenance=content.concepts.filter(c=>state.progress[c.id].masteredAt&&(allMastered||state.progress[c.id].nextMaintenance<=date));
  let concept=current;let phase='practice';
@@ -48,7 +48,7 @@ export function selectPractice(state,content,current,date,canListen){
  let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice'),focusedRetry=false;
  if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length){pool=focused;focusedRetry=true;}}
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
- let kind=phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen);
+ let kind=phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen,canSpeak);
  const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
  if(eligible.length)pool=eligible;
  else {

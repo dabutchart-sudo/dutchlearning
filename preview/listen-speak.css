@@ -1,0 +1,7 @@
+.preview-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 20px;background:#173a59;color:white;font-size:12px}
+.preview-bar span{display:block;opacity:.85;font-size:11px;margin-top:3px}
+.preview-status{margin:0;font-size:12px;opacity:.9}
+.preview-skip{display:flex;align-items:center;gap:8px;margin:0;font-size:12px;white-space:nowrap}
+.record-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.transcript{min-height:56px;padding:14px;border-radius:14px;background:rgba(118,118,128,.08);line-height:1.45}
+@media(max-width:520px){.preview-bar{flex-direction:column;align-items:flex-start;padding:10px 14px}}

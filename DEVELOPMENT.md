@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.122 adds a horizontal Flashcard flip; V5.1.121 Course/Syllabus remains included.
+- Active production source: `origin/main`. Zin V5.1.123 adds optional listening and skippable speaking in practice. V5.1.122 Flashcard flip and V5.1.121 Course/Syllabus remain included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,9 +161,10 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Land DAB-90 / #41 so local and GitHub Pages Zin cannot be mistaken for each other.
-2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. Take the next Linear item only after the owner chooses it. A1 content milestones remain backlog.
+1. Publish the Flashcard rating-button hit-target fix after owner review. Production can still swallow Again/Hard/Good/Easy taps after several flips; the standalone Flashcards app remains the safety path until then.
+2. A production OpenAI speech Edge Function remains later work. Until then, spoken questions use on-device recognition where available and can always be skipped and typed.
+3. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
+4. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
 ## Learning sync safety — 2026-09-18
 
@@ -194,3 +195,17 @@ Owner-authorized production release. Tapping a Flashcard now flips it horizontal
 ## DAB-90 study-origin distinction — 2026-09-19
 
 Local/`192.168` copies now show an amber **Development** banner and header label. GitHub Pages keeps the normal production chrome. Browser storage, scheduling, Supabase, authentication and learner data are unchanged. This is not yet a production version bump; publish only after owner review.
+
+## Listen and speak test area — 2026-09-20
+
+Owner direction: listening and speaking are high development priority (Linear DAB-146). OpenAI supplies listen/speak audio through the existing server-side key, never a client key.
+
+`feature/listen-speak-test-area` first added an isolated local preview. After owner acceptance, the same branch wired optional listening and speaking kinds onto existing practice items. Spoken questions can be skipped and typed. This is now production as Zin V5.1.123. Proofs, daily 20, new-card cap, Flashcards, Learning sync, authentication and schema stay unchanged. See `docs/listen-speak-preview.md`. Open:
+
+http://127.0.0.1:19086/preview/listen-speak.html
+
+after `python3 preview/serve-listen-speak.py` with `OPENAI_API_KEY` in the process environment. The preview can skip speaking or type instead. A production speech Edge Function is a later increment.
+
+## V5.1.123 listen and speak — 2026-09-20
+
+Owner-authorized production release after the isolated test area and skip-to-type were accepted. Practice on an existing topic can include optional listening and a spoken sentence. Existing learner history defaults speaking off. A spoken question can be skipped and typed without adding work or changing the daily 20. Mastery and retention proofs stay written. Cache identifier: `dutch-v5.1.123-20260920`. Confirm the header shows V5.1.123 after a fresh production load. No OpenAI speech Edge Function is deployed; production recording uses on-device recognition where available.

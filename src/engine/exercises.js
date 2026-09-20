@@ -1,5 +1,5 @@
 import {tokens,normalize,shuffle,uid,sentenceCase,displayTokens} from './util.js';
-export const kinds=['choice','wordbank','gap','correct-sentence','correction','form','listening','typed'];
+export const kinds=['choice','wordbank','gap','correct-sentence','correction','form','listening','speaking','typed'];
 export function wordBank(text,distractors,seed){const needed=displayTokens(sentenceCase(text));const other=[...new Set(distractors.flatMap(tokens))].filter(w=>!needed.map(normalize).includes(w));return shuffle([...needed,...shuffle(other,seed).slice(0,3)].map((text,i)=>({id:'tile-'+i,text})),seed)}
 export function chooseTile(selection,tileId,bank){if(!bank.some(t=>t.id===tileId)||selection.includes(tileId))return selection;return [...selection,tileId]}
 export const removeTile=(selection,tileId)=>selection.filter(x=>x!==tileId);

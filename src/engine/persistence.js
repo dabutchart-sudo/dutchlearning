@@ -7,6 +7,8 @@ export function validateState(s,content){
  if(s.pending&&!content.byId[s.pending.sourceId])throw Error('Backup needs a content pack that is not installed.');
  if(s.proof&&(!Array.isArray(s.proof.questions)||s.proof.questions.some(q=>!content.byId[q.sourceId])))throw Error('Invalid test in backup.');
  if(!s.words||!Array.isArray(s.retries)||!s.settings||!s.learnerId||!s.deviceId)throw Error('Backup is incomplete.');
+ s.settings.listening=!!s.settings.listening;
+ s.settings.speaking=!!s.settings.speaking;
  return s;
 }
 export function resetLearningState(current,content,now=new Date()){

@@ -37,13 +37,16 @@ When asked only to establish guardrails or documentation, do not change applicat
 - The configured maximum-new-cards value is a hard upper limit. The current required value is 5 per day.
 - Workload logic may reduce new-card introduction but must never silently increase it beyond the configured limit.
 - Completing the generated normal daily session must end normal learning for that study day. Unused new-card capacity must not be replenished later that day.
-- Optional Review Ahead behaviour must remain distinct from the normal completed daily session.
+- Optional Review Ahead behaviour, and optional open “keep talking” conversation, must remain distinct from the normal completed daily session.
+- When conversation practice exists, a short finite listening beat and speaking beat belong in the generated normal daily session. They must not become unbounded chat, refill unused new-card capacity, or replace mastery/retention proofs.
 - Flashcards remain a defined, satisfying batch-based learning activity with meaningful retention reporting.
 - English-to-Dutch production should be introduced progressively and supportively.
 - Repeated failure should lead to useful scaffolding or reduced immediate repetition, not an indefinite loop on the same spelling/item.
 - Answer-reveal assistance should promote recall; hold-to-show is preferred where revealing a word could otherwise encourage copying.
 - Feedback should show sufficient phrase/sentence context to make the relevant language pattern clear.
-- Speaking and listening are priority learning capabilities; preserve working speech and audio paths when changing exercises or interface structure.
+- Speaking and listening are high-priority learning capabilities; preserve working speech and audio paths when changing exercises or interface structure.
+- Listening audio and speech transcription use the existing server-side OpenAI key only. Never put a provider API key in the browser or PWA. Do not implement OpenAI Realtime as the first conversation path.
+- Speaking questions must remain skippable: convert the pending spoken item to the same typed question. Do not drop the item, add extra work, or refill unused daily capacity. Existing learner history defaults speaking off.
 - The practice experience is one-screen, mobile-first, and iOS-like. Keep the primary Check Answer action pinned/easy to reach and avoid unnecessary scrolling during normal questions.
 - Mobile/PWA usability is a first-class requirement.
 - Do not add points, streak pressure, leagues, badges, rewards, or other gamification unless the owner explicitly changes the product direction.
