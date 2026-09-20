@@ -55,6 +55,7 @@ export function learningProgress(state,{today=dayKey(),days=30,cohort='independe
  }).sort((a,b)=>attemptDay(a).localeCompare(attemptDay(b))||String(a.occurredAt||'').localeCompare(String(b.occurredAt||'')));
  const start=days===null?(attemptDay(all[0]||{})||today):addDays(today,1-days);
  const inRange=all.filter(a=>attemptDay(a)>=start);
+ const todayAttempts=all.filter(a=>attemptDay(a)===today);
  const independent=inRange.filter(isIndependentAttempt);
  const supportedKinds=new Set(['gap','correction','wordbank','choice','form','correct-sentence','listening','speaking']);
  const supported=inRange.filter(a=>!isIndependentAttempt(a)&&(a.assisted===true||supportedKinds.has(a.kind)));
@@ -66,7 +67,7 @@ export function learningProgress(state,{today=dayKey(),days=30,cohort='independe
  const last=selected.slice(-20),previous=selected.slice(-40,-20);
  const latest=aggregate(last),prior=aggregate(previous);
  const comparable=last.length===20&&previous.length===20&&latest.grammar.total>=10&&prior.grammar.total>=10;
- return {today,start,cohort,concept,total:inRange.length,studyDays:new Set(inRange.map(attemptDay)).size,
+ return {today,start,cohort,concept,total:inRange.length,todayTotal:todayAttempts.length,todayIndependent:todayAttempts.filter(isIndependentAttempt).length,todaySupported:todayAttempts.filter(a=>!isIndependentAttempt(a)&&(a.assisted===true||supportedKinds.has(a.kind))).length,studyDays:new Set(inRange.map(attemptDay)).size,
   independent:independent.length,supported:supported.length,unclassified,assisted:inRange.filter(a=>a.assisted===true).length,
   selected:aggregate(selected),daily,latest,prior,comparison:comparable?{delta:latest.grammar.rate-prior.grammar.rate}:null,
   undated:(state.attempts||[]).filter(a=>a&&!attemptDay(a)).length};
