@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.126 production Listen fetches OpenAI audio in the same tap and plays a blob, because iPhone often skips the service worker for `<audio>`. V5.1.124 rating taps remain included.
+- Active production source: `origin/main`. Zin V5.1.127 keeps Again/Hard/Good/Easy tappable after many flips and makes production Listen reuse an unlocked audio element. V5.1.124–V5.1.126 Listen/rating work remains included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm production Listen on a fresh V5.1.126 load, especially iPhone Flashcards. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm a full Flashcard batch on V5.1.127: ratings stay tappable after 15+ cards, and Listen is reliable on iPhone. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -220,3 +220,7 @@ Production Listen was showing “check that speech is enabled” because GitHub 
 ## V5.1.126 production Listen blob playback — 2026-09-20
 
 Owner report: V5.1.125 still showed “Dutch audio could not play” after refresh. GitHub Pages has no `/listen/tts` file, iPhone often does not send `<audio>` requests through the service worker, and a URL without a trailing slash resolved Listen outside `/dutchlearning/`. V5.1.126 unlocks audio in the tap, POSTs to `listen-tts` from the page, and plays the returned MP3 blob. The OpenAI key stays on the server. Cache identifier: `dutch-v5.1.126-20260920`. Confirm the header shows V5.1.126 after a fresh production load.
+
+## V5.1.127 session ratings and Listen — 2026-09-20
+
+Owner report: after about 15 live cards, Again/Hard/Good/Easy stopped again, and production Listen only worked some of the time. iOS inflates the 3D card’s hit box over the rating row; the previous helper trusted that box and treated rating taps as flips. V5.1.127 always looks under the card with `elementFromPoint`, turns pointer events off on the flip shell, and keeps ratings above it. Listen now unlocks a dedicated silent element, caches recent MP3s, and retries playback once so a slow OpenAI response does not drop the tap. Cache identifier: `dutch-v5.1.127-20260920`. Confirm the header shows V5.1.127 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh.

@@ -1,6 +1,6 @@
 # Listen and speak — isolated test area
 
-Production as Zin V5.1.126. Linear: DAB-146. Owner direction 2026-09-20. Production Listen POSTs to the `listen-tts` Edge Function from the page and plays a blob. The LAN development server remains the local OpenAI path.
+Production as Zin V5.1.127. Linear: DAB-146. Owner direction 2026-09-20. Production Listen POSTs to the `listen-tts` Edge Function from the page and plays a blob. The LAN development server remains the local OpenAI path.
 
 ## Aim for today
 
