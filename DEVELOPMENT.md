@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.129 puts Listen / Flag / Edit back on the card, then flattens the answer face before Again / Hard / Good / Easy appear. V5.1.127 Listen reliability remains included. V5.1.128's detached-button overlay was withdrawn.
+- Active production source: `origin/main`. Zin V5.1.130 keeps Dutch and English flashcards the same height and shows today’s Learning answers on Course. V5.1.129 on-card Listen / ratings flatten remains included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm a full Flashcard batch on V5.1.129: Listen, Flag and Edit sit on the card, audio plays, and ratings stay tappable after 15+ cards. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm V5.1.130: Dutch and English flashcards are the same height, ratings and Listen still work, and Course shows today’s Learning answers. Spoken questions still use on-device recognition where available and can always be skipped and typed.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -232,3 +232,7 @@ Owner report: V5.1.127 Listen stayed consistent, but Again/Hard/Good/Easy still 
 ## V5.1.129 flatten the answer face — 2026-09-20
 
 Owner report: V5.1.128 detached Listen / Flag / Edit from the card, broke audio, and left the rating buttons unusable. That overlay is withdrawn. V5.1.129 restores the on-card controls and V5.1.127 Listen path. After the flip animation, the answer face becomes a normal flat card and only then do Again / Hard / Good / Easy appear, so the spinning layer cannot cover them. Cache identifier: `dutch-v5.1.129-20260920`. Confirm the header shows V5.1.129 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh. If GitHub Pages has not updated yet, finish remaining cards in the standalone Flashcards app.
+
+## V5.1.130 card height and today’s Learning — 2026-09-20
+
+Owner report: after V5.1.129 the Dutch face was slightly short and grew on flip, and today’s completed Learning session did not appear to be picked up. Flattening the answer no longer changes the card box, so both sides stay 330px. Course now shows an answers-today count and opens on supported practice when that is what was done today, so listening and other guided work is not hidden behind the “On my own” chart. Cache identifier: `dutch-v5.1.130-20260920`. Confirm the header shows V5.1.130 after a fresh production load. Learner history was not rewritten.

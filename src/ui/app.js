@@ -4,6 +4,7 @@ import {createRepository,STORAGE_KEY} from '../engine/persistence.js';
 import {dayKey,addDays,pct} from '../engine/util.js';
 import {labels} from '../engine/scoring.js';
 import {chooseTile,removeTile,bankAnswer,correctiveFeedback} from '../engine/exercises.js';
+import {learningProgress} from '../engine/course-progress.js';
 import {coursePage,topicPage} from './course-overview.js';
 import {bindPeek} from './peek.js';
 import {dutchVoice,speak} from './speech.js';
@@ -11,7 +12,7 @@ const el=document.querySelector('#content'),message=document.querySelector('#sys
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='today',dev=false,selectedConcept=null,lastFeedback=null;
 let disposePeek=()=>{};
-let coursePane='progress',courseDays=30,courseCohort='independent',courseConcept=null;
+let coursePane='progress',courseDays=30,courseCohort='independent',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
 const statusLabels={'learning':'Learning','proof-ready':'Proof Ready','retention-wait':'Retention pending','retention-ready':'Retention Ready','mastered':'Mastered','reinforcement':'Reinforcement'};
 const status=id=>statusLabels[phase(state.progress[id],dayKey(now()))];
@@ -117,6 +118,10 @@ function renderQuestion(q){
 }
 function renderCourse(){
  const today=dayKey(now());
+ if(!courseCohortTouched){
+  const preview=learningProgress(state,{today,days:courseDays,cohort:'independent',concept:courseConcept});
+  if(preview.todayIndependent===0&&preview.todaySupported>0)courseCohort='supported';
+ }
  if(selectedConcept){
   el.innerHTML=topicPage(state,content,selectedConcept,{today,proofHTML:proofAction(selectedConcept)});
   on('read-course',()=>renderLesson(selectedConcept,false));
@@ -125,7 +130,7 @@ function renderCourse(){
  }
  el.innerHTML=coursePage(state,content,{today,pane:coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept});
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
- el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
+ el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});
  const period=document.getElementById('course-period');if(period)period.onchange=()=>{courseDays=period.value==='all'?null:Number(period.value);renderCourse();document.getElementById('course-period')?.focus()};
  const topic=document.getElementById('course-topic-filter');if(topic)topic.onchange=()=>{courseConcept=topic.value||null;renderCourse();document.getElementById('course-topic-filter')?.focus()};

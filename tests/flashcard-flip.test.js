@@ -28,7 +28,8 @@ test('the answer face flattens before Again Hard Good Easy appear',()=>{
  assert.match(sandbox,/function settleSandboxFlip\(/);
  assert.match(css,/\.flashcard-flip-inner\.is-flat\{transform:none/);
  assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-front\{display:none/);
- assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{transform:none;position:relative/);
+ assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{transform:none;position:absolute;inset:0/);
+ assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{[^}]*height:auto/);
  assert.doesNotMatch(preview,/flashcard-flip-hit/);
  assert.doesNotMatch(preview,/flashcard-stage/);
  assert.doesNotMatch(css,/\.flashcard-flip-hit\{/);
