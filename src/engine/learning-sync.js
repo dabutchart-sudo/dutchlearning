@@ -1,7 +1,21 @@
+import {freshState} from './learner.js';
 import {validateState} from './persistence.js';
 
 function clone(value){
  return value==null?value:JSON.parse(JSON.stringify(value));
+}
+
+function studyDay(row){
+ for(const value of [row?.day,row?.date,row?.attempted_at,row?.occurredAt]){
+  const text=String(value||'');
+  const day=/^\d{4}-\d{2}-\d{2}$/.test(text)?text:text.slice(0,10);
+  if(/^\d{4}-\d{2}-\d{2}$/.test(day))return day;
+ }
+ return null;
+}
+
+function flag(row,tableKey,localKey){
+ return Object.prototype.hasOwnProperty.call(row,tableKey)?row[tableKey]:row[localKey];
 }
 
 export function isPopulatedLearningState(state){
@@ -31,14 +45,27 @@ export function decideLearningSync({user,local,remote}={}){
  return {type:'push-attempts',state:local};
 }
 
+export function prepareRemoteLearningState(state,content){
+ if(!state||typeof state!=='object')return null;
+ const next=clone(state);
+ if(next.pending&&(!content?.byId||!content.byId[next.pending.sourceId]))next.pending=null;
+ if(next.proof){
+  const questions=next.proof.questions;
+  if(!Array.isArray(questions)||questions.some(q=>!content?.byId||!content.byId[q.sourceId]))next.proof=null;
+ }
+ return next;
+}
+
 export function mapTrainerAttempt(row){
  if(!row||!row.id)return null;
- const date=/^\d{4}-\d{2}-\d{2}$/.test(row.day||'')?row.day:String(row.attempted_at||'').slice(0,10);
- if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return null;
+ const date=studyDay(row);
+ if(!date)return null;
+ const grammar=flag(row,'grammar_correct','grammar');
+ const spelling=flag(row,'spelling_correct','spelling');
  return {
   id:row.id,
   date,
-  occurredAt:row.attempted_at||null,
+  occurredAt:row.attempted_at||row.occurredAt||null,
   concept:row.concept_id||row.concept||null,
   kind:row.exercise_type||row.kind||null,
   direction:row.direction||null,
@@ -46,10 +73,16 @@ export function mapTrainerAttempt(row){
   sourceId:row.source_id||row.sourceId||null,
   answer:row.answer??'',
   expected:row.correct_answer??row.expected??'',
-  grammar:row.grammar_correct==null?null:!!row.grammar_correct,
-  spelling:row.spelling_correct==null?null:!!row.spelling_correct,
-  assisted:!!row.used_help
+  grammar:grammar==null?null:!!grammar,
+  spelling:spelling==null?null:!!spelling,
+  assisted:!!(Object.prototype.hasOwnProperty.call(row,'used_help')?row.used_help:row.assisted)
  };
+}
+
+export function attemptMergeBase(local,content){
+ if(local&&typeof local==='object'&&local.schemaVersion===5&&Array.isArray(local.attempts))return local;
+ if(!content)return null;
+ try{return validateState(clone(freshState(content)),content);}catch{return null;}
 }
 
 export function mergeRemoteAttempts(local,rows=[]){
@@ -73,7 +106,8 @@ export function applyLearningSync({user,local,remote,content}={}){
  if(decision.type==='download'){
   if(!content)return {action:'none',reason:'content-unavailable',writeLocal:false,writeRemote:false,pushAttempts:false};
   try{
-   const state=validateState(clone(decision.state),content);
+   const prepared=prepareRemoteLearningState(decision.state,content);
+   const state=validateState(prepared,content);
    return {action:'download',state,reason:null,writeLocal:true,writeRemote:false,pushAttempts:false};
   }catch{
    return {action:'none',reason:'invalid-remote',writeLocal:false,writeRemote:false,pushAttempts:false};

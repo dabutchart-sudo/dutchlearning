@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. Zin V5.1.133 pulls saved `trainer_attempts` into local Learning history so Course can show the session already stored in Supabase. V5.1.132 All-practice Course display and V5.1.131 single-flip remain included.
+- Active production source: `origin/main`. Zin V5.1.134 restores Course from the saved `trainer_state` backup, including answers that 133 could not read back from `trainer_attempts`. V5.1.132 All-practice Course display and V5.1.131 single-flip remain included.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. Confirm V5.1.133: after a signed-in production load or Sync now, Course shows the Learning answers already saved in `trainer_attempts`. Spoken questions still use on-device recognition where available and can always be skipped and typed.
+1. Confirm V5.1.134: after a signed-in production load or Sync now, Course shows Learning answers stored in `trainer_state`. Spoken questions still use on-device recognition where available and can always be skipped and typed. Course still does not plot Flashcard `reviewhistory`.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. Take the next A1 Linear item only after the owner chooses it. A1.17–A1.26 content is on feature branches and is not published.
 
@@ -248,3 +248,7 @@ Owner report: today’s completed Learning session was still not populated on Co
 ## V5.1.133 pull saved Learning attempts — 2026-09-20
 
 Owner report: Course still had no training data after V5.1.132, while the same answers were visible in Supabase. Sync uploaded `trainer_attempts` but never read them back; Course only plots local `state.attempts`. V5.1.133 downloads those rows and adds any missing attempt ids into the local Learning blob. Empty local still cannot overwrite a populated `trainer_state`. Schema, authentication and Flashcards are unchanged. Cache identifier: `dutch-v5.1.133-20260920`. Confirm the header shows V5.1.133 after a fresh production load, then open Course (or tap Sync now in Settings). Learner history was not rewritten.
+
+## V5.1.134 restore Course from trainer_state — 2026-09-20
+
+Owner report: Course was still empty after V5.1.133 even though the saved Learning backup was visible in Supabase. 133 only added rows from `trainer_attempts`; Course still missed answers already stored inside `trainer_state`, and a stale unfinished question in that backup could block the whole download. V5.1.134 copies missing answers from the `trainer_state` blob and still downloads a populated backup after clearing a stale pending question. Empty local still cannot overwrite a populated remote row. Flashcard `reviewhistory` remains on Report, not Course. Cache identifier: `dutch-v5.1.134-20260920`. Confirm the header shows V5.1.134 after a fresh production load, then open Course while signed in (or tap Sync now). Learner history was not rewritten.
