@@ -7,8 +7,13 @@ export function validateState(s,content){
  if(s.pending&&!content.byId[s.pending.sourceId])throw Error('Backup needs a content pack that is not installed.');
  if(s.proof&&(!Array.isArray(s.proof.questions)||s.proof.questions.some(q=>!content.byId[q.sourceId])))throw Error('Invalid test in backup.');
  if(!s.words||!Array.isArray(s.retries)||!s.settings||!s.learnerId||!s.deviceId)throw Error('Backup is incomplete.');
+ if(!s.settings.dailyListenSpeakBeats){
+  s.settings.listening=true;
+  s.settings.dailyListenSpeakBeats=true;
+ }
  s.settings.listening=!!s.settings.listening;
  s.settings.speaking=!!s.settings.speaking;
+ s.settings.dailyListenSpeakBeats=true;
  return s;
 }
 export function resetLearningState(current,content,now=new Date()){
@@ -16,6 +21,8 @@ export function resetLearningState(current,content,now=new Date()){
  next.learnerId=current?.learnerId||next.learnerId;
  next.deviceId=current?.deviceId||next.deviceId;
  next.settings={...next.settings,...(current?.settings||{})};
+ if(!current?.settings?.dailyListenSpeakBeats)next.settings.listening=true;
+ next.settings.dailyListenSpeakBeats=true;
  delete next.settings.debugDate;
  return next;
 }
