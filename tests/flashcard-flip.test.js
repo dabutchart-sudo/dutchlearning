@@ -34,6 +34,12 @@ test('flattening the answer does not animate the card back to Dutch',()=>{
  assert.doesNotMatch(css,/\.flashcard-flip-hit\{/);
 });
 
+test('settled English face hides Dutch and un-mirrors left-to-right',()=>{
+ assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-front\{[^}]*visibility:hidden/);
+ assert.match(css,/\.flashcard-flip-inner\.is-flipped\.is-flat \.flashcard-face-back\{[^}]*transform:scaleX\(-1\)/);
+ assert.match(css,/\.flashcard-face-back\{transform:rotateY\(180deg\)\}/);
+});
+
 test('a hung rating save cannot leave Again Hard Good Easy frozen',()=>{
  assert.match(preview,/new AbortController\(\)/);
  assert.match(preview,/ctrl\.abort\(\)/);

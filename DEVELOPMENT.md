@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. This release prepares Zin V5.1.137: Course is home, Today is retired, extra retained-topic practice is available, and A1.21 is in the course. Previous production: V5.1.136 four-tab menu.
+- Active production source: `origin/main`. This release is Zin V5.1.138: the flipped Flashcard English face reads left-to-right, and the local Development banner no longer blocks Course / Flashcards / Progress / Settings. Previous production: V5.1.137 Course is home.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,9 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.137 is live, hard-refresh until the header shows V5.1.137. Course should be home. The mirrored Flashcard English face is a known leftover from the current flip and is not part of this release.
+1. After V5.1.138 is live, hard-refresh until the header shows V5.1.138. A flipped Flashcard English face should read left-to-right. Do not delete browsing data.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. A1.22–A1.26 remain planned. The mirrored English Flashcard face is a separate follow-up.
+3. A1.22–A1.26 remain planned. iPhone confirmation of the un-mirrored English face was not possible at Mac review and still needs an owner device check.
 
 ## Learning sync safety — 2026-09-18
 
@@ -266,3 +266,9 @@ Owner report: the seven-item top menu was too cluttered. V5.1.136 keeps Today, F
 Owner-authorized production release. The Course path is the home screen. Today is no longer a destination. A header counter shows Learning `x / 20` and Flashcards ready/done, including during questions. The current topic starts the normal daily 20. A retained topic can offer a five-question extra batch that does not use the daily 20, change mastery, or write retries. Progress holds Evidence, Mistakes and Words. Flashcard Report stays on Flashcards. A1.21 place-and-movement content is included; A1.22–A1.26 remain planned. The four top-tab labels stay even, and Progress no longer stays highlighted after leaving. Cache identifier: `dutch-v5.1.137-20260920`. Confirm the header shows V5.1.137 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
 
 The mirrored Flashcard English face is unchanged from V5.1.136 and is not fixed in this release.
+
+## V5.1.138 un-mirror the English Flashcard face — 2026-09-21
+
+Owner-authorized production release. After the rotateY flip settles, flattening still keeps the card at 180° so it does not spin back to Dutch. The Dutch face is then hidden, and the English face gets `scaleX(-1)` so the leftover parent `rotateY(180deg)` no longer reads backwards. Listen, Flag, Edit and Again / Hard / Good / Easy are unchanged.
+
+The DAB-90 amber Development banner stays visible on local/`192.168` copies, but it now sits above the header instead of inside the tab flex row. The four tabs keep a full-width row so Course / Flashcards / Progress / Settings stay selectable next to the longer Development subtitle and daily counter. Cache identifier: `dutch-v5.1.138-20260920`. Confirm the header shows V5.1.138 after a fresh production load. Do not delete browsing data. Learner history, scheduling, Learning sync, authentication and schema are unchanged. iPhone confirmation of the English face was not possible at Mac review.
