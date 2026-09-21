@@ -5,7 +5,7 @@
 
 @media(max-width:520px){
   .flashcard-review-card{padding-bottom:76px}
-  .flashcard-flip-inner{min-height:330px}
+  .flashcard-flip-inner,.flashcard-settled{min-height:330px}
   .flashcard-listen{left:16px;bottom:14px;width:46px;height:46px;min-height:46px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:0}
   .flashcard-face .flashcard-listen{position:static;left:auto;bottom:auto}
   .flashcard-listen::before{content:attr(data-icon);font-size:1.18rem;line-height:1}

@@ -44,9 +44,13 @@
 
 /* V5.1.99: keep every app screen inside the mobile viewport. */
 /* DAB-90: local/192.168 copies must not look like GitHub Pages production. */
-body.is-development .topbar{flex-wrap:wrap}
-body.is-development .tabs{flex:1 0 100%;width:100%;max-width:100%;align-self:stretch}
+body.is-development .app{grid-template-rows:auto auto auto minmax(0,1fr) auto}
+body.is-development.session-active .app{grid-template-rows:auto auto minmax(0,1fr)}
+body.is-development .topbar{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch}
+body.is-development .daily-chrome{width:100%;margin-left:0;order:2}
+body.is-development .tabs{flex:0 0 auto;width:100%;max-width:100%;align-self:stretch;order:3}
 .study-origin-banner{display:block;width:100%;box-sizing:border-box;margin:0 0 8px;padding:7px 10px;border-radius:10px;background:var(--warn-soft);color:#714000;font-size:.78rem;font-weight:700;line-height:1.3}
+@media(max-width:520px){.study-origin-banner{margin:0 0 6px;padding:5px 8px;font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 body.session-active .study-origin-banner{display:block}
 html,body{max-width:100%;overflow-x:hidden}.app,.topbar,#content,.stack,.home-grid,.course-grid,.evidence,.session,.card{min-width:0;max-width:100%}.app{width:100%}.topbar,.brand{min-width:0}.brand h1,.brand p,.card,.card p,.card h1,.card h2,.card h3{overflow-wrap:anywhere}.tabs{min-width:0;max-width:100%}.tabs::-webkit-scrollbar{display:none}
 @media(max-width:900px){.topbar{align-items:flex-start;flex-direction:column}.tabs,.daily-chrome{display:flex;flex-wrap:nowrap;width:100%;align-self:stretch;overflow:visible}.daily-chrome{margin:0;justify-content:space-between}.tabs>.tab{flex:1 1 0;min-width:0}.summary,.concept,.evidence-card,.question-card{max-width:100%}footer{min-width:0;max-width:100%;flex-wrap:wrap}}body.session-active .brand{padding-right:0}

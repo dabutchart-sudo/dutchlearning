@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. This release is Zin V5.1.138: the flipped Flashcard English face reads left-to-right, and the local Development banner no longer blocks Course / Flashcards / Progress / Settings. Previous production: V5.1.137 Course is home.
+- Active production source: `origin/main`. This release is Zin V5.1.139: after a Flashcard flip, Again / Hard / Good / Easy sit on a flat dock, and the local Development banner no longer hides those four tabs. Previous production: V5.1.138 un-mirrored English face.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,9 +161,9 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.138 is live, hard-refresh until the header shows V5.1.138. A flipped Flashcard English face should read left-to-right. Do not delete browsing data.
+1. After V5.1.139 is live, hard-refresh until the header shows V5.1.139. Do not delete browsing data. Flip a Flashcard and confirm Again / Hard / Good / Easy still work after several cards.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. A1.22–A1.26 remain planned. iPhone confirmation of the un-mirrored English face was not possible at Mac review and still needs an owner device check.
+3. A1.22–A1.26 remain planned.
 
 ## Learning sync safety — 2026-09-18
 
@@ -272,3 +272,9 @@ The mirrored Flashcard English face is unchanged from V5.1.136 and is not fixed 
 Owner-authorized production release. After the rotateY flip settles, flattening still keeps the card at 180° so it does not spin back to Dutch. The Dutch face is then hidden, and the English face gets `scaleX(-1)` so the leftover parent `rotateY(180deg)` no longer reads backwards. Listen, Flag, Edit and Again / Hard / Good / Easy are unchanged.
 
 The DAB-90 amber Development banner stays visible on local/`192.168` copies, but it now sits above the header instead of inside the tab flex row. The four tabs keep a full-width row so Course / Flashcards / Progress / Settings stay selectable next to the longer Development subtitle and daily counter. Cache identifier: `dutch-v5.1.138-20260920`. Confirm the header shows V5.1.138 after a fresh production load. Do not delete browsing data. Learner history, scheduling, Learning sync, authentication and schema are unchanged. iPhone confirmation of the English face was not possible at Mac review.
+
+The 3D flatten path still stole Again / Hard / Good / Easy taps after several cards. That is addressed in V5.1.139.
+
+## V5.1.139 rating dock — 2026-09-21
+
+Owner-authorized production release. V5.1.138 rotation was correct, but Again / Hard / Good / Easy stopped after several cards. Flattening the 3D card to uncover those buttons has failed across multiple releases. V5.1.139 keeps the rotateY animation, then destroys the 3D card and shows a normal flat English face. Ratings sit in a separate dock that is never transformed. Listen still uses the card’s Dutch text. On local/`192.168` copies the Development banner stays above the header, and Course / Flashcards / Progress / Settings stay on their own full-width row so they are not pushed off the phone screen. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.139-20260921`. Confirm the header shows V5.1.139 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.

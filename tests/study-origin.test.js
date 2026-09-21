@@ -47,7 +47,10 @@ test('origin distinction is shipped, cached and documented',()=>{
 test('the Development banner stays out of the tab row so Flashcards remains usable',()=>{
  assert.match(ui,/insertAdjacentElement\('beforebegin',banner\)/);
  assert.doesNotMatch(ui,/topbar\.prepend\(banner\)/);
- assert.match(css,/body\.is-development \.tabs\{[^}]*flex:1 0 100%/);
- assert.doesNotMatch(css,/body\.is-development \.tabs\{order:1\}/);
+ assert.match(css,/body\.is-development \.topbar\{[^}]*flex-direction:column/);
+ assert.match(css,/body\.is-development \.tabs\{[^}]*width:100%/);
+ assert.match(css,/body\.is-development \.tabs\{[^}]*order:3/);
+ assert.doesNotMatch(css,/body\.is-development \.tabs\{[^}]*flex:1 0 100%/);
+ assert.match(css,/body\.is-development \.app\{grid-template-rows:auto auto auto minmax\(0,1fr\) auto\}/);
  assert.match(css,/\.study-origin-banner\{[^}]*display:block/);
 });
