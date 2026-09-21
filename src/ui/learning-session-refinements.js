@@ -12,9 +12,10 @@ function installLayoutRules(){
  const style=document.createElement('style');
  style.textContent=`
   .session .question-card{min-height:clamp(520px,calc(100dvh - 180px),680px)}
-  .session-briefing .vocabulary-list{max-height:360px}
+  .session .question-card.session-briefing{min-height:0}
+  .session-briefing .vocabulary-list{flex:1 1 auto;min-height:0;max-height:min(360px,42dvh);overflow:auto;-webkit-overflow-scrolling:touch}
   .correction-instruction{margin:-10px 0 4px;color:var(--muted);font-size:.9rem}
-  @media(max-width:520px){.session .question-card{min-height:calc(100dvh - 220px)}}
+  @media(max-width:520px){.session .question-card{min-height:calc(100dvh - 220px)}.session .question-card.session-briefing{min-height:0}}
  `;
  document.head.appendChild(style);
 }

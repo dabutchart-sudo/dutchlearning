@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. This release is Zin V5.1.139: after a Flashcard flip, Again / Hard / Good / Easy sit on a flat dock, and the local Development banner no longer hides those four tabs. Previous production: V5.1.138 un-mirrored English face.
+- Active production source: `origin/main`. This release is Zin V5.1.140: **Ready — start the test** stays visible on the mastery vocabulary reminder. Previous production: V5.1.139 rating dock.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.139 is live, hard-refresh until the header shows V5.1.139. Do not delete browsing data. Flip a Flashcard and confirm Again / Hard / Good / Easy still work after several cards.
+1. After V5.1.140 is live, hard-refresh until the header shows V5.1.140. Do not delete browsing data. From Course, start the F1 mastery test and confirm **Ready — start the test** is on screen.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. A1.22–A1.26 remain planned.
 
@@ -278,3 +278,7 @@ The 3D flatten path still stole Again / Hard / Good / Easy taps after several ca
 ## V5.1.139 rating dock — 2026-09-21
 
 Owner-authorized production release. V5.1.138 rotation was correct, but Again / Hard / Good / Easy stopped after several cards. Flattening the 3D card to uncover those buttons has failed across multiple releases. V5.1.139 keeps the rotateY animation, then destroys the 3D card and shows a normal flat English face. Ratings sit in a separate dock that is never transformed. Listen still uses the card’s Dutch text. On local/`192.168` copies the Development banner stays above the header, and Course / Flashcards / Progress / Settings stay on their own full-width row so they are not pushed off the phone screen. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.139-20260921`. Confirm the header shows V5.1.139 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
+
+## V5.1.140 mastery start button — 2026-09-21
+
+Owner-authorized production release. The “Before your mastery test” vocabulary reminder had no way to continue: the start button sat under a long word list on a screen that cannot scroll. V5.1.140 pins **Ready — start the test** on the same action row used by other questions, and lets the word list scroll above it. The test still uses today’s 20. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.140-20260921`. Confirm the header shows V5.1.140 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
