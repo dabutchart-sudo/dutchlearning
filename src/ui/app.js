@@ -70,11 +70,13 @@ function renderLesson(id,continueSession){
  refreshChrome();
 }
 async function proofPreparation(id){
+ sessionChrome(true);
  const type=phase(state.progress[id],dayKey(now()))==='proof-ready'?'mastery':'retention';
  const words=vocabularyFor(id).filter(w=>!state.words[w.id]?.taughtAt);
  if(words.length){
-  el.innerHTML=`<section class="session"><article class="card evidence-card"><span class="direction">Vocabulary reminder · not scored</span><h2>Before your ${type} test</h2><p>Here is the remaining vocabulary for this concept. The test uses unseen sentences, with no assistance once it starts.</p>${vocabularyHTML(words)}${button('begin-proof','Ready — start the test')}<div class="spaced">${button('cancel-proof','Back to the path',false)}</div></article></section>`;
+  el.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary reminder · not scored</span><h2>Before your ${type} test</h2><p>Here is the remaining vocabulary for this concept. The test uses unseen sentences, with no assistance once it starts.</p>${vocabularyHTML(words)}<div class="actions">${button('begin-proof','Ready — start the test')}${button('cancel-proof','Back to the path',false)}</div></article></section>`;
   on('begin-proof',async()=>{await transaction(s=>{releaseUnscoredPractice(s);for(const w of words)markWordsTaught(s,{vocabulary:[w]},dayKey(now()));startProof(s,content,id,type,now())});await openQuestion()});on('cancel-proof',()=>show('curriculum'));
+  refreshChrome();
  }else{await transaction(s=>{releaseUnscoredPractice(s);startProof(s,content,id,type,now())});await openQuestion();}
 }
 function renderProofGate(offer){

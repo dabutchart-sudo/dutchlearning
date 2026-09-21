@@ -57,3 +57,13 @@ test('the path and practice warn before a ready test uses the day',()=>{
  assert.match(source,/Practice anyway/);
  assert.match(source,/releaseUnscoredPractice/);
 });
+
+test('the mastery vocabulary reminder keeps Ready start the test on a pinned action row',()=>{
+ const source=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
+ const refinements=readFileSync(new URL('../src/ui/learning-session-refinements.js',import.meta.url),'utf8');
+ assert.match(source,/Before your \$\{type\} test/);
+ assert.match(source,/session-briefing/);
+ assert.match(source,/class="actions">\$\{button\('begin-proof','Ready — start the test'\)/);
+ assert.doesNotMatch(source,/evidence-card"><span class="direction">Vocabulary reminder/);
+ assert.match(refinements,/question-card\.session-briefing\{min-height:0\}/);
+});
