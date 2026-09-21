@@ -6,6 +6,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 import json
 import os
+import socket
 import ssl
 import threading
 
@@ -147,9 +148,21 @@ class DevApp(SimpleHTTPRequestHandler):
         super().end_headers()
 
 
+def lan_url(port=8765):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(('1.1.1.1', 80))
+        ip = sock.getsockname()[0]
+    except OSError:
+        ip = '127.0.0.1'
+    finally:
+        sock.close()
+    return f'http://{ip}:{port}/'
+
+
 if __name__ == '__main__':
     load_local_env()
-    print('Development app: http://192.168.0.41:8765/', flush=True)
+    print(f'Development app: {lan_url()}', flush=True)
     print(
         'OpenAI listen audio: ready' if openai_key() else
         'OpenAI listen audio: missing. Export OPENAI_API_KEY in this Terminal, then start the server again.',

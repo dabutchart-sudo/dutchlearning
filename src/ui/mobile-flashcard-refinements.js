@@ -16,6 +16,9 @@ function decorate(root=document){
 }
 
 function currentDutch(){
+ const host=document.getElementById('review-card')||document.getElementById('sandbox-review-card');
+ const fromData=String(host?.dataset?.dutch||'').replace(/\s*\(.*?\)/g,'').trim();
+ if(fromData)return fromData;
  const word=document.querySelector('.flashcard-review-card .flashcard-word[lang="nl"]');
  if(!word)return '';
  const spoken=word.cloneNode(true);

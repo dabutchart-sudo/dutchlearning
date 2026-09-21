@@ -21,23 +21,29 @@ test('review cards keep both faces and flip horizontally in place',()=>{
  assert.match(css,/\.flashcard-face\.flashcard-review-card\{position:absolute;inset:0/);
 });
 
-test('flattening the answer does not animate the card back to Dutch',()=>{
- assert.match(preview,/function settleFlip\(/);
- assert.match(preview,/classList\.toggle\('is-flat',session\.flipped\)/);
- assert.match(preview,/if\(ratings\)ratings\.hidden=true/);
- assert.match(sandbox,/function settleSandboxFlip\(/);
- assert.match(css,/\.flashcard-flip-inner\.is-flipped\.is-flat\{transform:rotateY\(180deg\)\}/);
- assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat\{[^}]*transform:none/);
- assert.doesNotMatch(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-back\{[^}]*transform:none/);
- assert.doesNotMatch(preview,/flashcard-flip-hit/);
- assert.doesNotMatch(preview,/flashcard-stage/);
+test('after the flip the 3D card is replaced by a flat English card',()=>{
+ assert.match(preview,/function settleReviewCard\(/);
+ assert.match(preview,/class="flashcard-settled"/);
+ assert.match(preview,/function flippingReviewCard\(/);
+ assert.match(preview,/id="flashcard-stage"/);
+ assert.match(css,/\.flashcard-settled\{/);
+ assert.match(css,/\.flashcard-settled \.flashcard-face\{[^}]*transform:none/);
+ assert.doesNotMatch(preview,/function settleFlip\(/);
+ assert.doesNotMatch(preview,/is-flat/);
+ assert.doesNotMatch(preview,/ratingUnderCard/);
+ assert.doesNotMatch(css,/is-flat/);
+ assert.doesNotMatch(css,/scaleX\(-1\)/);
  assert.doesNotMatch(css,/\.flashcard-flip-hit\{/);
 });
 
-test('settled English face hides Dutch and un-mirrors left-to-right',()=>{
- assert.match(css,/\.flashcard-flip-inner\.is-flat \.flashcard-face-front\{[^}]*visibility:hidden/);
- assert.match(css,/\.flashcard-flip-inner\.is-flipped\.is-flat \.flashcard-face-back\{[^}]*transform:scaleX\(-1\)/);
- assert.match(css,/\.flashcard-face-back\{transform:rotateY\(180deg\)\}/);
+test('Again Hard Good Easy live on a dock that is never 3D',()=>{
+ assert.match(preview,/flashcard-rating-dock/);
+ assert.match(preview,/if\(ratings\)ratings\.hidden=true/);
+ assert.match(css,/\.flashcard-rating-dock\{[^}]*z-index:20/);
+ assert.match(css,/\.flashcard-rating-dock\{[^}]*pointer-events:auto/);
+ assert.match(css,/\.flashcard-rating-dock\{[^}]*transform:none/);
+ assert.match(css,/\.flashcard-rating-dock\[hidden\]\{display:none!important\}/);
+ assert.doesNotMatch(preview,/elementFromPoint/);
 });
 
 test('a hung rating save cannot leave Again Hard Good Easy frozen',()=>{
@@ -53,14 +59,21 @@ test('Listen, Flag and Edit sit on each face so they rotate with the card',()=>{
  assert.match(preview,/id="speak-card\$\{suffix\}"/);
  assert.match(preview,/id="flag-sentence\$\{suffix\}"/);
  assert.match(preview,/id="edit-card\$\{suffix\}"/);
+ assert.match(preview,/data-dutch=/);
  assert.match(css,/\.flashcard-face \.flashcard-tool-row/);
  assert.match(polish,/\.flashcard-face \.flashcard-tool-row/);
+ assert.match(refinements,/host\?\.dataset\?\.dutch/);
 });
 
-test('sandbox review cards use the same horizontal flip and on-card tools',()=>{
+test('sandbox review cards use the same horizontal flip and rating dock',()=>{
  assert.match(sandbox,/class="flashcard-flip"/);
  assert.match(sandbox,/function flipSandboxCard\(/);
+ assert.match(sandbox,/function settleSandboxCard\(/);
+ assert.match(sandbox,/class="flashcard-settled"/);
+ assert.match(sandbox,/flashcard-rating-dock/);
  assert.match(sandbox,/sandboxToolRow\(flagged,'-back'\)/);
+ assert.doesNotMatch(sandbox,/ratingUnderCard/);
+ assert.doesNotMatch(sandbox,/is-flat/);
 });
 
 test('card tool refinements decorate both faces',()=>{
