@@ -14,11 +14,38 @@ export function practiceContextWeight(item){
  if(count<=2)return -6;
  return 0;
 }
-export function practiceKind(p,canListen=false,canSpeak=false){
+export function practiceSession(state,phase='practice'){
+ const date=state.daily?.date;
+ const today=(state.attempts||[]).filter(a=>a.date===date&&a.phase!=='extra');
+ return {
+  dailyCount:state.daily?.count||0,
+  heardToday:!!(state.daily?.listeningBeat||today.some(a=>a.kind==='listening')),
+  spokenToday:!!(state.daily?.speakingBeat||today.some(a=>a.kind==='speaking')),
+  phase,
+  proof:!!state.proof
+ };
+}
+export function sessionBeatKind(p,canListen=false,canSpeak=false,session=null){
+ if(!session||session.proof||session.phase==='extra')return null;
+ if(p.recognised<4||p.constructed<4||p.weakness>=4)return null;
+ const remaining=Math.max(0,20-(session.dailyCount||0));
+ const needL=canListen&&!session.heardToday;
+ const needS=canSpeak&&!session.spokenToday;
+ if(!needL&&!needS)return null;
+ if(session.phase==='maintenance'&&remaining>(needL?1:0)+(needS?1:0))return null;
+ const due=(session.dailyCount||0)>=6||remaining<=(needL?1:0)+(needS?1:0);
+ if(!due)return null;
+ if(needL&&(!needS||remaining>1))return 'listening';
+ if(needS)return 'speaking';
+ return null;
+}
+export function practiceKind(p,canListen=false,canSpeak=false,session=null){
  if(p.recognised<4)return p.practiceAttempts%2?'correct-sentence':'choice';
  if(p.constructed<4)return ['wordbank','gap','form'][p.practiceAttempts%3];
  if(p.weakness>=4)return ['wordbank','gap','typed'][p.practiceAttempts%3];
- const cycle=['typed',canSpeak?'speaking':'typed','wordbank','typed','correction','form','typed','gap','correct-sentence',canListen?'listening':'choice'];
+ const beat=sessionBeatKind(p,canListen,canSpeak,session);
+ if(beat)return beat;
+ const cycle=['typed','typed','wordbank','typed','correction','form','typed','gap','correct-sentence','choice'];
  return cycle[p.practiceAttempts%cycle.length];
 }
 export function spreadPracticePool(pool,state,{keepVerb=false}={}){
@@ -41,7 +68,7 @@ export function spreadPracticePool(pool,state,{keepVerb=false}={}){
 export function selectExtraPractice(state,content,concept,canListen=false,canSpeak=false){
  let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
  pool=spreadPracticePool(pool,state);
- let kind=practiceKind(state.progress[concept]||{},canListen,canSpeak);
+ let kind=practiceKind(state.progress[concept]||{},canListen,canSpeak,practiceSession(state,'extra'));
  const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
  if(eligible.length)pool=eligible;
  else{
@@ -62,7 +89,9 @@ export function selectPractice(state,content,current,date,canListen,canSpeak=fal
  let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice'),focusedRetry=false;
  if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length){pool=focused;focusedRetry=true;}}
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
- let kind=phase==='maintenance'&&state.progress[concept].status!=='reinforcement'?'typed':practiceKind(state.progress[concept],canListen,canSpeak);
+ const session=practiceSession(state,phase);
+ let kind=practiceKind(state.progress[concept],canListen,canSpeak,session);
+ if(phase==='maintenance'&&state.progress[concept].status!=='reinforcement'&&kind!=='listening'&&kind!=='speaking')kind='typed';
  const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
  if(eligible.length)pool=eligible;
  else {

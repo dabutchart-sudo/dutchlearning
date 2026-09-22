@@ -6,7 +6,7 @@ import {assess} from './scoring.js';
 export const DAY_SIZE=20;
 export const EXTRA_PRACTICE_SIZE=5;
 export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
-export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,extra:null,settings:{listening:false,speaking:false},migration:null};}
+export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,extra:null,settings:{listening:true,speaking:false,dailyListenSpeakBeats:true},migration:null};}
 export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date){s.daily={date,count:0};if(s.pending?.phase==='extra')s.pending=null;s.extra=null;}return s.daily;}
 export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
@@ -137,6 +137,8 @@ export function submit(s,c,questionId,raw,now=new Date()){
   s.revision++;return rec;
  }
  recordRecall(s,q,wordEvidence);s.daily.count++;
+ if(q.kind==='listening')s.daily.listeningBeat=true;
+ if(q.kind==='speaking')s.daily.speakingBeat=true;
  p.weakness=Math.max(0,Math.min(12,p.weakness+(a.grammar===true?-1:a.grammar===false?2:0)));
  if(q.phase==='practice'){
   p.practiceAttempts++;
@@ -158,6 +160,7 @@ export function submit(s,c,questionId,raw,now=new Date()){
 export function skipSpeaking(s){
  if(!s.pending||s.pending.kind!=='speaking')throw Error('This is not a spoken question.');
  s.pending={...s.pending,kind:'typed'};
+ s.daily.speakingBeat=true;
  s.revision++;
  return s.pending;
 }

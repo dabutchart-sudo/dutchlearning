@@ -2,7 +2,7 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. This release is Zin V5.1.140: **Ready — start the test** stays visible on the mastery vocabulary reminder. Previous production: V5.1.139 rating dock.
+- Active production source: `origin/main`. This release is Zin V5.1.141: the normal daily 20 includes one listening beat, and one skippable speaking beat if speaking is on. Previous production: V5.1.140 mastery start button.
 - Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
 - Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
 - Persistent signed-in progress: Supabase.
@@ -161,7 +161,7 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.140 is live, hard-refresh until the header shows V5.1.140. Do not delete browsing data. From Course, start the F1 mastery test and confirm **Ready — start the test** is on screen.
+1. After V5.1.141 is live, hard-refresh until the header shows V5.1.141. Do not delete browsing data. On the next practice day, confirm one listening question appears in the 20. Speaking stays off until switched on in Settings.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
 3. A1.22–A1.26 remain planned.
 
@@ -282,3 +282,7 @@ Owner-authorized production release. V5.1.138 rotation was correct, but Again / 
 ## V5.1.140 mastery start button — 2026-09-21
 
 Owner-authorized production release. The “Before your mastery test” vocabulary reminder had no way to continue: the start button sat under a long word list on a screen that cannot scroll. V5.1.140 pins **Ready — start the test** on the same action row used by other questions, and lets the word list scroll above it. The test still uses today’s 20. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.140-20260921`. Confirm the header shows V5.1.140 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
+
+## V5.1.141 daily listening and speaking beats — 2026-09-21
+
+Owner-authorized production release. The isolated listen/speak test area and optional question kinds were already in production. V5.1.141 puts **one listening question** inside the generated daily 20, using the current topic’s own sentences and the existing server-side Listen audio. **One spoken question** is included only if speaking is switched on; skip still converts that item to the same typed question and does not add work. Mastery and retention tests stay written. Extra practice does not use these beats. Existing history still defaults speaking off; listening is turned on once for the daily beat and can be switched off in Settings. New-card cap stays 5. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.141-20260921`. Confirm the header shows V5.1.141 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.

@@ -13,7 +13,8 @@ A local test area where one listening exercise and one speaking exercise can be 
 - Speaking: record a spoken Dutch reply; the preview server transcribes it with OpenAI and scores it locally. Skip speaking to type the same sentence, or tick “Skip speaking and stay with listening”.
 - The browser never receives `OPENAI_API_KEY`.
 - Service workers are disabled on this preview origin.
-- Practice on existing topics includes optional listening and speaking kinds. Existing learner history defaults speaking off. A spoken question can be skipped and typed without adding work.
+- The generated normal daily session includes one listening beat. Speaking is one skippable spoken sentence when switched on. Existing learner history defaults speaking off. A spoken question can be skipped and typed without adding work.
+- Mastery and retention proofs stay written. Extra practice does not use these beats.
 
 ## Files
 

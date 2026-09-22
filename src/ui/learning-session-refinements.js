@@ -44,7 +44,7 @@ function showBriefing(conceptId){
  document.body.classList.add('session-active');
  document.querySelector('footer')?.setAttribute('aria-hidden','true');
  const host=document.getElementById('content');if(!host)return;
- host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions.</p>${vocabularyHTML(words)}<div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
+ host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions. Today’s 20 includes one listening question from this topic. Speaking, if switched on, is one spoken sentence you can skip and type.</p>${vocabularyHTML(words)}<div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
  document.getElementById('session-briefing-continue')?.addEventListener('click',()=>{
   const state=repo.load();
   markWordsTaught(state,{vocabulary:words},date);
