@@ -161,9 +161,10 @@ A change is done when the relevant combination of the following is true:
 
 ## Immediate next steps
 
-1. After V5.1.141 is live, hard-refresh until the header shows V5.1.141. Do not delete browsing data. On the next practice day, confirm one listening question appears in the 20. Speaking stays off until switched on in Settings.
+1. Review the A1.22 candidate branch (`feature/a1-22-directions-location`). It advances the course to directions and location with a V5.1.142 cache identifier; it is not published yet.
 2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. A1.22–A1.26 remain planned.
+3. After an owner review and production release, confirm a hard-refreshed PWA shows V5.1.142 and that A1.22 becomes available only after A1.21 is retained.
+4. A1.23–A1.26 and the teaching-quality audit remain planned.
 
 ## Learning sync safety — 2026-09-18
 
