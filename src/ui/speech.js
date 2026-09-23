@@ -240,6 +240,8 @@ async function playProductionAudio(audio,dutch,onError,gen){
 function speakProduction(dutch,onError){
  const audio=ensurePlayer();
  if(!audio)return speakDevice(dutch,onError);
+ audio.pause();
+ try{audio.currentTime=0;}catch{}
  const status=globalThis.document?.getElementById?.('system-message');
  if(status)status.innerHTML='';
  unlockInGesture();

@@ -16,6 +16,7 @@ test('optional listening uses only taught practice content and never mutates lea
  assert.ok(items.length>=5);assert.ok(items.every(item=>item.concept==='F1'&&item.pool==='practice'));
  const session=startListeningPractice(state,content,{seed:'test'});
  assert.equal(session.questions.length,5);assert.ok(session.questions.every(q=>q.kind==='listening'&&q.phase==='listening-practice'&&q.prompt==='Listen, then choose the meaning.'));
+ assert.ok(session.questions.every(q=>q.audio===content.byId[q.sourceId].nl&&q.answer===content.byId[q.sourceId].en&&q.options.includes(q.answer)));
  assert.equal(JSON.stringify(state),before);
 });
 
@@ -51,4 +52,5 @@ test('the learner-facing route states its isolation and safe fallback',()=>{
  const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
  assert.match(app,/Optional listening practice/i);assert.match(app,/does not use today’s 20/);
  assert.match(app,/Audio unavailable\? Show the Dutch text/);assert.match(app,/No Course, mastery, or retention progress changed/);
+ assert.match(app,/speak\(audioText,notify\)/);assert.doesNotMatch(app,/practice-play',\(\)=>speak\(item\.nl/);
 });
