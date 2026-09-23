@@ -198,7 +198,7 @@ Generated or AI-evaluated output must not silently determine permanent mastery w
 - Course remains home; there is no separate Today destination.
 - Learning `x / 20` and Flashcards ready/done remain easy to see.
 - The interface should be welcoming and characterful through colour, path design, and human copy—not game chrome.
-- Local and `192.168` origins remain visibly marked as Development; GitHub Pages is the only normal production study origin.
+- GitHub Pages is the only normal origin for genuine study. Local and `192.168` origins remain visibly marked as Development.
 
 ## Data, synchronisation, and production safety
 
