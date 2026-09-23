@@ -8,9 +8,11 @@ import {coursePage,topicPage} from './course-overview.js';
 import {paintDailyChrome} from './daily-chrome.js';
 import {bindPeek} from './peek.js';
 import {dutchVoice,speak,canUseServerListen} from './speech.js';
+import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
+let listeningSession=null,listeningRun=0;
 let disposePeek=()=>{};
 let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
@@ -100,6 +102,29 @@ async function beginExtra(id){
   await openExtraQuestion();
  }catch(e){notify(e.message)}
 }
+function listeningPracticeCard(){
+ const available=listeningPracticeItems(state,content).length;
+ return `<article class="card evidence-card"><div class="row"><div><div class="eyebrow">OPTIONAL PRACTICE · LISTENING</div><h2>Hear Dutch without seeing it</h2></div><span class="pill">Practice</span></div><p>Listen to a hidden Dutch sentence, then choose its English meaning. This short activity does not use today’s 20 or change Course, mastery, or retention progress.</p>${button('start-listening-practice',`Practise ${Math.min(LISTENING_PRACTICE_SIZE,available)} sentences`,true,!available)}${available?'':'<p class="small muted">Complete the first teaching step to unlock familiar sentences here.</p>'}</article>`;
+}
+function beginListeningPractice(){
+ try{listeningRun++;listeningSession=startListeningPractice(state,content,{seed:`${dayKey(now())}:${state.learnerId}:${listeningRun}`});renderListeningPractice();}catch(e){notify(e.message)}
+}
+function renderListeningPractice(){
+ sessionChrome(true);notify('');
+ const q=currentListeningQuestion(listeningSession);
+ if(!q){
+  const summary=listeningPracticeSummary(listeningSession);
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL LISTENING PRACTICE</div><h2>${summary.heardCorrect} of ${summary.heard} heard answers correct</h2><p>${summary.textFallbacks?`${summary.textFallbacks} ${summary.textFallbacks===1?'sentence used':'sentences used'} the visible-text fallback. ${summary.textFallbacks===1?'That answer is':'Those answers are'} recognition practice, not listening evidence.`:'Every answer was completed from audio without revealing the sentence.'}</p><p class="muted">No Course, mastery, or retention progress changed. This session-only result is not added to your permanent learning record.</p><div class="actions">${button('repeat-listening-practice','Practise another 5')}${button('leave-listening-practice','Back to Course',false)}</div></article></section>`;
+  on('repeat-listening-practice',beginListeningPractice);on('leave-listening-practice',()=>{listeningSession=null;goHome()});return;
+ }
+ const item=content.byId[q.sourceId];let raw='',usedTextFallback=false,locked=false;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Listening ${listeningSession.index+1} of ${listeningSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card"><span class="direction">Dutch audio → English meaning</span><div class="q-type">Listen and choose the meaning</div><h2 class="prompt">Listen, then choose the meaning.</h2>${button('practice-play','Play Dutch audio',false)}<button id="practice-text-fallback" class="text-link">Audio unavailable? Show the Dutch text</button><div id="practice-visible-text"></div><div id="answer-area"><div class="answers">${q.options.map((option,index)=>`<button class="choice" data-practice-choice="${index}" aria-pressed="false">${esc(option)}</button>`).join('')}</div></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-listening-practice','Check answer')}</div></article><button id="leave-listening-practice" class="text-link">Leave practice — no Course progress to save</button></section>`;
+ const area=document.getElementById('answer-area');area.querySelectorAll('[data-practice-choice]').forEach(choice=>choice.onclick=()=>{raw=q.options[Number(choice.dataset.practiceChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))})});
+ on('practice-play',()=>speak(item.nl,notify));
+ on('practice-text-fallback',()=>{usedTextFallback=true;document.getElementById('practice-visible-text').innerHTML=`<p class="prompt" lang="nl">${esc(item.nl)}</p><p class="small muted">Text shown: this answer will count only as recognition within this temporary session.</p>`;document.getElementById('practice-text-fallback').disabled=true;});
+ on('check-listening-practice',()=>{if(locked)return;if(!raw){notify('Choose an answer first.');return;}locked=true;const next=answerListeningPractice(listeningSession,raw,{usedTextFallback});const result=next.answers.at(-1);listeningSession=next;el.querySelectorAll('button').forEach(button=>button.disabled=true);document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?'Meaning understood':'Not this time'}</strong><span class="correct" lang="nl">${esc(item.nl)}</span><span class="meaning">${esc(item.en)}</span><div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span><span class="badge">Does not change progress</span></div></div>`;document.querySelector('.actions').innerHTML=button('next-listening-practice',currentListeningQuestion(listeningSession)?'Continue':'View listening summary');on('next-listening-practice',renderListeningPractice);document.getElementById('next-listening-practice').focus();});
+ on('leave-listening-practice',()=>{listeningSession=null;goHome()});
+}
 async function openExtraQuestion(){
  lastFeedback=null;
  const q=await transaction(s=>prepareExtraQuestion(s,content,now(),canListenNow(),!!s.settings.speaking));
@@ -187,6 +212,10 @@ function renderCourse(){
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});
  if(view!=='evidence'&&state.lastProof)el.querySelector('.course-heading')?.insertAdjacentHTML('afterend',proofReport());
+ if(view!=='evidence'){
+  const heading=el.querySelector('.course-heading');if(heading)heading.insertAdjacentHTML('afterend',listeningPracticeCard());else el.insertAdjacentHTML('afterbegin',listeningPracticeCard());
+  on('start-listening-practice',beginListeningPractice);
+ }
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
  el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});
