@@ -235,6 +235,12 @@ export function prepareSpeech(text){
  return productionBlob(dutch).then(()=>true).catch(()=>false);
 }
 
+export function discardPreparedSpeech(text){
+ const dutch=String(text??'').trim();
+ if(!dutch)return false;
+ return ttsCache.delete(dutch);
+}
+
 async function playProductionAudio(audio,dutch,onError,gen,{onStart=()=>{},onEnd=()=>{}}={}){
  try{
   const blob=await productionBlob(dutch);
