@@ -57,6 +57,8 @@ Required outcomes:
 - preserve daily-session, Flashcard, Supabase, PWA, and production-recovery behaviour;
 - select and deliver one bounded first vertical slice: hidden-text listening with meaning selection in optional Practice.
 
+Implementation started in DAB-168. The source-backed catalogue is in `docs/question-format-catalogue.md`; `src/engine/question-formats.js` now provides the first read-only, backward-compatible contract registry and automated coverage check. It describes current behaviour only and is not yet connected to scheduling, scoring, persistence, or progress presentation.
+
 This milestone changes documentation and planning first. Application work begins only through scoped issues/PRs.
 
 ## Roadmap and release gates
