@@ -110,4 +110,6 @@ The first two non-behavioural foundations now exist:
 - `src/engine/question-formats.js` provides the read-only format contracts and controlled vocabularies;
 - `src/engine/format-release.js` provides context gating, a kill switch, sequential promotion requiring owner acceptance, and immediate rollback.
 
-Neither module is connected to the scheduler or learner state yet. The next vertical slice can therefore use the release control for an isolated optional Practice route without changing the current daily Core session.
+The first optional Practice vertical slice now uses those controls through `src/engine/listening-practice.js` and the Course interface. It presents five familiar hidden-text listening questions, keeps its diagnostic summary in memory for that session only, and never calls the learner-state submission path. Revealing the Dutch text changes the session result from Listen to Recognise. The activity does not consume the daily 20 or alter Course, mastery, retention, Flashcard, or permanent capability progress.
+
+This slice remains on the DAB-168 development branch pending automated, browser, and owner iPhone validation. It has not been promoted to Trial or Core.
