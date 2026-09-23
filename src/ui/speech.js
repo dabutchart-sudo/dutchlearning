@@ -13,6 +13,7 @@ let listenAuthPending=null;
 let listenGen=0;
 let lastBlobUrl='';
 const ttsCache=new Map();
+const ttsPending=new Map();
 
 function voiceScore(v){
  const name=String(v?.name||'');
@@ -211,48 +212,66 @@ async function playBlob(audio,blob){
  }
 }
 
-async function playProductionAudio(audio,dutch,onError,gen){
- try{
-  let blob=ttsCache.get(dutch);
-  if(!blob){
-   const headers=await prefetchListenAuth();
-   if(gen!==listenGen)return;
-   if(!headers){onError(playErrorMessage());return;}
-   const res=await fetch(LISTEN_FUNCTION,{method:'POST',headers,body:JSON.stringify({text:dutch})});
-   if(gen!==listenGen)return;
-   if(!res.ok){
-    let message=playErrorMessage();
-    try{message=String((await res.json())?.error||message);}catch{}
-    onError(message);
-    return;
-   }
-   blob=await res.blob();
-   rememberBlob(dutch,blob);
+async function productionBlob(dutch){
+ const cached=ttsCache.get(dutch);if(cached)return cached;
+ if(ttsPending.has(dutch))return ttsPending.get(dutch);
+ const pending=(async()=>{
+  const headers=await prefetchListenAuth();
+  if(!headers)throw Error(playErrorMessage());
+  const res=await fetch(LISTEN_FUNCTION,{method:'POST',headers,body:JSON.stringify({text:dutch})});
+  if(!res.ok){
+   let message=playErrorMessage();
+   try{message=String((await res.json())?.error||message);}catch{}
+   throw Error(message);
   }
+  const blob=await res.blob();rememberBlob(dutch,blob);return blob;
+ })().finally(()=>ttsPending.delete(dutch));
+ ttsPending.set(dutch,pending);return pending;
+}
+
+export function prepareSpeech(text){
+ const dutch=String(text??'').trim();
+ if(!dutch||!canUseProductionListen())return Promise.resolve(false);
+ return productionBlob(dutch).then(()=>true).catch(()=>false);
+}
+
+export function discardPreparedSpeech(text){
+ const dutch=String(text??'').trim();
+ if(!dutch)return false;
+ return ttsCache.delete(dutch);
+}
+
+async function playProductionAudio(audio,dutch,onError,gen,{onStart=()=>{},onEnd=()=>{}}={}){
+ try{
+  const blob=await productionBlob(dutch);
   if(gen!==listenGen)return;
   audio.onerror=()=>{if(gen===listenGen)explainPlayError(onError);};
+  audio.onended=()=>{if(gen===listenGen)onEnd();};
   await playBlob(audio,blob);
- }catch{
-  if(gen===listenGen)explainPlayError(onError);
+  if(gen===listenGen)onStart();
+ }catch(error){
+  if(gen===listenGen)onError(String(error?.message||playErrorMessage()));
  }
 }
 
-function speakProduction(dutch,onError){
+function speakProduction(dutch,onError,events){
  const audio=ensurePlayer();
  if(!audio)return speakDevice(dutch,onError);
+ audio.pause();
+ try{audio.currentTime=0;}catch{}
  const status=globalThis.document?.getElementById?.('system-message');
  if(status)status.innerHTML='';
  unlockInGesture();
  const gen=++listenGen;
- playProductionAudio(audio,dutch,onError,gen);
+ playProductionAudio(audio,dutch,onError,gen,events);
  return true;
 }
 
-export function speak(text,onError=()=>{}){
+export function speak(text,onError=()=>{},events={}){
  const dutch=String(text??'').trim();
  if(!dutch)return false;
  if(canUseLanListen())return speakLan(dutch,onError);
- if(canUseProductionListen())return speakProduction(dutch,onError);
+ if(canUseProductionListen())return speakProduction(dutch,onError,events);
  return speakDevice(dutch,onError);
 }
 

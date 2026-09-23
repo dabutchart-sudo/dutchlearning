@@ -2,288 +2,263 @@
 
 ## Current production state
 
-- Active production source: `origin/main`. This release is Zin V5.1.141: the normal daily 20 includes one listening beat, and one skippable speaking beat if speaking is on. Previous production: V5.1.140 mastery start button.
-- Previous production: Zin V5.1.120 Learning sync-safety (`3f8e147`).
-- Delivery: GitHub Pages / installable PWA. Genuine study origin: `https://dabutchart-sudo.github.io/dutchlearning/`. Local/`192.168` servers are development copies with separate browser storage.
-- Persistent signed-in progress: Supabase.
-- Known-good source baseline: commit `3f8e1472166b17fda5e688f8a63c537e8b68a17b` (`Merge pull request #39 from dabutchart-sudo/feature/learning-sync-safety`).
-- Automated engine tests run through GitHub Actions with `npm test`.
-- Dutch Learning is the accepted normal Flashcards platform as of 2026-09-19 (DAB-83 / GitHub #32). The standalone Flashcards app remains a reversible fallback and has not been retired.
+- Production source: `origin/main`.
+- Current documented release: **Zin V5.1.146**.
+- Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
+- Delivery: GitHub Pages / installable PWA.
+- Persistent signed-in state: Supabase.
+- Course is home; the normal Learning session contains 20 questions.
+- The daily 20 includes one listening beat and, when enabled, one skippable speaking beat.
+- Mastery and retention proofs remain finite written checks.
+- Integrated Flashcards are the accepted normal platform. The standalone app remains a reversible fallback.
+- Automated regression tests run with `npm test`.
 
-The restored production `generate-sentences` Supabase Edge Function uses OpenAI (`OPENAI_API_KEY` and the Responses API) with owner/Google authentication and daily quota controls. The deployed function is a production boundary even though its source is not currently present in this repository. Do not recreate, replace, or redeploy it from assumptions or from `generate-visual`; inspect the deployed source and obtain explicit owner approval before any change. Its current `verify_jwt = false` configuration is deliberate because the function performs authentication internally.
+Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
-See `DESIGN.md` for product and learning requirements. This document describes implementation state, development priorities, and delivery discipline.
+The production `generate-sentences` and `listen-tts` Supabase Edge Functions use the server-side `OPENAI_API_KEY`. Treat deployed functions, owner/Google authentication, quota controls, and the deliberate internal-auth boundaries as protected production contracts. Do not recreate or redeploy them from assumptions.
 
-## Architecture overview
+## Agreed development direction — 2026-09-23
 
-Dutch Learning is currently a lightweight web/PWA application with application logic, question generation, scheduling/learning state, tests, service-worker/PWA support, and Supabase-backed persistence for signed-in use.
+The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.
 
-Development should preserve the deliberately small deployment footprint unless a larger architecture provides a clear learning or reliability benefit.
+This is an expansion of the proven live course, not a rewrite. Work proceeds on three coordinated tracks:
 
-Changing the AI provider, model strategy, application architecture, GitHub Pages hosting, Supabase database/persistence, or authentication design is an architectural decision requiring explicit owner approval. It is never an incidental cleanup or dependency choice.
+1. conversational capability;
+2. question-format quality and fairness;
+3. evidence-based progress visualisation.
 
-## Agent/Cursor change protocol
+The delivery order is:
+
+1. baseline, feature flags, question catalogue, and evidence model;
+2. question-format consolidation and teaching-quality audit;
+3. course journey, capability profile, and retention/activity reporting;
+4. deeper listening;
+5. conversational chunks and real-life scenarios;
+6. assessed spoken answers;
+7. controlled dialogues;
+8. broader, less predictable listening and conversation.
+
+A1.22 is included; A1.23–A1.26 remain required course work, but curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+
+## Active milestone
+
+### Question quality and teaching audit
+
+DAB-168 established the format catalogue, capability evidence vocabulary, reversible release controls, and first optional listening Practice slice. DAB-88 now audits whether the live course teaches and tests fairly before further conversational expansion.
+
+The source-backed findings are recorded in `docs/question-quality-audit.md`. The first implementation slice now combines proof-pool safety with the owner-approved 19/20 mastery rule: mastery requires at least 9/10 in each direction, a single missed item creates targeted follow-up, A1.7–A1.12 have sufficient unseen proof for one failure plus retry and retention, and retention remains strict at 10/10. The proof-safety and mastery-fairness slice is now in the production source; phone acceptance remains to be checked.
+
+The completed conversational-foundations milestone established the structure needed to add conversational learning safely.
+
+Required outcomes:
+
+- catalogue every current question format and the evidence it records;
+- define the shared format contract for teaching, support, feedback, scoring, fallback, persistence, and mobile presentation;
+- distinguish independent, supported, and revealed success;
+- define the capability evidence model;
+- define Course Journey, Capability Profile, and Retention/Activity progress views;
+- introduce a reversible Experimental → Practice → Trial → Core promotion mechanism;
+- preserve daily-session, Flashcard, Supabase, PWA, and production-recovery behaviour;
+- select and deliver one bounded first vertical slice: hidden-text listening with meaning selection in optional Practice.
+
+Implementation started in DAB-168. The source-backed catalogue is in `docs/question-format-catalogue.md`; `src/engine/question-formats.js` provides the read-only, backward-compatible contract registry and automated coverage check. `src/engine/format-release.js` adds isolated context gating, a kill switch, sequential owner-approved promotion, and immediate rollback. The first optional Practice slice uses these foundations for five hidden-text listening questions with session-only diagnostics and a visible-text fallback. It remains separate from scheduling, permanent learner evidence, mastery, retention, Flashcards, and the daily 20.
+
+This milestone changes documentation and planning first. Application work begins only through scoped issues/PRs.
+
+## Roadmap and release gates
+
+### Phase 0 — Baseline and safeguards
+
+- Inventory formats, evidence writes, help paths, and failure behaviour.
+- Confirm current production baseline and open work before implementation.
+- Add feature flags or isolated test routes.
+- Strengthen regressions for the 20-question close, teaching-first flow, five-new-card ceiling, completion persistence, and safe resume.
+- Confirm optional-service failure cannot block normal study.
+
+**Gate:** an experimental format can be enabled, disabled, and rolled back without changing production learning history or preventing a daily session.
+
+### Phase 1 — Question quality
+
+- Standardise prompt, answer, help, Check Answer, and feedback positions.
+- Formalise teaching vs assessment and independent vs supported evidence.
+- Keep capitalization scoring fair.
+- Prevent spelling from blocking concept/grammar progression.
+- Use a 19/20 grammar pass threshold for mastery, with at least 9/10 correct in each direction. A missed item creates targeted follow-up rather than being silently ignored. Retention remains a separate, stricter 10/10 check.
+- Finish the teaching-quality audit.
+- Add ambiguity and natural-Dutch review to content acceptance.
+
+**Gate:** existing question families have documented contracts, regression coverage, and owner acceptance on phone-sized layouts.
+
+### Phase 2 — Progress foundation
+
+- Preserve Course as home.
+- Show course position and topic states: Not started, Learning, Practising, Proven, Retaining, Needs attention.
+- Add a capability profile across Vocabulary/Recall, Grammar/Construction, Reading, Listening, Writing/Production, Speaking, and Interaction.
+- Keep retention/activity and Flashcard reporting distinct.
+- Explain what evidence changes a state.
+- Do not award listening from visible-text playback, speaking from typed fallback, or interaction from isolated questions.
+
+**Gate:** the owner understands and trusts why progress changed and no single percentage implies balanced conversational ability.
+
+### Phase 3 — Listening depth
+
+Progress through:
+
+1. known-sentence playback;
+2. hidden-text meaning selection;
+3. sentence discrimination;
+4. missing heard word;
+5. short dictation;
+6. two-line exchange comprehension;
+7. controlled voice and speed variation.
+
+**Gate:** listening is measured independently from reading, service failure falls back safely, and iPhone/PWA behaviour is validated.
+
+### Phase 4 — Chunks and scenarios
+
+- Schedule reusable conversational chunks as complete learning objects.
+- Add communicative objectives such as introductions, family/home, ordering, plans, directions, and simple problems.
+- Map grammar topics to situations in which the learner can use them.
+- Reuse known vocabulary while varying phrasing.
+
+**Gate:** each completed block supports at least one genuine real-life outcome.
+
+### Phase 5 — Assessed speech
+
+- Implement prompt → spoken response → transcription → focused feedback → retry → later review.
+- Prioritise intelligibility and retrieval over native-accent imitation.
+- Keep typed fallback, but do not award speaking evidence for it.
+- Keep credentials server-side and apply authentication and spend quotas.
+
+**Gate:** reliable on iPhone and MacBook; speech failure never blocks daily completion.
+
+### Phase 6 — Controlled dialogue
+
+- Add bounded two-to-four-turn exchanges.
+- Allow several correct responses and optional phrase support.
+- Include repeat/clarify/repair controls.
+- Provide consolidated feedback after the exchange where practical.
+- Start in optional Practice before limited daily Trial use.
+
+**Gate:** common A1 exchanges can be completed without memorising one exact response.
+
+### Phase 7 — Broader conversation
+
+- Add phrasing variation, unfamiliar combinations of known language, longer audio, freer answers, idiomatic feedback, and conversational repair.
+- Treat open-ended conversation as optional extra study unless explicitly approved for a bounded daily role.
+- Consider realtime architecture only after a separate decision and production-safety review.
+
+**Gate:** evidence shows earlier controlled formats are dependable and affordable.
+
+## Question-format delivery standard
+
+Every question implementation or substantial revision must specify:
+
+- learning capability and stage;
+- teaching/practice/proof role;
+- answer and ambiguity rules;
+- help and evidence consequences;
+- success, near-miss, and failure feedback;
+- repeated-failure behaviour;
+- offline/service-failure fallback;
+- mobile layout;
+- persistence/resume behaviour;
+- automated and manual tests.
+
+New formats move through:
+
+| Level | Availability | Progress effect |
+| --- | --- | --- |
+| Experimental | Isolated developer/test route | None |
+| Practice | Optional learner-facing activity | Diagnostic only |
+| Trial | Small controlled daily share | Limited evidence |
+| Core | Normal adaptive session | Full relevant evidence |
+
+Promotion requires owner acceptance and evidence that production study remains dependable.
+
+## Progress implementation rules
+
+Maintain separate models for:
+
+- **Course journey** — location and next objective;
+- **Capability profile** — what can be demonstrated;
+- **Retention/activity** — whether learning is sticking and study is occurring.
+
+Evidence must be capability-specific. Help usage must remain visible to the evidence engine even when internal status is hidden from the learner during a question.
+
+Do not add gamified substitutes for progress.
+
+## Architecture and data boundaries
+
+The project remains a lightweight web/PWA application with Supabase-backed persistence. Changing the provider, model strategy, application architecture, hosting platform, Supabase role, authentication design, scheduler, daily-completion contract, or reporting model requires explicit owner approval.
+
+Do not alter Supabase tables, schema, policies, migrations, functions, authentication settings, or production data as an incidental part of a UI or exercise change. Prefer additive/backwards-compatible work and establish rollback before high-impact changes.
+
+Never commit API keys, secrets, service-role keys, passwords, or private credentials.
+
+## Agent/Cursor workflow
 
 Before editing:
 
-1. Read `AGENTS.md`, `DESIGN.md`, this document, the relevant code/tests, and `git status`.
-2. Confirm that the intended starting point is a known source/GitHub baseline. Create a focused branch or named checkpoint before substantial work; preserve unrelated owner changes if the tree is already dirty.
-3. State the bounded objective and intended file list. A broad "review and improve" request authorises analysis and proposals, not unrelated implementation.
+1. Read `AGENTS.md`, `DESIGN.md`, this file, the relevant Linear/GitHub issue, implementation, tests, and `git status`.
+2. Confirm the production baseline and create a focused branch/checkpoint.
+3. State the bounded objective and expected files.
+4. Identify application, data, deployment, cost, mobile, and rollback impact.
 
-While editing, keep one coherent scope, preserve behaviour outside it, and avoid opportunistic refactors, dependency/provider swaps, schema work, deployments, or UI redesign. If new information requires a materially broader change, stop and ask the owner rather than silently expanding the task.
+During implementation:
+
+- keep one coherent scope;
+- preserve unrelated behaviour;
+- avoid opportunistic refactors;
+- add focused regression coverage;
+- do not silently promote Experimental or Practice work into the daily Core session.
 
 Before handoff:
 
-1. Review the exact diff and confirm it contains only the agreed scope.
-2. Run focused tests plus `npm test` for implementation changes; documentation-only changes still require diff/whitespace validation and confirmation that no runtime files changed.
-3. Report changed files, tests and results, application/data/deployment impact, risks, and remaining manual checks.
-4. Leave the branch/checkpoint available for owner review. Do not merge, push, deploy, mutate Supabase, or remove recovery paths unless explicitly requested.
+1. review the exact diff;
+2. run focused tests and `npm test` for behaviour changes;
+3. run whitespace/link validation for documentation-only work;
+4. report files, tests, data/deployment impact, costs, risks, and manual checks;
+5. leave a recoverable branch;
+6. do not merge, deploy, mutate production data, or remove a fallback unless explicitly authorised.
 
-## Current active milestone
+## Testing requirements
 
-### Milestone: Unified Flashcards
+Protect regression coverage for:
 
-Goal: replace the standalone Flashcards application with a fully integrated Dutch Learning flashcard experience without interrupting the learner's ability to complete daily sessions.
+- teaching before assessment;
+- exactly 20 normal Learning questions;
+- finite 20-question mastery and 10-question retention proofs;
+- hard adjustable new-card ceiling, currently 5;
+- no normal-session refill after completion;
+- Flashcard batch scheduling and retention reporting;
+- safe local/remote learner-state recovery;
+- gradual English-to-Dutch production;
+- capitalization tolerance where appropriate;
+- separate spelling and concept evidence;
+- hold-to-show assistance;
+- listening/speaking substitution and failure fallback;
+- one-screen mobile layout and pinned action;
+- PWA cache/update behaviour when relevant.
 
-Current Phase 1 work is tracked in draft PR #13 (`feature/unified-flashcards-phase-1`). It introduces a reversible shared foundation. The standalone Flashcards app remains the production path while this work is validated.
-
-The operational board for this epic is **Dutch Learning - Unified Flashcards · Project #6**:
-https://github.com/users/dabutchart-sudo/projects/6
-
-Its standard workflow is **Todo → In Progress → Testing → Done**.
-
-Suggested staged roadmap:
-
-1. **Shared foundation** — domain helpers, integration boundaries, migration notes, regression coverage.
-2. **Data integration** — establish safe compatibility/migration of card and review state.
-3. **UI integration** — bring the defined flashcard session experience into Dutch Learning.
-4. **Learner-state integration** — ensure scheduling, daily completion, reporting, and cross-device state behave correctly together.
-5. **Production migration** — validate the integrated path on real devices and make Dutch Learning the normal flashcard platform.
-6. **Legacy retirement** — archive the standalone Flashcards app only after the integrated platform is proven reliable.
-
-At every stage, at least one reliable platform must remain available for completing the learner's normal sessions.
-
-## Other active work
-
-### Daily session completion
-Issue #12 tracks the requirement that completion of the generated normal daily queue ends normal learning until the next study day. Unused new-card capacity must not be offered later that day.
-
-### Real-device verification
-Issue #8 tracks iPhone/PWA/Supabase verification for V5.1.5. Browser-only testing is not sufficient evidence for cross-device persistence or installed-PWA cache behaviour.
-
-## Development priorities
-
-Unless a defect requires urgent attention, prefer work in this order:
-
-1. Protect the learner's ability to complete daily study.
-2. Protect existing learner data and review history.
-3. Fix correctness/reliability problems.
-4. Improve learning effectiveness and workload sustainability.
-5. Improve clarity/mobile usability.
-6. Add new learning capabilities.
-7. Add cosmetic or convenience features.
-
-## Development cadence
-
-This project is a hobby project and should favour focused, rewarding increments over maximising the quantity of AI-generated work.
-
-Prefer one coherent, testable improvement at a time. Avoid asking an agent to consume a large backlog simply because capacity is available. Larger initiatives should be split into stages that provide visible or meaningful progress while remaining reviewable.
-
-## Branches and pull requests
-
-- `main` represents the production baseline/documented source of truth.
-- Substantial development should use focused feature branches and pull requests.
-- Prefer one coherent purpose per PR.
-- Large migrations should be split into staged PRs with explicit compatibility boundaries.
-- Draft PRs are appropriate for integration work that is not yet intended to become production.
-- Do not merge migration work merely because automated tests pass; relevant real-device/user validation may still be required.
-
-PR #13 predates this formalised workflow and is unusually large. Treat it as an existing migration snapshot, not as the preferred size for future PRs.
-
-## Issues and project structure
-
-Issue #7 is the portfolio anchor for Dutch Learning.
-
-Every active epic should have a dedicated GitHub Projects board as its operational work view. The standard status flow is **Todo → In Progress → Testing → Done**. The higher-level personal Project Portfolio remains the cross-project overview rather than replacing epic-level boards.
-
-The Unified Flashcards board is bootstrapped by `.github/workflows/bootstrap-unified-flashcards-project.yml`, using the repository Actions secret `PROJECTS_TOKEN`. The secret must never be printed or committed.
-
-Substantial work should normally have an issue describing the problem/objective and acceptance criteria. Group related work conceptually under these areas as the backlog develops:
-
-- Unified Flashcards
-- Daily learning and scheduling
-- Sentence and grammar learning
-- Progress and reporting
-- Cross-device reliability
-- UX and mobile polish
-
-Do not create issues merely to make the backlog look comprehensive. Capture real intended work when it becomes actionable.
-
-## Testing
-
-For behavioural changes:
-
-- Add or update automated regression tests where practical.
-- Run `npm test` before considering the implementation complete.
-- Test scheduling/date-boundary changes carefully.
-- Protect compatibility with existing learner state.
-- Use real-device testing for PWA installation/cache behaviour, mobile layout, and cross-device Supabase behaviour when relevant.
-- For migration work, validate that the old reliable study path remains available until the replacement is accepted.
-- Keep regression coverage for the hard adjustable new-card ceiling (currently 5), no extra normal cards after daily completion, the batch flashcard workflow, retention/reporting, gradual English-to-Dutch production, hold-to-show help, and mobile practice layout.
-
-## Data and migration safety
-
-Changes involving Supabase schema, review history, scheduling fields, learner progress, or card identity are high-impact.
-
-Do not alter existing Supabase tables, schema, migrations, policies, production functions, authentication configuration, or data unless the owner explicitly approves that exact scope. Prefer an application-side compatible change when possible, but do not introduce a compatibility layer that silently changes behaviour or weakens access control.
-
-Before destructive or irreversible migration:
-
-1. document the intended transformation;
-2. preserve or establish a rollback/recovery path;
-3. test against representative data;
-4. verify the new path before retiring the old one.
-
-Never commit API secrets, service-role keys, passwords, or private credentials.
+Use real-device testing for iPhone audio, microphone, recognition, installed-PWA cache, layout, and cross-device synchronisation.
 
 ## Release discipline
 
-A change is done when the relevant combination of the following is true:
+A change is complete only when the relevant acceptance criteria, automated tests, manual/device checks, learner-data protection, rollback, documentation, and issue/PR updates are complete.
 
-- acceptance criteria are satisfied;
-- automated tests pass;
-- required manual/real-device checks pass;
-- existing learner data is preserved;
-- production study remains available;
-- version/release documentation is updated where appropriate;
-- `DEVELOPMENT.md` is updated when project state or milestones materially change;
-- the associated issue/PR accurately records outcome and remaining follow-up.
+Production study must remain available. A feature being technically mergeable does not make it ready for Core use or deployment.
 
-## Immediate next steps
+## Immediate next work
 
-1. Review the A1.22 candidate branch (`feature/a1-22-directions-location`). It advances the course to directions and location with a V5.1.142 cache identifier; it is not published yet.
-2. Keep the standalone Flashcards app available as a fallback; do not retire it without an explicit retirement task.
-3. After an owner review and production release, confirm a hard-refreshed PWA shows V5.1.142 and that A1.22 becomes available only after A1.21 is retained.
-4. A1.23–A1.26 and the teaching-quality audit remain planned.
+1. Complete the question-format catalogue and evidence map.
+2. Convert the open teaching-quality audit into format-specific acceptance work.
+3. Specify the three-part progress model against existing learner data.
+4. Implement the feature-promotion mechanism.
+5. Build hidden-text listening with meaning selection as the first optional Practice vertical slice.
+6. Continue A1.22 content in a way that supports communicative/scenario objectives.
+7. Keep the standalone Flashcards fallback until a separate retirement decision.
 
-## Learning sync safety — 2026-09-18
+## V5.1.146 A1.22 and mastery proof safety — 2026-09-23
 
-`feature/learning-sync-safety` hardens `v51.js` so a fresh/empty local Learning blob cannot overwrite or mask a populated `trainer_state` row. Populated remote state is downloaded regardless of revision after `validateState`; invalid remote JSON writes neither localStorage nor Supabase; an empty local open does not insert a `trainer_state` row. Flashcards, Course UI, schema and authentication providers are unchanged. Owner restoration of the existing populated remote row still requires a signed-in Learning session on the production origin after this fix is published; do not sign in from an empty browser until then.
-
-This is now production as Zin V5.1.120 (`dutch-v5.1.120-20260918`, merge `3f8e1472166b17fda5e688f8a63c537e8b68a17b`). The owner has confirmed genuine `trainer_state` restoration on Mac and iPhone. Preserve this behaviour exactly; Course UI work must not alter Learning sync.
-
-## Course & Progress review preview — 2026-09-18
-
-`feature/course-progress-preview` is now based on production main `3f8e147` (V5.1.120 Learning sync-safety). The owner requested a working preview of a syllabus map and learning-progress dashboard, plus the previously recorded missing-form/full-sentence fix. This follows the progression-clarity work in #17 and the course-understandability criterion in #31.
-
-The implementation reads the existing Learning history and progression rules. It does not change scheduling, daily limits, Flashcards, Learning sync, learner-history records, database schema or migration state. Planned A1 content remains unavailable, and no fluency/CEFR certification claim is made.
-
-See `docs/course-progress-preview.md` for the precise file scope, local preview, evidence definitions and remaining manual checks. The isolated preview uses labelled sample history and has no live account connections. Production remains V5.1.120 until this PR is published; owner review comes before publication.
-
-## V5.1.121 release — 2026-09-18
-
-The owner accepted the working Course preview, particularly the Syllabus tab, and explicitly authorized proceeding with release after rebasing onto protected main. The release adds progress charts and a browsable syllabus/current position, and fixes complete-sentence answers to missing-form exercises. Related issues: #31 and #17; their broader readiness requirements remain open.
-
-Validation after updating onto `3f8e147`: 290 tests passed with `node --test tests/*.js`; `git diff --check` passed. The new worker regression executes installation, verifies every cached asset exists, simulates offline requests for the Course modules/style and versioned entry point, and confirms activation deletes only old caches within this app's scope. Desktop and phone-size preview checks passed in the preceding review. Physical iPhone installed-PWA update/offline behaviour still needs an owner device check; this is not claimed as verified.
-
-No learner records, persistence schema, authentication, scheduling, Learning sync or migration state change. Release/cache identifiers advance to 5.1.121 (`dutch-v5.1.121-20260918`). Rollback is a revert of this focused PR followed by a fresh cache identifier; retain the branch and production main `3f8e147` as source recovery points. Publication status is recorded in the PR and task completion report.
-
-## V5.1.122 flashcard flip — 2026-09-19
-
-Owner-authorized production release. Tapping a Flashcard now flips it horizontally with `rotateY`; Listen, Flag sentence and Edit card sit on both faces and rotate with the card. Rating buttons stay below the card. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.122-20260919`. Confirm the header shows V5.1.122 after a fresh production load.
-
-## DAB-90 study-origin distinction — 2026-09-19
-
-Local/`192.168` copies now show an amber **Development** banner and header label. GitHub Pages keeps the normal production chrome. Browser storage, scheduling, Supabase, authentication and learner data are unchanged. This is not yet a production version bump; publish only after owner review.
-
-## Listen and speak test area — 2026-09-20
-
-Owner direction: listening and speaking are high development priority (Linear DAB-146). OpenAI supplies listen/speak audio through the existing server-side key, never a client key.
-
-`feature/listen-speak-test-area` first added an isolated local preview. After owner acceptance, the same branch wired optional listening and speaking kinds onto existing practice items. Spoken questions can be skipped and typed. This is now production as Zin V5.1.123. Proofs, daily 20, new-card cap, Flashcards, Learning sync, authentication and schema stay unchanged. See `docs/listen-speak-preview.md`. Open:
-
-http://127.0.0.1:19086/preview/listen-speak.html
-
-after `python3 preview/serve-listen-speak.py` with `OPENAI_API_KEY` in the process environment. The preview can skip speaking or type instead. A production speech Edge Function is a later increment.
-
-## V5.1.123 listen and speak — 2026-09-20
-
-Owner-authorized production release after the isolated test area and skip-to-type were accepted. Practice on an existing topic can include optional listening and a spoken sentence. Existing learner history defaults speaking off. A spoken question can be skipped and typed without adding work or changing the daily 20. Mastery and retention proofs stay written. Cache identifier: `dutch-v5.1.123-20260920`. Confirm the header shows V5.1.123 after a fresh production load. No OpenAI speech Edge Function is deployed; production recording uses on-device recognition where available.
-
-## V5.1.124 rating taps and Listen — 2026-09-20
-
-Owner-authorized production release. The flipped 3D Flashcard no longer steals Again/Hard/Good/Easy taps. Listen starts in the same tap so iPhone can play audio. On GitHub Pages, Listen still uses device voices (Mac works; iPhone device TTS can stay silent). OpenAI MP3 Listen stays on the LAN development server (`preview/serve-dev.py`, key only in that process). Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.124-20260920`. Confirm the header shows V5.1.124 after a fresh production load.
-
-## V5.1.125 production Listen — 2026-09-20
-
-Production Listen was showing “check that speech is enabled” because GitHub Pages used device voices; iPhone rejects that path. V5.1.125 starts the same same-tap `GET /listen/tts` audio used on the LAN. The service worker proxies that request to a new `listen-tts` Edge Function that uses the existing server-side `OPENAI_API_KEY`. The OpenAI key stays off the browser. Device `canceled`/`interrupted` events are ignored so they do not show a false error. Scheduling, Flashcard ratings, Learning sync, authentication and schema are unchanged. Cache identifier: `dutch-v5.1.125-20260920`. The `listen-tts` function is deployed on the existing Supabase project and uses the server-side `OPENAI_API_KEY`. Confirm the header shows V5.1.125 after a fresh production load.
-
-## V5.1.126 production Listen blob playback — 2026-09-20
-
-Owner report: V5.1.125 still showed “Dutch audio could not play” after refresh. GitHub Pages has no `/listen/tts` file, iPhone often does not send `<audio>` requests through the service worker, and a URL without a trailing slash resolved Listen outside `/dutchlearning/`. V5.1.126 unlocks audio in the tap, POSTs to `listen-tts` from the page, and plays the returned MP3 blob. The OpenAI key stays on the server. Cache identifier: `dutch-v5.1.126-20260920`. Confirm the header shows V5.1.126 after a fresh production load.
-
-## V5.1.127 session ratings and Listen — 2026-09-20
-
-Owner report: after about 15 live cards, Again/Hard/Good/Easy stopped again, and production Listen only worked some of the time. iOS inflates the 3D card’s hit box over the rating row; the previous helper trusted that box and treated rating taps as flips. V5.1.127 always looks under the card with `elementFromPoint`, turns pointer events off on the flip shell, and keeps ratings above it. Listen now unlocks a dedicated silent element, caches recent MP3s, and retries playback once so a slow OpenAI response does not drop the tap. Cache identifier: `dutch-v5.1.127-20260920`. Confirm the header shows V5.1.127 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh.
-
-## V5.1.128 rating hit layer — 2026-09-20
-
-Owner report: V5.1.127 Listen stayed consistent, but Again/Hard/Good/Easy still died after several cards. iOS promotes the 3D card into its own layer; children with pointer events still receive taps, so looking “under” the card was not enough. V5.1.128 moves flip and Listen/Flag/Edit onto a flat layer, leaves the spinning card display-only, and times out a hung save so one slow write cannot freeze the rest of the batch. Cache identifier: `dutch-v5.1.128-20260920`. Confirm the header shows V5.1.128 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh.
-
-## V5.1.129 flatten the answer face — 2026-09-20
-
-Owner report: V5.1.128 detached Listen / Flag / Edit from the card, broke audio, and left the rating buttons unusable. That overlay is withdrawn. V5.1.129 restores the on-card controls and V5.1.127 Listen path. After the flip animation, the answer face becomes a normal flat card and only then do Again / Hard / Good / Easy appear, so the spinning layer cannot cover them. Cache identifier: `dutch-v5.1.129-20260920`. Confirm the header shows V5.1.129 after a fresh production load. Saved ratings from the interrupted batch are kept; Pause and continue the rest after the refresh. If GitHub Pages has not updated yet, finish remaining cards in the standalone Flashcards app.
-
-## V5.1.130 card height and today’s Learning — 2026-09-20
-
-Owner report: after V5.1.129 the Dutch face was slightly short and grew on flip, and today’s completed Learning session did not appear to be picked up. Flattening the answer no longer changes the card box, so both sides stay 330px. Course now shows an answers-today count and opens on supported practice when that is what was done today, so listening and other guided work is not hidden behind the “On my own” chart. Cache identifier: `dutch-v5.1.130-20260920`. Confirm the header shows V5.1.130 after a fresh production load. Learner history was not rewritten.
-
-## V5.1.131 single flip — 2026-09-20
-
-Owner report: V5.1.130 sizes were right, but every card flipped to English then flipped again back to Dutch. Flattening was resetting the spin to 0°, which plays as a second flip. V5.1.131 keeps the card at 180° after the first flip. Cache identifier: `dutch-v5.1.131-20260920`. Confirm the header shows V5.1.131 after a fresh production load.
-
-## V5.1.132 Course shows today’s Learning — 2026-09-20
-
-Owner report: today’s completed Learning session was still not populated on Course. The chart waited for two study days and defaulted to typed-only “On my own”, so a listening/guided day looked empty. V5.1.132 defaults to All practice and plots a point from the first study day. Cache identifier: `dutch-v5.1.132-20260920`. Confirm the header shows V5.1.132 after a fresh production load. Learner history was not rewritten. If Today still shows 0 / 20, say so — that would be a save/sync issue rather than a Course display issue.
-
-## V5.1.133 pull saved Learning attempts — 2026-09-20
-
-Owner report: Course still had no training data after V5.1.132, while the same answers were visible in Supabase. Sync uploaded `trainer_attempts` but never read them back; Course only plots local `state.attempts`. V5.1.133 downloads those rows and adds any missing attempt ids into the local Learning blob. Empty local still cannot overwrite a populated `trainer_state`. Schema, authentication and Flashcards are unchanged. Cache identifier: `dutch-v5.1.133-20260920`. Confirm the header shows V5.1.133 after a fresh production load, then open Course (or tap Sync now in Settings). Learner history was not rewritten.
-
-## V5.1.134 restore Course from trainer_state — 2026-09-20
-
-Owner report: Course was still empty after V5.1.133 even though the saved Learning backup was visible in Supabase. 133 only added rows from `trainer_attempts`; Course still missed answers already stored inside `trainer_state`, and a stale unfinished question in that backup could block the whole download. V5.1.134 copies missing answers from the `trainer_state` blob and still downloads a populated backup after clearing a stale pending question. Empty local still cannot overwrite a populated remote row. Flashcard `reviewhistory` remains on Report, not Course. Cache identifier: `dutch-v5.1.134-20260920`. Confirm the header shows V5.1.134 after a fresh production load, then open Course while signed in (or tap Sync now). Learner history was not rewritten.
-
-## V5.1.135 offer a ready test before practice — 2026-09-20
-
-Owner report: Course said F1 was test-ready, but Start Mastery Test was grey because today’s 20 had already been used on ordinary practice. V5.1.135 makes a ready mastery or retention test the Today primary action while the day still has enough unused questions, and it warns if practice is started instead. The test still uses the normal daily 20; it does not add extra work. Cache identifier: `dutch-v5.1.135-20260920`. Confirm the header shows V5.1.135 after a fresh production load. Learner history was not rewritten.
-
-## V5.1.136 four-tab menu — 2026-09-20
-
-Owner report: the seven-item top menu was too cluttered. V5.1.136 keeps Today, Flashcards, Progress and Settings in the top bar. Course, Flashcard Report, Learning mistakes and the word browser open from a Progress switcher, defaulting to Course. Study rules, Flashcards ratings and Learning sync are unchanged. Cache identifier: `dutch-v5.1.136-20260920`. Confirm the header shows V5.1.136 after a fresh production load. Do not delete browsing data to pick up the menu. Learner history was not rewritten.
-
-## V5.1.137 Course is home — 2026-09-20
-
-Owner-authorized production release. The Course path is the home screen. Today is no longer a destination. A header counter shows Learning `x / 20` and Flashcards ready/done, including during questions. The current topic starts the normal daily 20. A retained topic can offer a five-question extra batch that does not use the daily 20, change mastery, or write retries. Progress holds Evidence, Mistakes and Words. Flashcard Report stays on Flashcards. A1.21 place-and-movement content is included; A1.22–A1.26 remain planned. The four top-tab labels stay even, and Progress no longer stays highlighted after leaving. Cache identifier: `dutch-v5.1.137-20260920`. Confirm the header shows V5.1.137 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
-
-The mirrored Flashcard English face is unchanged from V5.1.136 and is not fixed in this release.
-
-## V5.1.138 un-mirror the English Flashcard face — 2026-09-21
-
-Owner-authorized production release. After the rotateY flip settles, flattening still keeps the card at 180° so it does not spin back to Dutch. The Dutch face is then hidden, and the English face gets `scaleX(-1)` so the leftover parent `rotateY(180deg)` no longer reads backwards. Listen, Flag, Edit and Again / Hard / Good / Easy are unchanged.
-
-The DAB-90 amber Development banner stays visible on local/`192.168` copies, but it now sits above the header instead of inside the tab flex row. The four tabs keep a full-width row so Course / Flashcards / Progress / Settings stay selectable next to the longer Development subtitle and daily counter. Cache identifier: `dutch-v5.1.138-20260920`. Confirm the header shows V5.1.138 after a fresh production load. Do not delete browsing data. Learner history, scheduling, Learning sync, authentication and schema are unchanged. iPhone confirmation of the English face was not possible at Mac review.
-
-The 3D flatten path still stole Again / Hard / Good / Easy taps after several cards. That is addressed in V5.1.139.
-
-## V5.1.139 rating dock — 2026-09-21
-
-Owner-authorized production release. V5.1.138 rotation was correct, but Again / Hard / Good / Easy stopped after several cards. Flattening the 3D card to uncover those buttons has failed across multiple releases. V5.1.139 keeps the rotateY animation, then destroys the 3D card and shows a normal flat English face. Ratings sit in a separate dock that is never transformed. Listen still uses the card’s Dutch text. On local/`192.168` copies the Development banner stays above the header, and Course / Flashcards / Progress / Settings stay on their own full-width row so they are not pushed off the phone screen. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.139-20260921`. Confirm the header shows V5.1.139 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
-
-## V5.1.140 mastery start button — 2026-09-21
-
-Owner-authorized production release. The “Before your mastery test” vocabulary reminder had no way to continue: the start button sat under a long word list on a screen that cannot scroll. V5.1.140 pins **Ready — start the test** on the same action row used by other questions, and lets the word list scroll above it. The test still uses today’s 20. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.140-20260921`. Confirm the header shows V5.1.140 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
-
-## V5.1.141 daily listening and speaking beats — 2026-09-21
-
-Owner-authorized production release. The isolated listen/speak test area and optional question kinds were already in production. V5.1.141 puts **one listening question** inside the generated daily 20, using the current topic’s own sentences and the existing server-side Listen audio. **One spoken question** is included only if speaking is switched on; skip still converts that item to the same typed question and does not add work. Mastery and retention tests stay written. Extra practice does not use these beats. Existing history still defaults speaking off; listening is turned on once for the daily beat and can be switched off in Settings. New-card cap stays 5. Scheduling, Supabase writes, Learning sync, authentication and the standalone Flashcards path are unchanged. Cache identifier: `dutch-v5.1.141-20260921`. Confirm the header shows V5.1.141 after a fresh production load. Do not delete browsing data. Learner history was not rewritten.
+This release combines A1.22 directions and location with DAB-88 proof safety. A1.22 follows A1.21 as a separate mastered and retained concept. The mastery proof now passes at 19/20 with at least 9/10 in each direction, records the missed item for targeted follow-up, and keeps retention strict at 10/10. A1.7–A1.12 have larger unseen proof pools so a failed attempt can be retried. The offline cache includes the new content. Learner history, Supabase schema and authentication are unchanged. Confirm V5.1.146 on a fresh production load and check the A1.22 lesson on a phone. Do not delete browsing data.

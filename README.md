@@ -1,30 +1,62 @@
 # Zin
 
-Zin is a personal Dutch-learning PWA focused on sentence construction, adaptive practice, active recall, flashcards and long-term retention.
+Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-term purpose is to make comfortable everyday Dutch conversation possible through a dependable daily routine, sentence-based learning, spaced review, listening, speaking, interaction, and honest evidence of progress.
 
-## Current checkpoint
+## Current production position
 
-**V5.1.104**
+Production is Zin V5.1.141 on GitHub Pages:
 
-The current learning path supports sustained Foundation progression rather than a single isolated session:
+- Course is the home screen and shows the syllabus and current position.
+- The normal Learning session is finite: 20 questions per study day.
+- New concepts are taught before they are assessed.
+- Practice progresses from recognition and supported construction toward independent English-to-Dutch production.
+- Mastery uses a 20-question unseen proof; retention uses a later 10-question proof.
+- The daily session includes one hidden-text listening beat.
+- Speaking can add one skippable spoken beat when enabled; skipping converts the same item to typing without adding work.
+- Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting.
+- The configured new-card limit is a hard ceiling; the current required maximum is 5 per day.
+- Supabase preserves signed-in learner state, and GitHub Pages is the only normal production study origin.
 
-- finite 20-question daily learning sessions;
-- explicit teaching before newly unlocked concepts;
-- practice progression through recognition, construction and independent Dutch production;
-- clear progress toward the 40-practice mastery threshold;
-- 20-question mastery proof using unseen material;
-- a three-day retention interval followed by a 10-question retention proof;
-- clean handoff into the next unlocked concept and its lesson;
-- Today and Course both explain the learner's current milestone rather than exposing raw engine state only;
-- Flashcard Listen excludes part-of-word labels such as "verb" from spoken Dutch.
+Completing the current A1 syllabus is an important stage, not the final destination and not an official CEFR qualification.
 
-The real Foundation content pack is covered by regression tests across the F1 mastery/retention boundary and the F2 teaching handoff.
+## Agreed product direction
 
-## Product direction
+Zin will evolve incrementally from a strong structured course and flashcard system into the learner's primary method for conversational Dutch.
 
-Zin is for one learner and is intended to build usable Dutch rather than vocabulary recognition alone. Sentence formation, grammar, spelling, comprehension and production are first-class learning goals. Repeated difficulty should trigger useful support or reduced exposure rather than endless repetition of the same failed prompt.
+Development is organised around three connected tracks:
 
-The Flashcards system remains integrated alongside the structured Learning course. Daily new-card limits are hard ceilings, due reviews take priority, and a completed Flashcard session does not refill unused new-card capacity later the same day.
+1. **Conversational capability** — deeper listening, conversational chunks, real-life scenarios, assessed speech, controlled dialogue, then less constrained conversation.
+2. **Question quality** — a small, consistent family of question formats with explicit teaching/assessment intent, fair support, useful feedback, and reliable evidence.
+3. **Progress clarity** — separate views of course position, capability, and retention rather than a misleading single completion percentage.
+
+The active staged roadmap is:
+
+1. Baseline, feature flags, question-format catalogue, and evidence model.
+2. Question-format consolidation and teaching-quality audit.
+3. Course journey, capability profile, and retention/activity reporting.
+4. Listening progression from hidden-text sentences to short exchanges.
+5. Conversational chunks and scenario-based objectives.
+6. Assessed spoken answers with typed fallback.
+7. Controlled dialogues.
+8. Broader, less predictable listening and conversation.
+
+New formats move through **Experimental → Practice → Trial → Core**. Experimental work must not destabilise the normal daily session.
+
+## Non-negotiable safeguards
+
+- Keep the live daily study route usable throughout development.
+- Preserve learner history, card identities, scheduling, review history, and Supabase recovery behaviour.
+- Keep the 20-question daily close and the hard 5-new-card ceiling.
+- Keep Flashcards and Learning as distinct, satisfying activities.
+- Do not let spelling alone block grammar/concept progression.
+- Repeated failure triggers scaffolding or reduced exposure, not endless repetition.
+- Keep normal questions single-screen, mobile-first, and easy to use on iPhone and MacBook.
+- Keep Check Answer pinned/easy to reach and use hold-to-show where revealing an answer could encourage copying.
+- Do not add points, streak pressure, leagues, badges, or other gamification.
+- Keep provider credentials server-side. Never expose an OpenAI key in the browser or PWA.
+- Keep at least one reliable fallback study path until a replacement is explicitly accepted.
+
+See [DESIGN.md](DESIGN.md) for intended learning behaviour, [DEVELOPMENT.md](DEVELOPMENT.md) for current delivery state and roadmap, and [AGENTS.md](AGENTS.md) for change-control rules.
 
 ## Development
 
@@ -34,4 +66,4 @@ Run the regression suite with:
 npm test
 ```
 
-Current learner-facing development is on `feature/a1-learning-session-vertical-slice`. Mobile-first testing remains part of each milestone.
+Substantial work uses focused branches and pull requests. Documentation-only changes must not be presented as implemented application behaviour. Mobile/PWA and real-device verification remain required where relevant.

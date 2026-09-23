@@ -113,9 +113,15 @@ function finishProof(s,now){
  const proof=s.proof,p=s.progress[proof.concept],n=proof.type==='mastery'?10:5;
  const attempts=s.attempts.filter(x=>proof.attemptIds.includes(x.id));
  const directions=Object.fromEntries(['nl-en','en-nl'].map(d=>{const a=attempts.filter(x=>x.direction===d);return [d,{correct:a.filter(x=>x.grammar===true&&!x.assisted).length,total:a.length}]}));
- const passed=Object.values(directions).every(x=>x.total===n&&x.correct===n);
- const report={id:proof.id,type:proof.type,concept:proof.concept,completedAt:now.toISOString(),directions,passed};p.proofHistory.push(report);s.lastProof=report;
- if(passed&&proof.type==='mastery'){p.status='retention-wait';p.retentionDue=addDays(dayKey(now),3);}
+ const correct=Object.values(directions).reduce((total,x)=>total+x.correct,0);
+ const complete=Object.values(directions).every(x=>x.total===n);
+ const passed=proof.type==='mastery'?complete&&correct>=19&&Object.values(directions).every(x=>x.correct>=9):complete&&Object.values(directions).every(x=>x.correct===n);
+ const missed=attempts.filter(x=>x.grammar!==true||x.assisted);
+ const report={id:proof.id,type:proof.type,concept:proof.concept,completedAt:now.toISOString(),directions,correct,total:attempts.length,required:proof.type==='mastery'?19:10,passed};p.proofHistory.push(report);s.lastProof=report;
+ if(passed&&proof.type==='mastery'){
+  p.status='retention-wait';p.retentionDue=addDays(dayKey(now),3);
+  for(const attempt of missed)s.retries.push({id:uid(),concept:proof.concept,verb:attempt.verb,sourceId:attempt.sourceId,after:s.attempts.length+2,date:dayKey(now),reason:'mastery-follow-up'});
+ }
  else if(passed){p.status='mastered';p.masteredAt=dayKey(now);p.nextMaintenance=addDays(dayKey(now),7);p.retentionDue=null;p.weakness=0;}
  else{p.status='learning';p.retentionDue=null;p.remedial=8;p.weakness=Math.max(p.weakness,4);}
  s.proof=null;

@@ -1,6 +1,7 @@
 import a1CoreExpansion from './a1-core-expansion.js';
 import a1CoreExpansion2 from './a1-core-expansion-2.js';
 import a1CoreExpansion3 from './a1-core-expansion-3.js';
+import a1ProofRetryBuffer from './a1-proof-retry-buffer.js';
 import a1CoreExpansion4 from './a1-core-expansion-4.js';
 import a1CoreExpansion4ProofBuffer from './a1-core-expansion-4-proof-buffer.js';
 import a1CoreExpansion5 from './a1-core-expansion-5.js';
@@ -11,7 +12,7 @@ import a1CapabilityExpansion3 from './a1-capability-expansion-3.js';
 import a1CapabilityExpansion4 from './a1-capability-expansion-4.js';
 export function registerPacks(packs){
  const includesMainCourse=packs.some(p=>p?.id==='foundation-a1');
- const sources=includesMainCourse?[...packs,a1CoreExpansion,a1CoreExpansion2,a1CoreExpansion3,a1CoreExpansion4,a1CoreExpansion4ProofBuffer,a1CoreExpansion5,a1CoreExpansion5ProofBuffer,a1CapabilityExpansion1,a1CapabilityExpansion2,a1CapabilityExpansion3,a1CapabilityExpansion4]:packs;
+ const sources=includesMainCourse?[...packs,a1CoreExpansion,a1CoreExpansion2,a1CoreExpansion3,a1ProofRetryBuffer,a1CoreExpansion4,a1CoreExpansion4ProofBuffer,a1CoreExpansion5,a1CoreExpansion5ProofBuffer,a1CapabilityExpansion1,a1CapabilityExpansion2,a1CapabilityExpansion3,a1CapabilityExpansion4]:packs;
  const concepts=[],sentences=[],ids=new Set();
  for(const p of sources){if(p.schemaVersion!==1)throw Error('Unsupported content pack version');for(const c of p.concepts){if(ids.has(c.id))throw Error('Duplicate concept');ids.add(c.id);concepts.push(c)}sentences.push(...p.sentences)}
  const seen=new Set();for(const s of sentences){if(seen.has(s.id)||!ids.has(s.concept)||!s.nl||!s.en)throw Error('Invalid sentence record');seen.add(s.id)}
