@@ -102,3 +102,12 @@ The current course-level `assisted` boolean can distinguish independent from non
 6. Promote formats one level at a time only when accessibility, scoring reliability, learner comprehension, and data safety checks pass.
 
 The first implementation slice is deliberately non-destructive: introduce the registry and its contract tests. No scheduler, mastery, persistence, or production-data behaviour should change in that slice.
+
+## Implemented foundation
+
+The first two non-behavioural foundations now exist:
+
+- `src/engine/question-formats.js` provides the read-only format contracts and controlled vocabularies;
+- `src/engine/format-release.js` provides context gating, a kill switch, sequential promotion requiring owner acceptance, and immediate rollback.
+
+Neither module is connected to the scheduler or learner state yet. The next vertical slice can therefore use the release control for an isolated optional Practice route without changing the current daily Core session.
