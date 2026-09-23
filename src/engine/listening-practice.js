@@ -30,15 +30,16 @@ export function startListeningPractice(state,content,{size=LISTENING_PRACTICE_SI
 
 export function currentListeningQuestion(session){return session?.questions?.[session.index]||null;}
 
-export function answerListeningPractice(session,raw,{usedTextFallback=false}={}){
+export function answerListeningPractice(session,raw,{usedTextFallback=false,audioIssue=null}={}){
  const question=currentListeningQuestion(session);
  if(!question)throw Error('Listening practice is already complete.');
  if(!String(raw??'').trim())throw Error('Choose an answer first.');
+ const issue=['unclear','unavailable'].includes(audioIssue)?audioIssue:null;
  const correct=normalize(raw)===normalize(question.answer);
  const result=Object.freeze({
   questionId:question.id,sourceId:question.sourceId,concept:question.concept,correct,
   capability:usedTextFallback?'recognise':'listen',support:'independent',releaseLevel:'practice',
-  usedTextFallback:Boolean(usedTextFallback),countsTowardProgress:false
+  usedTextFallback:Boolean(usedTextFallback),...(issue?{audioIssue:issue}:{}),countsTowardProgress:false
  });
  return Object.freeze({...session,index:session.index+1,answers:Object.freeze([...session.answers,result])});
 }
@@ -46,5 +47,5 @@ export function answerListeningPractice(session,raw,{usedTextFallback=false}={})
 export function listeningPracticeSummary(session){
  const answers=session?.answers||[];
  const heard=answers.filter(a=>!a.usedTextFallback);
- return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(a=>a.correct).length,textFallbacks:answers.filter(a=>a.usedTextFallback).length,countsTowardProgress:false});
+ return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(a=>a.correct).length,textFallbacks:answers.filter(a=>a.usedTextFallback).length,audioUnclear:answers.filter(a=>a.audioIssue==='unclear').length,audioUnavailable:answers.filter(a=>a.audioIssue==='unavailable').length,countsTowardProgress:false});
 }
