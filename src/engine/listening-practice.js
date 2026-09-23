@@ -20,7 +20,11 @@ export function startListeningPractice(state,content,{size=LISTENING_PRACTICE_SI
  if(!available.length)throw Error('Complete the first teaching step before starting listening practice.');
  const count=Math.max(1,Math.min(LISTENING_PRACTICE_SIZE,Math.trunc(size)||LISTENING_PRACTICE_SIZE));
  const selected=[...available].sort((a,b)=>hash(`${seed}:${a.id}`)-hash(`${seed}:${b.id}`)).slice(0,count);
- const questions=selected.map((item,index)=>makeExercise(item,'listening',content,{phase:'listening-practice',seed:`${seed}:${index}`}));
+ const questions=selected.map((item,index)=>{
+  const question=makeExercise(item,'listening',content,{phase:'listening-practice',seed:`${seed}:${index}`});
+  if(question.audio!==item.nl||question.answer!==item.en||!question.options.includes(question.answer))throw Error(`Invalid listening question: ${item.id}`);
+  return question;
+ });
  return Object.freeze({releaseLevel:'practice',capability:'listen',index:0,questions:Object.freeze(questions),answers:Object.freeze([])});
 }
 
