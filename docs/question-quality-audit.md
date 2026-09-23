@@ -1,8 +1,8 @@
 # Question-quality audit
 
-Status: initial read-only audit for DAB-88, 23 September 2026.
+Status: audit complete; first proof-safety and mastery-fairness slice implemented for review, 23 September 2026.
 
-This audit examines the current production content and scoring architecture. It does not change questions, learner state, scheduling, Supabase data, or production pass rules.
+This audit examines the production content and scoring architecture. The first bounded response changes mastery scoring and adds curated proof capacity without rewriting learner history, Supabase data, or the daily scheduler.
 
 ## Executive finding
 
@@ -23,9 +23,11 @@ Hard-coded course content is not itself a problem. Curated, versioned sentences 
 
 ### Critical — failed mastery can exhaust unseen proof
 
-A mastery test consumes 20 unseen proof sentences and retention consumes another 10. A1.7–A1.12 contain only 32 proof sentences. A simulated one-question mastery failure in A1.7 leaves 12 unseen sentences; after the required remediation, starting the next 20-question mastery test throws `Not enough unseen proof sentences remain in this pack`.
+A mastery test consumes 20 unseen proof sentences and retention consumes another 10. Before this slice, A1.7–A1.12 contained only 32 proof sentences. A simulated mastery failure in A1.7 left 12 unseen sentences; after the required remediation, starting the next 20-question mastery test threw `Not enough unseen proof sentences remain in this pack`.
 
 This is a progression blocker, not merely a content-quality concern. The same structural risk exists anywhere the effective proof pool cannot support failures, a later successful mastery test, and retention.
+
+Implemented response: A1.7–A1.12 now each have at least 52 unique proof sentences. Regression coverage exercises failure → eight successful remedial answers → fresh mastery retry → delayed retention without recycling exposed proof.
 
 Required response:
 
@@ -46,7 +48,7 @@ Required response:
 
 ### High — mastery scoring is brittle
 
-Production currently requires 20/20 grammar: 10/10 Dutch → English and 10/10 English → Dutch. The owner-approved DAB-88 direction is 19/20, with at least 9/10 in each direction. The missed item must still generate targeted follow-up. Spelling and capitalisation remain separate unless they change grammar or meaning. Retention scoring requires a separate explicit decision.
+Mastery now requires 19/20 grammar overall, with at least 9/10 in each direction. A 19/20 pass records the missed item for targeted follow-up. Spelling and capitalisation remain separate unless they change grammar or meaning. Retention remains strict at 10/10.
 
 ### Medium — exact English prompts can conceal Dutch distinctions
 
@@ -70,7 +72,7 @@ Each concept begins with one rule, one example, and a vocabulary list. That is a
 
 ## Recommended delivery order within DAB-88
 
-1. **Proof safety and fair mastery:** prevent proof exhaustion; implement the approved 19/20 and 9/10-per-direction mastery rule; create targeted follow-up for the missed item; keep retention unchanged pending a decision.
+1. **Proof safety and fair mastery — implemented for review:** prevent proof exhaustion; use the approved 19/20 and 9/10-per-direction mastery rule; create targeted follow-up for the missed item; keep retention at 10/10.
 2. **Practice breadth:** define minimum effective context diversity and expand the ten-item practice pools.
 3. **Ambiguity and alternatives:** repair A1.8 and audit prompts with multiple natural Dutch answers.
 4. **Format enforcement:** make `suitableKinds` an actual scheduling constraint with safe fallback.
@@ -81,10 +83,10 @@ Each concept begins with one rule, one example, and a vocabulary list. That is a
 The first code slice should address proof safety and mastery fairness together because both govern the same high-stakes transition:
 
 - mastery passes with at least 19/20 grammar-correct and at least 9/10 in each direction;
-- retention remains 10/10 until separately approved;
+- retention remains 10/10;
 - a 19/20 pass records the missed item for targeted later practice;
 - a failed mastery can always reach a fresh retry after remediation;
 - tests cover 20/20, 19/20 in either direction, an invalid 18/20, an invalid direction imbalance, and fail → remediate → retry → retention;
 - no existing learner history is rewritten.
 
-Owner review and phone acceptance remain required before promotion or production deployment.
+Automated coverage includes a perfect pass through the existing progression suite, 19/20 with the miss in either direction, 18/20 failure, strict 9/10 retention failure, proof-pool uniqueness, offline inclusion, and fail → remediate → retry → retention. Owner review and phone acceptance remain required before promotion or production deployment.
