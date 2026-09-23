@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.141**.
+- Current documented release: **Zin V5.1.146**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -38,7 +38,7 @@ The delivery order is:
 7. controlled dialogues;
 8. broader, less predictable listening and conversation.
 
-A1.22–A1.26 remain required course work, but curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+A1.22 is included; A1.23–A1.26 remain required course work, but curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
 ## Active milestone
 
@@ -46,7 +46,7 @@ A1.22–A1.26 remain required course work, but curriculum expansion should align
 
 DAB-168 established the format catalogue, capability evidence vocabulary, reversible release controls, and first optional listening Practice slice. DAB-88 now audits whether the live course teaches and tests fairly before further conversational expansion.
 
-The source-backed findings are recorded in `docs/question-quality-audit.md`. The first implementation slice now combines proof-pool safety with the owner-approved 19/20 mastery rule: mastery requires at least 9/10 in each direction, a single missed item creates targeted follow-up, A1.7–A1.12 have sufficient unseen proof for one failure plus retry and retention, and retention remains strict at 10/10. Production promotion still requires owner review and phone acceptance.
+The source-backed findings are recorded in `docs/question-quality-audit.md`. The first implementation slice now combines proof-pool safety with the owner-approved 19/20 mastery rule: mastery requires at least 9/10 in each direction, a single missed item creates targeted follow-up, A1.7–A1.12 have sufficient unseen proof for one failure plus retry and retention, and retention remains strict at 10/10. The proof-safety and mastery-fairness slice is now in the production source; phone acceptance remains to be checked.
 
 The completed conversational-foundations milestone established the structure needed to add conversational learning safely.
 
@@ -258,3 +258,7 @@ Production study must remain available. A feature being technically mergeable do
 5. Build hidden-text listening with meaning selection as the first optional Practice vertical slice.
 6. Continue A1.22 content in a way that supports communicative/scenario objectives.
 7. Keep the standalone Flashcards fallback until a separate retirement decision.
+
+## V5.1.146 A1.22 and mastery proof safety — 2026-09-23
+
+This release combines A1.22 directions and location with DAB-88 proof safety. A1.22 follows A1.21 as a separate mastered and retained concept. The mastery proof now passes at 19/20 with at least 9/10 in each direction, records the missed item for targeted follow-up, and keeps retention strict at 10/10. A1.7–A1.12 have larger unseen proof pools so a failed attempt can be retried. The offline cache includes the new content. Learner history, Supabase schema and authentication are unchanged. Confirm V5.1.146 on a fresh production load and check the A1.22 lesson on a phone. Do not delete browsing data.
