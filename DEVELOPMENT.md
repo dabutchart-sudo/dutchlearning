@@ -42,9 +42,13 @@ A1.22–A1.26 remain required course work, but curriculum expansion should align
 
 ## Active milestone
 
-### Conversational learning foundations
+### Question quality and teaching audit
 
-The immediate milestone establishes the structure needed to add conversational learning safely.
+DAB-168 established the format catalogue, capability evidence vocabulary, reversible release controls, and first optional listening Practice slice. DAB-88 now audits whether the live course teaches and tests fairly before further conversational expansion.
+
+The initial source-backed findings are recorded in `docs/question-quality-audit.md`. The first proposed implementation slice combines proof-pool safety with the owner-approved 19/20 mastery direction; it remains subject to a separate implementation review and phone acceptance.
+
+The completed conversational-foundations milestone established the structure needed to add conversational learning safely.
 
 Required outcomes:
 
