@@ -47,5 +47,9 @@ export function answerListeningPractice(session,raw,{usedTextFallback=false,audi
 export function listeningPracticeSummary(session){
  const answers=session?.answers||[];
  const heard=answers.filter(a=>!a.usedTextFallback);
- return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(a=>a.correct).length,textFallbacks:answers.filter(a=>a.usedTextFallback).length,audioUnclear:answers.filter(a=>a.audioIssue==='unclear').length,audioUnavailable:answers.filter(a=>a.audioIssue==='unavailable').length,countsTowardProgress:false});
+ const audioIssues=answers.filter(a=>a.audioIssue).map(answer=>{
+  const question=session?.questions?.find(q=>q.id===answer.questionId);
+  return Object.freeze({sourceId:answer.sourceId,issue:answer.audioIssue,audio:question?.audio||'',meaning:question?.answer||''});
+ });
+ return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(a=>a.correct).length,textFallbacks:answers.filter(a=>a.usedTextFallback).length,audioUnclear:answers.filter(a=>a.audioIssue==='unclear').length,audioUnavailable:answers.filter(a=>a.audioIssue==='unavailable').length,audioIssues:Object.freeze(audioIssues),countsTowardProgress:false});
 }
