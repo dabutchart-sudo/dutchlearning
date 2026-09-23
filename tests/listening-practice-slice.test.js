@@ -52,5 +52,6 @@ test('the learner-facing route states its isolation and safe fallback',()=>{
  const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
  assert.match(app,/Optional listening practice/i);assert.match(app,/does not use today’s 20/);
  assert.match(app,/Audio unavailable\? Show the Dutch text/);assert.match(app,/No Course, mastery, or retention progress changed/);
- assert.match(app,/speak\(audioText,notify\)/);assert.doesNotMatch(app,/practice-play',\(\)=>speak\(item\.nl/);
+ assert.match(app,/speak\(audioText,audioError/);assert.doesNotMatch(app,/practice-play',\(\)=>speak\(item\.nl/);
+ assert.match(app,/Loading Dutch audio/);assert.match(app,/prepareSpeech\(audioText\)/);assert.match(app,/prepareSpeech\(upcoming\.audio\)/);
 });
