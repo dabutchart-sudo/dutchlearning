@@ -1,135 +1,210 @@
 # Dutch Learning — Agent Instructions
 
-These instructions apply to AI-assisted development in this repository, whether work is performed through ChatGPT, Work, Codex, or another coding agent.
+These instructions apply to AI-assisted work in this repository through ChatGPT, Work, Codex, Cursor, or another coding agent.
 
 ## Read first
 
-Before substantial work:
+Before substantial work, read:
 
-1. Read `DESIGN.md` for product and learning intent.
-2. Read `DEVELOPMENT.md` for current implementation state, milestones, and development discipline.
-3. Read the relevant GitHub issue and existing tests/code before proposing changes.
+1. `DESIGN.md` — product and learning authority;
+2. `DEVELOPMENT.md` — current production state, active roadmap, and delivery discipline;
+3. the relevant Linear/GitHub issue;
+4. the implementation and tests in scope;
+5. current Git status and branch baseline.
 
-Do not infer a new product direction merely from current implementation behaviour.
+Do not infer product direction from current implementation behaviour or stale historical issues.
 
 ## Primary rule
 
-This is personal learning software with real learner history. Protect the learner's ability to study and protect existing progress before optimising architecture or adding features.
+This is live personal learning software with genuine learner history. Protect the learner's ability to study and protect existing progress before optimising architecture or adding capability.
 
-The owner is the sole product owner and user. Only the owner can approve a change to product direction, learning policy, production architecture, or data model. A broad request such as "review and improve", "clean up", or "modernise" is not permission to redesign unrelated areas or expand scope.
+The owner is the sole product owner and learner. Only the owner can approve changes to product direction, learning policy, provider/model strategy, production architecture, hosting, authentication, scheduler, data model, or production study contract.
+
+A request to review, improve, modernise, or clean up is not permission for unrelated redesign, refactoring, dependency changes, schema work, or backlog expansion.
+
+## Agreed direction
+
+Owner decision 2026-09-23: Zin will evolve incrementally into the learner's primary method for conversational Dutch.
+
+This is not permission for a rewrite or immediate open-ended chatbot. Work follows the staged roadmap in `DEVELOPMENT.md`:
+
+1. baseline, feature flags, question catalogue, and evidence model;
+2. question quality and teaching audit;
+3. trustworthy progress;
+4. deeper listening;
+5. conversational chunks and scenarios;
+6. assessed speaking;
+7. controlled dialogue;
+8. broader conversation.
+
+Coordinate three tracks: conversational capability, question-format quality, and evidence-based progress visualisation.
 
 ## Required working protocol
 
-For every agent/Cursor task:
+For each task:
 
-1. Inspect this file, `DESIGN.md`, `DEVELOPMENT.md`, the relevant implementation and tests, and the current Git status before proposing or editing.
-2. Confirm the source baseline and create a recoverable checkpoint or focused branch before substantial work. `main`/GitHub is the production source of truth; do not build on an unexplained dirty tree or unverified generated/deployed artifact.
-3. State the intended outcome and exact files expected to change. If discovery materially expands that list or the requested scope, stop and obtain owner approval.
-4. Make the smallest coherent, bounded change. Preserve all behaviour outside the explicit scope and do not bundle opportunistic refactors, dependency upgrades, redesigns, or backlog items.
-5. Add or update focused regression tests for behavioural changes where practical, then run the relevant focused tests and `npm test` before calling implementation work complete.
-6. Report the files changed, tests run and results, behaviour/data/deployment impact, remaining risks, and manual verification still needed. Show a concise diff-level scope for owner review.
-7. Do not merge, push, deploy, alter production data, or delete a recovery path merely because tests pass. Those actions require explicit scope or owner approval.
+1. Confirm the current production/source baseline and create a focused, recoverable branch or checkpoint.
+2. State the intended outcome, exact files expected to change, and application/data/deployment/cost impact.
+3. Make the smallest coherent change. Preserve all behaviour outside the approved scope.
+4. Add or update focused regression tests for behaviour changes.
+5. Run focused tests and `npm test` before calling implementation complete.
+6. Perform relevant phone/PWA/device checks where audio, speech, layout, cache, or synchronisation is affected.
+7. Review the exact diff and report files, tests, behaviour, learner-data impact, deployment status, costs, risks, rollback, and remaining manual checks.
+8. Do not merge, deploy, alter production data, or remove recovery paths merely because tests pass. Those actions require explicit scope or owner approval.
 
-When asked only to establish guardrails or documentation, do not change application behaviour to make the documentation true. Record any discovered mismatch as a risk or follow-up for owner review.
+If discovery materially expands scope, stop and obtain owner approval.
 
-## Non-negotiable product constraints
+Documentation-only work must not change runtime behaviour or claim that planned behaviour is implemented.
 
-- The configured maximum-new-cards value is a hard upper limit. The current required value is 5 per day.
-- Workload logic may reduce new-card introduction but must never silently increase it beyond the configured limit.
-- Completing the generated normal daily session must end normal learning for that study day. Unused new-card capacity must not be replenished later that day.
-- Optional Review Ahead behaviour, and optional open “keep talking” conversation, must remain distinct from the normal completed daily session.
-- When conversation practice exists, a short finite listening beat and speaking beat belong in the generated normal daily session. They must not become unbounded chat, refill unused new-card capacity, or replace mastery/retention proofs.
-- Flashcards remain a defined, satisfying batch-based learning activity with meaningful retention reporting.
-- English-to-Dutch production should be introduced progressively and supportively.
-- Repeated failure should lead to useful scaffolding or reduced immediate repetition, not an indefinite loop on the same spelling/item.
-- Answer-reveal assistance should promote recall; hold-to-show is preferred where revealing a word could otherwise encourage copying.
-- Feedback should show sufficient phrase/sentence context to make the relevant language pattern clear.
-- Speaking and listening are high-priority learning capabilities; preserve working speech and audio paths when changing exercises or interface structure.
-- Listening audio and speech transcription use the existing server-side OpenAI key only. Never put a provider API key in the browser or PWA. Do not implement OpenAI Realtime as the first conversation path.
-- Speaking questions must remain skippable: convert the pending spoken item to the same typed question. Do not drop the item, add extra work, or refill unused daily capacity. Existing learner history defaults speaking off.
-- The practice experience is one-screen, mobile-first, and iOS-like. Keep the primary Check Answer action pinned/easy to reach and avoid unnecessary scrolling during normal questions.
-- Mobile/PWA usability is a first-class requirement.
-- Do not add points, streak pressure, leagues, badges, rewards, or other gamification unless the owner explicitly changes the product direction.
-- The app is for one owner; do not add multi-user/commercial/product-growth complexity without explicit approval.
+## Non-negotiable study contract
 
-## Change-control boundaries
+- Course remains home.
+- The normal Learning session is finite: 20 questions per study day.
+- A ready mastery/retention proof must be offered before ordinary practice when the remaining daily allowance permits it.
+- Mastery is a finite 20-question unseen written proof; retention is a later 10-question written proof unless explicitly redesigned.
+- Completing the normal daily session ends normal Learning for that study day.
+- Optional Free Practice, Review Ahead, Experimental/Practice activities, and future open conversation remain distinct from normal daily completion.
+- The configured maximum-new-card value is a hard ceiling; the current required maximum is 5 per day.
+- Workload logic may reduce new cards but never silently increase or replenish them after completion.
+- Flashcards remain a separate, satisfying batch with meaningful retention reporting.
+- English-to-Dutch production increases gradually and supportively.
+- Repeated failure produces scaffolding, a simpler step, or reduced exposure—not an indefinite loop.
+- Spelling evidence must not unfairly block grammar/concept progress.
+- Hold-to-show is preferred where immediate reveal encourages copying.
+- Feedback includes enough sentence context to teach the relevant pattern.
+- Capitalisation is not penalised where meaning and Dutch orthography do not require it.
+- Multiple-choice English answers are preferred to typing English.
 
-Do not replace or materially rework the following without explicit owner approval:
+## Question-format controls
 
-- the AI provider or model strategy;
-- the application architecture or deployment/hosting platform;
-- Supabase as the database, persistence, or authentication platform;
-- the authentication flow or its trust boundaries;
-- the scheduling, daily-completion, flashcard, retention, or reporting model.
+Every new or materially changed format must define:
 
-Do not treat a new framework, provider, abstraction, or rewrite as an incidental implementation detail. If an approved task genuinely requires one of these changes, first document the reason, affected behaviour/data, migration and rollback plan, and validation required.
+- capability being taught or assessed;
+- teaching, guided, independent, or proof role;
+- acceptable-answer and ambiguity rules;
+- help and its evidence consequences;
+- success, near-miss, and failure feedback;
+- repeated-failure behaviour;
+- offline/service-failure fallback;
+- mobile layout;
+- persistence/resume behaviour;
+- automated and manual validation.
 
-## Flashcards migration safety
+New formats progress through **Experimental → Practice → Trial → Core**:
 
-The standalone Flashcards application is intended to be replaced by Dutch Learning, but it is currently a production safety path.
+- Experimental: isolated route; no production progress.
+- Practice: optional; diagnostic evidence only.
+- Trial: small controlled daily share; limited evidence.
+- Core: normal adaptive session; full relevant evidence.
 
-At least one reliable platform must remain available for completing normal sessions throughout development.
+Do not skip levels or promote a format solely because it works in a developer preview. Keep a feature flag or equivalent rollback until the path is proven.
 
-Therefore:
+Optional-service failure must convert or substitute an item safely; it must not strand the daily session.
 
-- do not retire, disable, or destructively modify the standalone Flashcards production path until the integrated Dutch Learning replacement has been validated and explicitly accepted;
-- prefer reversible migration stages;
-- protect card identities, scheduling state, review history, and learner progress;
-- document migration/rollback assumptions;
-- treat passing automated tests as necessary but not sufficient for production migration.
+## Evidence and progress rules
 
-## Supabase and data
+Progress has three separate meanings:
 
-- Do not alter existing Supabase tables, schema, migrations, policies, functions, or production data unless that exact change is explicitly approved.
-- Never commit secrets, passwords, API keys, service-role keys, or private credentials.
-- Preserve backwards compatibility where practical.
-- For potentially destructive data changes, establish and document recovery/rollback before execution.
-- Real-device/cross-device behaviour must be tested when the change depends on Supabase synchronisation or PWA persistence.
+1. Course journey — syllabus location and next objective.
+2. Capability profile — what the learner can demonstrate.
+3. Retention/activity — whether learning is sticking and study is occurring.
 
-Production sentence generation currently uses OpenAI through the restored deployed `generate-sentences` Supabase Edge Function. It uses `OPENAI_API_KEY`, the OpenAI Responses API and owner/Google authentication plus daily quota controls; its `verify_jwt = false` setting is deliberate because authentication is enforced inside the function. Do not replace this path, change provider, weaken its checks, or infer the deployed function from unrelated local code without explicit owner approval and production-safe validation.
+Evidence must be capability-specific:
 
-## Coding and testing
+- visible-text playback is exposure, not listening proof;
+- a typed fallback is production evidence, not speaking evidence;
+- an isolated sentence is not interaction evidence;
+- revealed/support-heavy success is not independent proof.
 
-- Prefer the smallest coherent change that satisfies the issue.
-- Preserve existing UI and behaviour unless the task requires changing them.
-- Treat existing passing behaviour as a compatibility surface, not an invitation to rewrite it.
-- Add/update regression tests for behavioural changes where practical.
-- Run the repository test suite (`npm test`) before declaring code complete.
-- Do not suppress failing tests merely to make CI green.
-- When a test expectation conflicts with `DESIGN.md`, investigate the intended behaviour rather than automatically preserving the test.
+Do not invent a single overall score that implies balanced conversational ability. Do not add points, streak pressure, leagues, badges, rewards, chests, or other gamification.
 
-## GitHub workflow
+## Listening, speaking, and conversation
 
-- Associate substantial changes with a GitHub issue.
-- Use focused feature branches/PRs for substantial implementation work.
-- Prefer one coherent purpose per PR.
-- Avoid allowing long-running branches to accumulate unrelated changes.
-- Keep PR descriptions clear about behaviour changed, tests performed, migration impact, and manual verification still required.
-- Do not merge draft/integration work solely because it is mergeable.
+- Listening and speaking are high-priority capabilities.
+- The current normal daily session may contain one finite listening beat and one optional speaking beat.
+- Speaking remains skippable; skipping converts the same item to typing without adding work.
+- Keep mastery and retention proofs written until explicitly changed.
+- Start with controlled, request/response paths; do not implement OpenAI Realtime first.
+- Controlled dialogue precedes open conversation.
+- Open “keep talking” conversation remains optional extra study unless explicitly approved otherwise.
+- Preserve working audio and speech paths when changing exercise or interface structure.
 
-## Documentation responsibility
+## UI requirements
 
-Update `DEVELOPMENT.md` when work materially changes:
+- Mobile-first, PWA-friendly, usable on iPhone and MacBook, and iOS-like in clarity.
+- Normal questions use a stable single-screen shell.
+- Keep **Check Answer** pinned or continuously easy to reach.
+- Avoid unnecessary scrolling and visible internal scoring/state during questions.
+- Course, Flashcards, Progress, and Settings remain the main destinations.
+- GitHub Pages is the genuine study origin; local/`192.168` copies remain visibly marked Development.
+- Interface character comes from colour, path design, and human copy—not game chrome.
 
-- current production state;
-- active milestone/phase;
-- architecture;
-- migration state;
-- known risks;
-- immediate next steps.
+## Architecture, AI, and cost boundaries
 
-Update `DESIGN.md` only when the intended product behaviour itself has changed and that change has been explicitly agreed with the owner.
+Do not replace or materially rework without explicit owner approval:
 
-GitHub issues should capture actionable work; do not use documentation as a substitute for issue tracking or create speculative issue clutter.
+- OpenAI/provider/model strategy;
+- application architecture or GitHub Pages hosting;
+- Supabase database, persistence, authentication, policies, or functions;
+- scheduling, daily completion, Flashcards, retention, or reporting models.
+
+Audio and transcription use the existing server-side OpenAI key through authenticated, quota-controlled functions or local preview environment. Never expose provider keys to browser/PWA code, logs, tests, or commits.
+
+New AI services require explicit daily/monthly spend limits and must fit the owner's modest running-cost target. AI output must not silently award permanent mastery without explainable evidence and deterministic safeguards.
+
+## Supabase and learner data
+
+- Do not alter tables, schema, migrations, policies, functions, authentication configuration, or production data unless that exact change is approved.
+- Preserve card identities, scheduling state, review history, learner history, and empty-local/populated-remote recovery behaviour.
+- Prefer additive and backwards-compatible changes.
+- Establish and document rollback before high-impact changes.
+- Test cross-device behaviour when persistence or synchronisation changes.
+- Never commit secrets, passwords, API keys, or service-role credentials.
+
+Production `generate-sentences` and `listen-tts` functions are protected boundaries. Inspect deployed/current source before approved changes; do not reconstruct or redeploy them from assumptions.
+
+## Reliable-study fallback
+
+At least one reliable platform must remain available for genuine sessions throughout development.
+
+The integrated Zin Flashcards path is accepted production. The standalone Flashcards app remains a fallback until an explicit retirement task is approved and validated. Do not disable, destructively modify, or discard that recovery path incidentally.
+
+## Coding, tests, and releases
+
+- Prefer one coherent purpose per branch/PR.
+- Avoid opportunistic refactors and dependency upgrades.
+- Treat passing current behaviour as a compatibility surface.
+- Do not suppress tests merely to make CI green.
+- Investigate conflicts between tests and `DESIGN.md`; do not automatically rewrite the design around an implementation shortcut.
+- Protect regression coverage listed in `DEVELOPMENT.md`.
+- Passing tests are necessary but not sufficient for production release.
+- Real-device validation is required when relevant.
+- Keep rollback and fallback paths until acceptance.
+
+## Planning and documentation
+
+Linear is the active roadmap/work-status system. GitHub is the source of truth for code, commits, pull requests, and technical documentation.
+
+Update:
+
+- `DESIGN.md` only for explicitly approved intended product behaviour;
+- `DEVELOPMENT.md` when production state, roadmap, architecture, risks, migration, or next work changes;
+- README when the public/current product summary becomes inaccurate;
+- Linear when milestones, priority, status, or actionable scope changes.
+
+Do not create speculative issue clutter. Create actionable issues with clear outcomes, acceptance criteria, dependencies, evidence impact, safeguards, and release level.
 
 ## Completion standard
 
-Before reporting a substantial task as complete, state:
+Before reporting a substantial task complete, state:
 
 - what changed;
-- what tests were run and their result;
-- what manual/real-device verification remains;
-- whether learner data or migration state was affected;
-- whether documentation/issues need updating.
+- what did not change;
+- tests run and results;
+- manual/device checks completed and outstanding;
+- learner-data, schema, authentication, deployment, and cost impact;
+- rollback/fallback state;
+- documentation and Linear updates;
+- whether anything was actually merged or deployed.
 
-Never claim a GitHub update, test, deployment, or device verification occurred unless it actually did.
+Never claim an update, test, deployment, data change, or device verification occurred unless it did.
