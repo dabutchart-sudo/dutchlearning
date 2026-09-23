@@ -79,6 +79,7 @@ This milestone changes documentation and planning first. Application work begins
 - Formalise teaching vs assessment and independent vs supported evidence.
 - Keep capitalization scoring fair.
 - Prevent spelling from blocking concept/grammar progression.
+- Change mastery proof from an all-or-nothing 20/20 rule to a 19/20 grammar pass threshold, with at least 9/10 correct in each direction. A failed item must still create targeted follow-up evidence rather than being silently ignored. Retention-proof scoring remains a separate DAB-88 decision and does not change implicitly.
 - Finish the teaching-quality audit.
 - Add ambiguity and natural-Dutch review to content acceptance.
 
