@@ -1,142 +1,221 @@
 # Dutch Learning — Product Design
 
 ## Purpose
-Dutch Learning is a personal Dutch-learning application built for one learner. Its purpose is to develop durable Dutch comprehension and production skills through a manageable daily routine, sentence-based practice, spaced review, adaptive support, and visible progress.
 
-The longer-term learning destination, agreed with the owner, is **comfortable everyday conversation**. Zin is intended to be the primary study method for reaching that level. Completing the current A1 course is a necessary stage on that path, not the final destination. Finishing Zin is not an official CEFR qualification.
+Zin is a personal Dutch-learning application for one learner. Its purpose is to develop durable, usable Dutch through a manageable daily routine, sentence-based learning, spaced review, adaptive support, listening, speaking, interaction, and visible evidence of progress.
 
-The application is not intended to become a general-purpose commercial language-learning product. Product decisions should optimise for the owner's learning needs, motivation, devices, and preferences rather than for a broad audience.
+The agreed long-term destination is **comfortable everyday conversation**. Zin is intended to become the learner's primary study method for reaching that level. Completing the current A1 syllabus is a necessary stage, not the final destination and not an official CEFR qualification.
 
-## Core learning philosophy
+Zin is not a commercial, multi-user language platform. Decisions optimise for the owner's learning needs, memory, devices, motivation, and preference for measurable progress without gamification.
 
-- Learning should extend beyond vocabulary recognition into sentence formation, grammar, spelling, comprehension, and eventually confident production.
-- Practice should be challenging enough to produce learning without becoming discouraging or needlessly repetitive.
-- Repetition is useful, but repeated failure on the same item should trigger support or reduced immediate exposure rather than an endless loop.
-- The learner should finish each day with a clear sense of completion.
-- Progress and retention reporting are motivational features and should remain meaningful.
-- Assistance should encourage recall rather than make copying the answer the easiest path.
+## Product principles
+
+- Move from recognition toward independent comprehension and production.
+- Teach language before testing it.
+- Use meaningful sentences, phrases, and situations rather than isolated words alone.
+- Make repetition contextual and useful.
+- Respond to repeated failure with help, a simpler step, or reduced immediate exposure rather than an endless loop.
+- Keep spelling evidence separate enough that spelling does not trap grammar or communication progress.
+- Make the end of each normal study day decisive.
+- Show progress only where evidence supports it.
+- Preserve a reliable production study route and genuine learner history throughout development.
+- Add conversational capability incrementally; do not replace a dependable course with an unbounded chatbot.
 
 ## Daily study contract
 
-### One normal session per study day
-The app generates one normal daily learning session. Completing that generated session completes normal study for the day. Reopening or refreshing the app must not offer unused new-card capacity as a second normal session.
+### One normal Learning session
 
-Mastery (20 questions) and retention (10 questions) proofs use that same daily session. When a proof is ready and the day still has enough unused questions, the app must tell the learner before ordinary practice starts, so practice does not silently postpone the test until the next study day.
+The app generates one normal Learning session per study day. The normal session contains 20 questions. Completing it completes normal Learning for that day; refreshing or reopening the app must not create another normal session.
 
-Explicit features such as Review Ahead, extra Free Practice of a retained topic, or optional open “keep talking” conversation, may provide extra study, but they must remain clearly separate from the completed normal daily session. Extra practice must not refill unused daily capacity, start a second normal session, change mastery or retention status, or leak retries into the next daily queue.
+Mastery uses a finite 20-question proof and retention uses a later 10-question proof. A ready proof must be offered before ordinary practice when enough of the daily allowance remains.
 
-### New-card limit
-The user setting for maximum new cards is a hard, adjustable upper limit.
+Optional Free Practice, Review Ahead, experimental Practice activities, and future open conversation remain clearly separate. They must not refill daily capacity, silently alter mastery/retention, or leak extra retries into the next normal queue.
 
-The current required setting is **5 new cards per day**.
+### New-card limit and Flashcards
 
-The scheduler may introduce fewer than the configured maximum when workload/backlog management requires it, but it must never automatically exceed the configured value and must not later replenish unused capacity after the daily session has been completed.
+The configured maximum number of new Flashcards is a hard adjustable ceiling. The current required maximum is **5 per day**. Workload logic may introduce fewer, but never more, and unused capacity must not be replenished after the batch is complete.
 
-### Reviews and workload
-Due reviews take priority over introducing new material. The system may dampen new-card introduction when review load is high so that daily workload remains sustainable.
+Due reviews take priority. Flashcards remain a separate, satisfying batch with meaningful retention reporting and Again / Hard / Good / Easy decisions.
 
-The goal is long-term retention without allowing review counts to grow without reasonable control.
+### Listening and speaking beats
 
-## Learning modes
+The normal session may contain a short, finite listening beat and speaking beat drawn from the current topic. They count within the daily 20; they are not extra work.
 
-### Recognition and production
-The app should support both Dutch-to-English recognition and English-to-Dutch production.
+Speaking remains optional when talking is inconvenient. Skipping converts the same item to its typed equivalent without dropping it, adding another question, or awarding speaking evidence. Mastery and retention proofs remain finite written checks until an explicit later design decision changes that rule.
 
-English-to-Dutch production is important but should be introduced progressively. Difficulty should rise supportively rather than abruptly so that production practice remains achievable and motivating.
+## Capability model
 
-### Sentence-based learning
-Vocabulary should normally be learned in meaningful phrases or sentences rather than as isolated words alone. Where a question concerns part of a phrase, feedback should show enough of the full relevant phrase to make the language pattern clear.
+Zin records distinct evidence rather than treating every correct answer as interchangeable.
 
-Sentence exercises should progressively develop grammar and sentence construction as well as vocabulary recall.
+| Capability | What it means | Suitable evidence |
+| --- | --- | --- |
+| Recognise | Understand familiar Dutch | Dutch-to-English meaning selection |
+| Recall | Retrieve a word or phrase | English cue to Dutch recall |
+| Construct | Build correct Dutch structure | Word order, missing form, controlled construction |
+| Produce | Generate Dutch independently | Typed English-to-Dutch sentence |
+| Listen | Understand Dutch without reading it first | Hidden-text audio selection, dictation, comprehension |
+| Speak | Retrieve and communicate Dutch aloud | Recorded/spoken response, not a typed substitute |
+| Interact | Respond appropriately in an exchange | Bounded dialogue with several acceptable responses |
+| Retain | Reproduce learning after delay and variation | Unseen delayed proof |
 
-### Spelling support
-Spelling mistakes should produce useful corrective practice. If the learner repeatedly fails the same spelling in a session, the system should provide stronger scaffolding and/or reduce immediate repetition so the session does not become dominated by one word.
+Spelling is supporting evidence, not a universal gate. Help usage must be recorded so supported success is not confused with independent proof.
 
-Missing-letter exercises may hide roughly half of a target word where appropriate.
+## Question-format system
 
-### Hints and answer assistance
-Answer assistance should be deliberately frictionful enough to promote recall. Where a word can be revealed, hold-to-show behaviour is preferred over a simple click that encourages copying.
+Zin uses a small family of consistent question formats. New formats must be justified by the capability they teach or prove; visual novelty is not sufficient.
 
-Hints, images, partial words, phrases, and other scaffolding may be used where they improve learning without trivialising the question.
+Every format requires a written contract covering:
 
-### Listening and speaking
-Owner direction 2026-09-20: listening and speaking are a **high development priority**. After the isolated test area was accepted, practice on an existing topic may include a listening beat and a short speaking beat. Those beats reuse the topic’s own sentences. They must be closed activities that finish with the rest of the daily session. They must not teach unbounded new grammar, refill unused new-card capacity, or raise the new-card ceiling.
+1. the capability it teaches or assesses;
+2. whether the current use is teaching, guided practice, independent practice, or proof;
+3. acceptable answers and ambiguity handling;
+4. available support and how support changes the evidence earned;
+5. feedback after success, near miss, and failure;
+6. repeated-failure behaviour;
+7. offline and service-failure behaviour;
+8. accessibility and mobile layout;
+9. persistence and resumption behaviour;
+10. automated and manual validation.
 
-Speaking is optional whenever talking is inconvenient. A spoken question can be skipped and answered as the same typed English-to-Dutch item. That skip does not add work or replace the day’s 20-question close. Existing learner history defaults speaking off until the owner opts in.
+The shared presentation should remain stable:
 
-Early listening and speaking may be scripted: listen and choose a meaning, repeat, or answer a known question. Later turns may adapt through OpenAI. Open-ended chat that can continue after the daily session is complete remains optional extra study, like Review Ahead.
+- one task per screen;
+- a clear prompt and one principal answer area;
+- pinned or continuously reachable **Check Answer**;
+- help available without dominating the screen;
+- feedback in a consistent location with enough sentence context to explain the pattern;
+- internal status and scoring machinery hidden during normal questions;
+- capitalization differences not penalised where meaning and Dutch orthography do not require it;
+- multiple-choice English answers preferred to typing English;
+- hold-to-show where immediate reveal would encourage copying.
 
-Mastery and retention proofs remain finite, scored written checks. Spoken turns are not a substitute for those proofs.
+A format must not enter the compulsory daily session merely because it exists.
 
-### Voice conversation architecture
-OpenAI remains the approved provider. Owner direction 2026-09-20: use the existing OpenAI API for listening audio and speech transcription. The existing server-side `OPENAI_API_KEY` on Supabase Edge Functions, or the same key in a local preview-server environment, is the only permitted key. The browser and installed PWA must never receive a provider API key.
+## Format release ladder
 
-The first conversation implementation must not use the OpenAI Realtime API. A later optional “talk freely” mode would need a separate owner decision.
+New capabilities move through four levels:
 
-Any conversation or speech Edge Function must use owner/Google authentication and its own daily and monthly spend quota, separate from sentence generation and visual generation.
+1. **Experimental** — isolated test route; no production progress.
+2. **Practice** — optional learner-facing activity; diagnostic evidence only.
+3. **Trial** — a small, controlled share of selected daily sessions; limited evidence.
+4. **Core** — normal adaptive use after reliability, fairness, and learning value are demonstrated.
 
-## Flashcards
+Every promotion requires suitable regression coverage, owner acceptance, and relevant mobile/real-device validation. A feature flag or equivalent rollback path must remain until the new path is proven.
 
-Flashcard study remains a core part of Dutch Learning. The learner values completing a defined batch of cards and the retention reporting generated by that process.
+If audio, transcription, AI, or another optional service fails, the normal session must substitute or convert the item safely rather than become unusable.
 
-The existing standalone Flashcards application is a legacy production system and is intended to be fully replaced by Dutch Learning.
+## Conversational-learning roadmap
 
-Migration must be reversible and staged. **At least one reliable platform must remain available for completing normal flashcard sessions throughout development.** The standalone Flashcards app must therefore remain usable until the integrated Dutch Learning implementation has been validated sufficiently to become the production study path.
+### Stage 0 — Baseline and safeguards
 
-The integrated system should preserve the useful qualities of the standalone flashcard experience rather than dissolving flashcards into an unstructured stream of ad-hoc questions.
+Document current formats and evidence, establish feature flags/test routes, strengthen daily-session and persistence regression coverage, and preserve recovery paths.
+
+### Stage 1 — Question quality
+
+Consolidate prompt, answer, help, and feedback behaviour. Complete the teaching-quality audit. Separate independent, supported, and revealed success. Prevent spelling from blocking broader learning unfairly.
+
+### Stage 2 — Trustworthy progress
+
+Deliver three complementary views:
+
+- **Course journey** — where the learner is going and the current syllabus position;
+- **Capability profile** — what the learner can currently do across vocabulary/recall, grammar/construction, reading, listening, writing/production, speaking, and interaction;
+- **Retention and activity** — whether learning is sticking over time.
+
+### Stage 3 — Listening depth
+
+Progress from known sentence audio to hidden-text meaning, sentence discrimination, missing heard words, short dictation, and comprehension of two-line exchanges. Later introduce different voices and controlled speed variation.
+
+### Stage 4 — Conversational chunks and scenarios
+
+Teach reusable units such as *Ik denk dat…*, *Kun je dat herhalen?*, and *Ik zou graag…* as scheduled learning objects. Organise application around real tasks: introductions, home/family, ordering and paying, arranging plans, directions, and explaining a simple problem.
+
+Grammar remains explicit where useful, but each course block should contribute to a communicative objective.
+
+### Stage 5 — Assessed spoken answers
+
+Add a narrow loop: prompt, spoken response, transcription, comparison, focused feedback, retry, and later review. Early assessment prioritises comprehensibility and correct retrieval over native accent imitation.
+
+Typed fallback remains available but earns no speaking evidence.
+
+### Stage 6 — Controlled dialogues
+
+Add short two-to-four-turn exchanges with bounded vocabulary, several acceptable responses, optional phrase support, and clarification/repetition controls. Feedback normally follows the exchange rather than interrupting every utterance.
+
+### Stage 7 — Broader conversation
+
+Only after controlled dialogue is dependable, introduce more phrasing variation, unfamiliar sentences built from known language, longer audio, freer answers, idiomatic feedback, conversational repair, and optional open conversation.
+
+Open conversation remains extra study unless the owner explicitly approves a bounded form for the normal daily session.
 
 ## Progress and reporting
 
-The Course path is the home screen. The learner should see the whole syllabus, where they are, and be able to start study from that screen. The current topic’s Start or Continue opens the normal daily Learning session, using the same 20-question rules and proof offer. A retained topic may offer extra Free Practice, labelled as extra.
+A single overall percentage must not imply balanced conversational ability.
 
-A slim header counter shows Learning `x / 20` and whether Flashcards are ready or done. That counter stays visible during questions. When a test is ready, the current node must offer it before ordinary practice. When the day’s 20 are finished, the path must make that ending as obvious as Start.
+### Course journey
 
-Reporting should help the learner see that retention is being maintained and that learning is progressing over time. Evidence charts and counts live inside Progress, not on the home path. Flashcard Report stays on the Flashcards screen.
+Course is home. It shows the finite syllabus, current position, next meaningful objective, and topic states:
 
-Useful measures include review volume, new material, retention/performance trends, and day/month/year views where appropriate. Reporting changes should prioritise a few meaningful facts over adding large quantities of metrics.
+- Not started
+- Learning
+- Practising
+- Proven
+- Retaining
+- Needs attention
 
-Later extras, not required for the current path: optional daily weak-area suggestions, and an optional short matching drill of known pairs. Those must not introduce points, streaks, leagues, or other gamification.
+The current topic starts or continues the normal daily session. Retained topics may offer clearly labelled extra practice.
+
+### Capability profile
+
+Progress separately represents Vocabulary/Recall, Grammar/Construction, Reading, Listening, Writing/Production, Speaking, and Interaction. A capability rises only from relevant evidence:
+
+- listening requires hidden-text comprehension, not pressing Listen while reading;
+- speaking requires a spoken response, not a typed fallback;
+- interaction requires an exchange, not an isolated sentence;
+- independent proof must not be inferred from revealed answers.
+
+Early empty or low-evidence areas should be shown honestly without framing them as failure.
+
+### Retention and activity
+
+Keep meaningful Flashcard and Learning reporting: New, Learning, Reviewing, Mastered, recent retention, completed study, and areas due for reinforcement. Prefer a few understandable facts and day/month/year trends over dense dashboards.
+
+Progress is not gamification. Do not add points, streak pressure, leagues, badges, chests, rewards, or artificial scarcity.
+
+## Listening, speech, and AI architecture
+
+OpenAI is the approved provider. Audio and transcription use the existing server-side key through authenticated, quota-controlled Supabase Edge Functions or a local preview-server environment. A provider key must never enter browser code, the installed PWA, logs, or repository.
+
+Do not begin with OpenAI Realtime. Scripted and request/response speech paths come first. A later realtime or free-conversation architecture requires a separate owner decision, spend controls, authentication review, fallback behaviour, and production-safe validation.
+
+Generated or AI-evaluated output must not silently determine permanent mastery without deterministic rules, explainable evidence, and a recovery path. AI is most valuable for acceptable-answer breadth, near-miss explanation, feedback, and controlled variation.
 
 ## User experience
 
-- Mobile-first, PWA-friendly, and deliberately iOS-like in clarity and restraint.
-- Normal practice is a focused one-screen experience. Daily questions should fit comfortably on a phone without unnecessary scrolling.
-- The primary **Check Answer** action should remain pinned or otherwise continuously easy to reach during a question.
-- Dutch text, capitalization, and answer presentation should be consistent and unambiguous.
-- Hints and error tips should be specific enough to teach the learner what to try next, not generic encouragement or an unexplained correction.
-- Word reveal should use hold-to-show where immediate reveal would encourage copying.
-- Speaking and listening are high-priority capabilities. Practice may include a short listening beat and a short speaking beat from the current topic. Speaking can be skipped and typed when talking is inconvenient. Interface changes should preserve easy access to Dutch pronunciation.
-- The main menu should make today's study state obvious, including when the normal daily session is complete. The top bar has four destinations: Course, Flashcards, Progress, and Settings. Course is home and shows the syllabus path. Learning `x / 20` and Flashcards ready/done sit in the header. Evidence, Learning mistakes, and the word browser live inside Progress. The Flashcard report lives on the Flashcards screen. There is no separate Today destination.
-- The interface should remain focused; features should justify the complexity they add.
-- The product should not use points, streak pressure, leagues, badges, artificial rewards, or other gamification. Motivation should come from a clear course path, satisfying completed batches, learning progress, retention, and a few useful facts — not screens of numbers.
-- The interface should feel welcoming and a little more characterful than a form, while staying clean and iOS-like. Character comes from the path, warmer colour, and human copy, not a mascot, chests, or game chrome.
-- GitHub Pages is the only normal origin for genuine study. Local and 192.168 origins are development copies, must remain visually distinct, and keep separate browser storage.
+- Mobile-first, installable/PWA-friendly, usable on iPhone and MacBook, and deliberately iOS-like in clarity.
+- Normal questions should fit on one phone screen without unnecessary scrolling.
+- Course, Flashcards, Progress, and Settings remain the main destinations.
+- Course remains home; there is no separate Today destination.
+- Learning `x / 20` and Flashcards ready/done remain easy to see.
+- The interface should be welcoming and characterful through colour, path design, and human copy—not game chrome.
+- Local and `192.168` origins remain visibly marked as Development; GitHub Pages is the only normal production study origin.
 
-## Data and synchronisation
+## Data, synchronisation, and production safety
 
-Supabase is the persistent cross-device data service for signed-in use. Local/offline behaviour should remain robust where supported.
+Supabase is the persistent cross-device service for signed-in use. Local/offline behaviour remains robust where supported.
 
-Changes to scheduling, learner state, review history, or schema must protect existing progress. Migration work must be designed so that learner data can be validated before an old production path is retired.
+Learner state, card identity, scheduling, review history, authentication boundaries, existing schema, and the empty-local/populated-remote recovery protections are production contracts. Changes require explicit approval, additive/backwards-compatible design where practical, representative testing, rollback, and real-device verification when relevant.
 
-Existing Supabase tables, schema, policies, stored data, and authentication boundaries are production contracts. They must not be altered merely to simplify a feature implementation; any change requires explicit owner agreement, a recovery plan, and validation against real learner data.
+At least one reliable route must remain available for genuine daily study. The standalone Flashcards path is retained as a fallback until explicitly retired.
 
-Secrets and service credentials must never be committed to the repository.
+## Product scope and authority
 
-## Product scope
+Evaluate features by asking:
 
-Dutch Learning is intentionally personal software. Features should be evaluated primarily against these questions:
+1. Will this improve the owner's conversational Dutch?
+2. Will it make daily study clearer, sustainable, or more effective?
+3. Does it produce trustworthy evidence rather than decorative progress?
+4. Does it preserve learner data and a reliable production route?
+5. Is the complexity justified for one learner?
 
-1. Will this improve the owner's Dutch learning?
-2. Will it make the daily routine clearer, more sustainable, or more motivating?
-3. Does it preserve learner progress and a reliable study path?
-4. Is its complexity justified for a single-user application?
-
-Features needed only for multi-user productisation, commercialisation, broad onboarding, social features, gamification, or growth should not be added unless the product direction is explicitly changed.
-
-## Design authority
-
-This document records the intended product behaviour and learning principles. It should not be changed merely to match an implementation shortcut.
-
-When implementation and this design conflict, either the implementation should be corrected or the design change should be explicitly agreed with the owner and recorded here.
-
-The owner is the sole product owner and learner. Agents may identify trade-offs and propose bounded changes, but they must not infer permission for a broader redesign, provider/platform swap, gamification, commercialisation, or architectural rewrite from a general request to review or improve the application.
+This document is the authority for intended product behaviour. Implementation shortcuts do not silently rewrite it. The owner alone approves changes to product direction, learning policy, provider/platform strategy, architecture, or production data model.
