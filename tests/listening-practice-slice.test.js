@@ -31,7 +31,7 @@ test('heard answers create session-only listening diagnostics',()=>{
  const state=ready(),before=JSON.stringify(state);let session=startListeningPractice(state,content,{size:1,seed:'heard'});
  const question=currentListeningQuestion(session);session=answerListeningPractice(session,question.answer);
  assert.deepEqual(session.answers[0],{questionId:question.id,sourceId:question.sourceId,concept:'F1',correct:true,capability:'listen',support:'independent',releaseLevel:'practice',usedTextFallback:false,countsTowardProgress:false});
- assert.deepEqual(listeningPracticeSummary(session),{total:1,heard:1,heardCorrect:1,textFallbacks:0,countsTowardProgress:false});
+ assert.deepEqual(listeningPracticeSummary(session),{total:1,heard:1,heardCorrect:1,textFallbacks:0,audioUnclear:0,audioUnavailable:0,countsTowardProgress:false});
  assert.equal(JSON.stringify(state),before);
 });
 
@@ -39,7 +39,16 @@ test('revealing text changes evidence to recognition and never claims listening 
  let session=startListeningPractice(ready(),content,{size:1,seed:'fallback'});const question=currentListeningQuestion(session);
  session=answerListeningPractice(session,question.answer,{usedTextFallback:true});
  assert.equal(session.answers[0].capability,'recognise');assert.equal(session.answers[0].usedTextFallback,true);
- assert.deepEqual(listeningPracticeSummary(session),{total:1,heard:0,heardCorrect:0,textFallbacks:1,countsTowardProgress:false});
+ assert.deepEqual(listeningPracticeSummary(session),{total:1,heard:0,heardCorrect:0,textFallbacks:1,audioUnclear:0,audioUnavailable:0,countsTowardProgress:false});
+});
+
+test('unclear and unavailable audio remain answerable recognition fallbacks',()=>{
+ let session=startListeningPractice(ready(),content,{size:2,seed:'audio-issues'});let question=currentListeningQuestion(session);
+ session=answerListeningPractice(session,question.answer,{usedTextFallback:true,audioIssue:'unclear'});question=currentListeningQuestion(session);
+ session=answerListeningPractice(session,question.answer,{usedTextFallback:true,audioIssue:'unavailable'});
+ assert.equal(session.answers[0].capability,'recognise');assert.equal(session.answers[0].audioIssue,'unclear');
+ assert.equal(session.answers[1].capability,'recognise');assert.equal(session.answers[1].audioIssue,'unavailable');
+ assert.deepEqual(listeningPracticeSummary(session),{total:2,heard:0,heardCorrect:0,textFallbacks:2,audioUnclear:1,audioUnavailable:1,countsTowardProgress:false});
 });
 
 test('practice requires teaching, a selected answer and an unfinished question',()=>{
@@ -51,7 +60,7 @@ test('practice requires teaching, a selected answer and an unfinished question',
 test('the learner-facing route states its isolation and safe fallback',()=>{
  const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
  assert.match(app,/Optional listening practice/i);assert.match(app,/does not use today’s 20/);
- assert.match(app,/Audio unavailable\? Show the Dutch text/);assert.match(app,/No Course, mastery, or retention progress changed/);
+ assert.match(app,/Audio unclear/);assert.match(app,/Audio unavailable/);assert.match(app,/Check answer to continue/);assert.match(app,/No Course, mastery, or retention progress changed/);
  assert.match(app,/speak\(audioText,audioError/);assert.doesNotMatch(app,/practice-play',\(\)=>speak\(item\.nl/);
  assert.match(app,/Loading Dutch audio/);assert.match(app,/prepareSpeech\(audioText\)/);assert.match(app,/prepareSpeech\(upcoming\.audio\)/);
 });
