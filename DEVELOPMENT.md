@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.146**.
+- Current documented release: **Zin V5.1.147**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -16,6 +16,10 @@
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
 The production `generate-sentences` and `listen-tts` Supabase Edge Functions use the server-side `OPENAI_API_KEY`. Treat deployed functions, owner/Google authentication, quota controls, and the deliberate internal-auth boundaries as protected production contracts. Do not recreate or redeploy them from assumptions.
+
+## Mastery retake timing — 2026-09-24
+
+A failed mastery test becomes eligible on the next study day without eight successful remedial answers. The test still needs all 20 daily questions. Earlier saved failures are recognised from proof history without rewriting learner data. Retention failure behaviour is unchanged. Release cache: `dutch-v5.1.147-20260924-mastery-retake`.
 
 ## Agreed development direction — 2026-09-23
 

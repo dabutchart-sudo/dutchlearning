@@ -8,7 +8,16 @@ export const EXTRA_PRACTICE_SIZE=5;
 export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
 export function freshState(content,now=new Date()){return {schemaVersion:5,revision:0,learnerId:uid(),deviceId:uid(),createdAt:now.toISOString(),progress:Object.fromEntries(content.concepts.map(c=>[c.id,blankProgress()])),attempts:[],exposures:[],words:{},wordStruggles:{},retries:[],daily:{date:dayKey(now),count:0},pending:null,proof:null,lastProof:null,extra:null,settings:{listening:true,speaking:false,dailyListenSpeakBeats:true},migration:null};}
 export function ensureDay(s,now=new Date()){const date=dayKey(now);if(date>s.daily.date){s.daily={date,count:0};if(s.pending?.phase==='extra')s.pending=null;s.extra=null;}return s.daily;}
-export function phase(p,date){if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';return p.status;}
+export function phase(p,date){
+ if(p.masteredAt&&p.status!=='reinforcement')return 'mastered';
+ if(p.retentionDue)return date>=p.retentionDue?'retention-ready':'retention-wait';
+ const latest=p.proofHistory?.at(-1);
+ if(latest?.type==='mastery'&&!latest.passed){
+  const failedOn=latest.studyDate||latest.completedAt?.slice(0,10);
+  if(failedOn&&date>failedOn)return 'proof-ready';
+ }
+ return p.status;
+}
 export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
 export function activeConcept(s,c){return c.concepts.find(x=>unlocked(x,s)&&!s.progress[x.id].masteredAt)?.id||c.concepts.at(-1).id;}
 export function teachConcept(s,id,content,{acknowledge=true}={}){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;if(acknowledge)s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
@@ -117,13 +126,13 @@ function finishProof(s,now){
  const complete=Object.values(directions).every(x=>x.total===n);
  const passed=proof.type==='mastery'?complete&&correct>=19&&Object.values(directions).every(x=>x.correct>=9):complete&&Object.values(directions).every(x=>x.correct===n);
  const missed=attempts.filter(x=>x.grammar!==true||x.assisted);
- const report={id:proof.id,type:proof.type,concept:proof.concept,completedAt:now.toISOString(),directions,correct,total:attempts.length,required:proof.type==='mastery'?19:10,passed};p.proofHistory.push(report);s.lastProof=report;
+ const report={id:proof.id,type:proof.type,concept:proof.concept,completedAt:now.toISOString(),studyDate:dayKey(now),directions,correct,total:attempts.length,required:proof.type==='mastery'?19:10,passed};p.proofHistory.push(report);s.lastProof=report;
  if(passed&&proof.type==='mastery'){
   p.status='retention-wait';p.retentionDue=addDays(dayKey(now),3);
   for(const attempt of missed)s.retries.push({id:uid(),concept:proof.concept,verb:attempt.verb,sourceId:attempt.sourceId,after:s.attempts.length+2,date:dayKey(now),reason:'mastery-follow-up'});
  }
  else if(passed){p.status='mastered';p.masteredAt=dayKey(now);p.nextMaintenance=addDays(dayKey(now),7);p.retentionDue=null;p.weakness=0;}
- else{p.status='learning';p.retentionDue=null;p.remedial=8;p.weakness=Math.max(p.weakness,4);}
+ else{p.status='learning';p.retentionDue=null;p.remedial=proof.type==='mastery'?0:8;p.weakness=Math.max(p.weakness,4);}
  s.proof=null;
 }
 export function submit(s,c,questionId,raw,now=new Date()){
@@ -149,7 +158,9 @@ export function submit(s,c,questionId,raw,now=new Date()){
  if(q.phase==='practice'){
   p.practiceAttempts++;
   if(a.grammar===true){if(['choice','correct-sentence','listening','speaking'].includes(q.kind))p.recognised++;if(['wordbank','gap','form'].includes(q.kind))p.constructed++;if(a.independent)p.independent++;if(p.remedial)p.remedial--;}
-  if(p.practiceAttempts>=c.conceptById[q.concept].minPractice&&!p.remedial&&!p.retentionDue&&!p.masteredAt)p.status='proof-ready';
+  const latest=p.proofHistory?.at(-1);
+  const failedMasteryToday=latest?.type==='mastery'&&!latest.passed&&(latest.studyDate||latest.completedAt?.slice(0,10))===s.daily.date;
+  if(p.practiceAttempts>=c.conceptById[q.concept].minPractice&&!p.remedial&&!p.retentionDue&&!p.masteredAt&&!failedMasteryToday)p.status='proof-ready';
  }
  if(q.phase==='maintenance'){
   if(a.grammar===false){p.status='reinforcement';p.nextMaintenance=dayKey(now);}

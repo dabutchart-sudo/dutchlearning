@@ -30,6 +30,7 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   }else if(status==='retention-wait')nextStep=`Your retention check opens on ${p.retentionDue}. Passing it unlocks the next topic.`;
   else if(status==='mastered')nextStep='Retained after a delayed check. Future practice will revisit this skill.';
   else if(status==='reinforcement')nextStep='Revisit this retained skill in maintenance practice. Earlier retention evidence is kept.';
+  else if(p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false)nextStep='Your mastery retake opens on your next study day. You can practise today.';
   else nextStep=[remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} to reach the ${required}-answer test requirement.`:'Practice requirement reached.',p.remedial?`${p.remedial} successful practice ${p.remedial===1?'answer':'answers'} still needed after your last test.`:''].filter(Boolean).join(' ');
   return {...c,status,label:statusLabels[status]||'In practice',available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,nextStep};
  });

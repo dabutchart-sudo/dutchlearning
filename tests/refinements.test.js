@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
 import {makeExercise,maskedCorrection,sentenceDifference,wordBank,bankAnswer} from '../src/engine/exercises.js';
 import {assess} from '../src/engine/scoring.js';
-import {freshState,submit,prepareQuestion,useHelp,ensureDay,startProof} from '../src/engine/learner.js';
+import {freshState,submit,prepareQuestion,useHelp,ensureDay,startProof,phase,dailyProofOffer} from '../src/engine/learner.js';
 import {selectPractice} from '../src/engine/scheduler.js';
 import {spellingBlocked,wordBlocked} from '../src/engine/word-recall.js';
 import {createRepository} from '../src/engine/persistence.js';
@@ -96,6 +96,28 @@ test('proof remains unassisted, twenty questions, with independent unseen materi
  prepareQuestion(s,content,now);assert.throws(()=>useHelp(s),/unavailable/);
  for(let i=0;i<20;i++){const q=prepareQuestion(s,content,now);submit(s,content,q.id,q.answer,now);}
  assert.equal(s.lastProof.passed,true);assert.equal(s.progress.F1.retentionDue,'2026-09-11');assert.equal(s.progress.F1.masteredAt,null);
+});
+test('failed mastery opens for a retake the next study day without remedial successes',()=>{
+ const s=state();s.progress.F1.status='proof-ready';s.progress.F1.practiceAttempts=40;
+ startProof(s,content,'F1','mastery',now);
+ for(let i=0;i<20;i++){
+  const q=prepareQuestion(s,content,now);
+  submit(s,content,q.id,i<2?'wrong answer':q.answer,now);
+ }
+ assert.equal(s.lastProof.passed,false);
+ assert.equal(s.progress.F1.remedial,0);
+ assert.equal(phase(s.progress.F1,'2026-09-08'),'learning');
+ assert.equal(dailyProofOffer(s,content,now),null);
+ const tomorrow=new Date('2026-09-09T12:00:00');
+ assert.equal(phase(s.progress.F1,'2026-09-09'),'proof-ready');
+ assert.equal(dailyProofOffer(s,content,tomorrow).canStartToday,true);
+ startProof(s,content,'F1','mastery',tomorrow);
+ assert.equal(s.proof.questions.length,20);
+});
+test('an earlier failed mastery with the old remedial counter also becomes ready',()=>{
+ const s=state();Object.assign(s.progress.F1,{status:'learning',practiceAttempts:40,remedial:8,proofHistory:[{type:'mastery',passed:false,completedAt:'2026-09-08T12:00:00.000Z'}]});
+ assert.equal(phase(s.progress.F1,'2026-09-08'),'learning');
+ assert.equal(dailyProofOffer(s,content,new Date('2026-09-09T12:00:00')).canStartToday,true);
 });
 test('service worker caches every new runtime module and version',()=>{
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');

@@ -29,6 +29,8 @@ The app generates one normal Learning session per study day. The normal session 
 
 Mastery uses a finite 20-question proof and retention uses a later 10-question proof. A ready proof must be offered before ordinary practice when enough of the daily allowance remains.
 
+After a failed mastery proof, a retake becomes eligible on the next study day without a quota of successful remedial questions. It still needs all 20 of that day's questions. Practice remains available in the meantime.
+
 Optional Free Practice, Review Ahead, experimental Practice activities, and future open conversation remain clearly separate. They must not refill daily capacity, silently alter mastery/retention, or leak extra retries into the next normal queue.
 
 ### New-card limit and Flashcards
