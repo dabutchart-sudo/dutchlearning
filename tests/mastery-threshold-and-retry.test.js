@@ -57,7 +57,7 @@ test('mastery still fails at 18 of 20',()=>{
  assert.equal(state.lastProof.correct,18);
  assert.equal(state.lastProof.passed,false);
  assert.equal(state.progress['A1.7'].status,'learning');
- assert.equal(state.progress['A1.7'].remedial,8);
+ assert.equal(state.progress['A1.7'].remedial,0);
 });
 
 test('retention remains strict at 10 of 10',()=>{
@@ -72,27 +72,18 @@ test('retention remains strict at 10 of 10',()=>{
  assert.equal(state.progress['A1.7'].status,'learning');
 });
 
-test('a failed mastery has enough unseen proof for remediation, retry and retention',()=>{
+test('a failed mastery has enough unseen proof for a next-day retry and retention',()=>{
  const {state,now}=readyState();
  startProof(state,content,'A1.7','mastery',now);
  answerProof(state,now,[0,1]);
 
- const remediationDay=new Date('2026-09-24T12:00:00Z');
+ const retryDay=new Date('2026-09-24T12:00:00Z');
  state.daily={date:'2026-09-24',count:0};
- for(let i=0;i<8;i++){
-  const question=prepareQuestion(state,content,remediationDay,false);
-  submit(state,content,question.id,question.answer,remediationDay);
- }
- assert.equal(state.progress['A1.7'].remedial,0);
- assert.equal(state.progress['A1.7'].status,'proof-ready');
-
- const retryDay=new Date('2026-09-25T12:00:00Z');
- state.daily={date:'2026-09-25',count:0};
  assert.doesNotThrow(()=>startProof(state,content,'A1.7','mastery',retryDay));
  answerProof(state,retryDay);
 
- const retentionDay=new Date('2026-09-28T12:00:00Z');
- state.daily={date:'2026-09-28',count:0};
+ const retentionDay=new Date('2026-09-27T12:00:00Z');
+ state.daily={date:'2026-09-27',count:0};
  assert.doesNotThrow(()=>startProof(state,content,'A1.7','retention',retentionDay));
  answerProof(state,retentionDay);
  assert.equal(state.progress['A1.7'].status,'mastered');
