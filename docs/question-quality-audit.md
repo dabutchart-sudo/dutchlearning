@@ -102,3 +102,15 @@ Focused checks cover context breadth, proof separation, valid verb metadata, all
 Phone acceptance remains outstanding: inspect new items in typed, choice, word-bank, gap/form and correction presentations; confirm readable feedback and reachable Check Answer. No UI or service changes are included. This branch is not a release; production cache/version remain unchanged. Rollback is a revert of the additive content slice.
 
 Validation: focused tests passed (4/4); full regression suite passed (394/394); whitespace validation passed. No real-device validation, merge or deployment was performed.
+
+## A1.8 question-word practice breadth — 27 September 2026
+
+The second local practice-breadth slice expands A1.8 from 10 to 20 unique Dutch sentences and English meanings. Each of waar, wat, wanneer, hoe and wie now has four contexts. The pool meets the same minimum of ten verbs and ten subjects as A1.7. Added contexts cover locating everyday belongings, food, family, opening times, lessons, travel, payment and helping. New English prompts avoid singular/plural “you”; the existing A1.8 ambiguity remains a separate audit task.
+
+All ten added Dutch sentences are distinct from every other registered sentence, including proof records. Existing sentence identities, metadata, teaching, proof material, scheduler and mastery/retention rules are unchanged. The original A1.7 breadth slice is retained on this branch. No learner-data, schema, authentication, service or cost changes are included. Production version/cache remain unchanged; no merge or deployment was performed.
+
+Focused checks cover all five question words, diversity, vocabulary-target and verb metadata, all eight declared formats, word-bank construction, unique answer options, distractor rejection, capitalisation tolerance, missing question words and changed word order. Existing A1.7/A1.8 progression coverage also passes. A one-off comparison against the parent checkpoint confirms every original pack record and teaching definition is unchanged.
+
+Phone/PWA acceptance remains outstanding: inspect the new items and feedback in typed, choice, word-bank, gap/form and correction views, confirm Check Answer remains reachable, and check playback through the existing listening path. No audio-service or UI changes are included. Rollback is a revert of the additive A1.8 content commit. Next implementation work is A1.9 practice breadth; ambiguity, format enforcement and teaching coverage follow the breadth audit.
+
+Validation: focused tests passed (7/7); full regression suite passed (397/397); whitespace validation passed. No real-device validation was performed.

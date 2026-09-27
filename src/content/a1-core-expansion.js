@@ -77,7 +77,17 @@ const questionPractice=[
  ['Wat koopt zij?','What is she buying?','kopen',1,['koop','koopt','kopen'],'zij','wat'],
  ['Wanneer komen jullie?','When are you coming?','komen',1,['kom','komt','komen'],'jullie','wanneer'],
  ['Hoe gaat het?','How is it going?','gaan',1,['ga','gaat','gaan'],'het','hoe'],
- ['Wie woont hier?','Who lives here?','wonen',1,['woon','woont','wonen'],'wie','wie']
+ ['Wie woont hier?','Who lives here?','wonen',1,['woon','woont','wonen'],'wie','wie'],
+ ['Waar ligt de krant?','Where is the newspaper?','liggen',1,['lig','ligt','liggen'],'de krant','waar'],
+ ['Waar staat jouw auto?','Where is your car?','staan',1,['sta','staat','staan'],'jouw auto','waar'],
+ ['Wat eet de hond?','What is the dog eating?','eten',1,['eet','eten'],'de hond','wat'],
+ ['Wat schrijft mijn zus?','What is my sister writing?','schrijven',1,['schrijf','schrijft','schrijven'],'mijn zus','wat'],
+ ['Wanneer opent het museum?','When does the museum open?','openen',1,['open','opent','openen'],'het museum','wanneer'],
+ ['Wanneer begint de les?','When does the lesson start?','beginnen',1,['begin','begint','beginnen'],'de les','wanneer'],
+ ['Hoe reist jouw vader?','How does your father travel?','reizen',1,['reis','reist','reizen'],'jouw vader','hoe'],
+ ['Hoe betaalt de vrouw?','How does the woman pay?','betalen',1,['betaal','betaalt','betalen'],'de vrouw','hoe'],
+ ['Wie kookt vanavond?','Who is cooking tonight?','koken',1,['kook','kookt','koken'],'wie','wie'],
+ ['Wie helpt de kinderen?','Who is helping the children?','helpen',1,['help','helpt','helpen'],'wie','wie']
 ];
 const questionProof=[
  ['Waar woont zij?','Where does she live?','wonen',1,['woon','woont','wonen'],'zij','waar'],

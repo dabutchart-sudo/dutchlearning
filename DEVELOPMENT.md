@@ -270,3 +270,7 @@ This release combines A1.22 directions and location with DAB-88 proof safety. A1
 ## DAB-88 practice breadth — 2026-09-27 (local review)
 
 The next bounded audit slice expands A1.7 negation practice from 10 to 20 contexts, with a minimum of ten subjects and ten verbs. Existing record identities and proof material are preserved. Added rows are validated across their declared formats and against all registered proof text. No scheduler, learner-data, schema, authentication, service, cost or production-release change is included. Phone/PWA acceptance remains outstanding. Continue practice breadth for later ten-item pools, then ambiguity, format enforcement and teaching coverage in the audit's agreed order.
+
+## DAB-88 A1.8 practice breadth — 2026-09-27 (local review)
+
+A1.8 question-word practice now has 20 contexts, four each for waar, wat, wanneer, hoe and wie, spanning at least ten verbs and ten subjects. Added Dutch sentences are distinct from all registered course text. Existing identities, teaching and proof records are preserved; daily scheduling, learner history, services and production-release settings are unchanged. Phone/PWA acceptance remains outstanding. Next: A1.9 practice breadth, then the later small pools before ambiguity, format enforcement and teaching coverage.
