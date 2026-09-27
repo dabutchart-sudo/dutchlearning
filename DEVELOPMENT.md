@@ -266,3 +266,7 @@ Production study must remain available. A feature being technically mergeable do
 ## V5.1.146 A1.22 and mastery proof safety — 2026-09-23
 
 This release combines A1.22 directions and location with DAB-88 proof safety. A1.22 follows A1.21 as a separate mastered and retained concept. The mastery proof now passes at 19/20 with at least 9/10 in each direction, records the missed item for targeted follow-up, and keeps retention strict at 10/10. A1.7–A1.12 have larger unseen proof pools so a failed attempt can be retried. The offline cache includes the new content. Learner history, Supabase schema and authentication are unchanged. Confirm V5.1.146 on a fresh production load and check the A1.22 lesson on a phone. Do not delete browsing data.
+
+## DAB-88 practice breadth — 2026-09-27 (local review)
+
+The next bounded audit slice expands A1.7 negation practice from 10 to 20 contexts, with a minimum of ten subjects and ten verbs. Existing record identities and proof material are preserved. Added rows are validated across their declared formats and against all registered proof text. No scheduler, learner-data, schema, authentication, service, cost or production-release change is included. Phone/PWA acceptance remains outstanding. Continue practice breadth for later ten-item pools, then ambiguity, format enforcement and teaching coverage in the audit's agreed order.

@@ -90,3 +90,15 @@ The first code slice should address proof safety and mastery fairness together b
 - no existing learner history is rewritten.
 
 Automated coverage includes a perfect pass through the existing progression suite, 19/20 with the miss in either direction, 18/20 failure, strict 9/10 retention failure, proof-pool uniqueness, offline inclusion, and fail → remediate → retry → retention. Owner review and phone acceptance remain required before promotion or production deployment.
+
+## Practice breadth slice — 27 September 2026
+
+A1.7 negation practice has been expanded from 10 to 20 unique Dutch sentences and English meanings. The pool now covers at least ten verbs and ten subjects, with adjective, adverb, place/time and definite-object negation. New examples cover food, home, travel and everyday actions. The initial bounded acceptance floor is 20 unique sentence/meaning pairs, ten verbs and ten subjects; this is a content-review floor, not a change to progression requirements or a guarantee of transfer. Later pools still require individual review.
+
+Existing sentence identities, teaching, proof records, mastery/retention rules and learner history remain unchanged. Every added sentence is checked against all registered proof text to avoid reducing unseen proof capacity. The scan also found an existing cross-course overlap for A1.7-p-03; broader legacy overlap remains audit work.
+
+Focused checks cover context breadth, proof separation, valid verb metadata, all eight declared formats, word-bank construction, answer options and rejection of omitted negation. The existing A1.7/A1.8 mastery-to-retention progression tests remain in scope.
+
+Phone acceptance remains outstanding: inspect new items in typed, choice, word-bank, gap/form and correction presentations; confirm readable feedback and reachable Check Answer. No UI or service changes are included. This branch is not a release; production cache/version remain unchanged. Rollback is a revert of the additive content slice.
+
+Validation: focused tests passed (4/4); full regression suite passed (394/394); whitespace validation passed. No real-device validation, merge or deployment was performed.

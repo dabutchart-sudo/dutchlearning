@@ -21,7 +21,17 @@ const negationPractice=[
  ['De winkel is vandaag niet open.','The shop is not open today.','zijn',2,['ben','bent','is','zijn'],'De winkel','niet'],
  ['Mijn fiets is niet nieuw.','My bicycle is not new.','zijn',2,['ben','bent','is','zijn'],'Mijn fiets','niet'],
  ['Ik spreek niet snel.','I do not speak quickly.','spreken',1,['spreek','spreekt','spreken'],'Ik','niet'],
- ['Wij gaan vanavond niet.','We are not going tonight.','gaan',1,['ga','gaat','gaan'],'Wij','niet']
+ ['Wij gaan vanavond niet.','We are not going tonight.','gaan',1,['ga','gaat','gaan'],'Wij','niet'],
+ ['De soep is niet warm.','The soup is not warm.','zijn',2,['ben','bent','is','zijn'],'De soep','niet'],
+ ['Het brood is niet vers.','The bread is not fresh.','zijn',2,['ben','bent','is','zijn'],'Het brood','niet'],
+ ['Mijn kamer is niet groot.','My room is not big.','zijn',2,['ben','bent','is','zijn'],'Mijn kamer','niet'],
+ ['Ik loop niet langzaam.','I do not walk slowly.','lopen',1,['loop','loopt','lopen'],'Ik','niet'],
+ ['De leraar praat niet hard.','The teacher does not speak loudly.','praten',2,['praat','praten'],'De leraar','niet'],
+ ['Wij wonen niet in Rotterdam.','We do not live in Rotterdam.','wonen',1,['woon','woont','wonen'],'Wij','niet'],
+ ['Hij eet vandaag niet thuis.','He is not eating at home today.','eten',1,['eet','eten'],'Hij','niet'],
+ ['Zij neemt de trein niet.','She is not taking the train.','nemen',1,['neem','neemt','nemen'],'Zij','niet'],
+ ['Ik koop die fiets niet.','I am not buying that bicycle.','kopen',1,['koop','koopt','kopen'],'Ik','niet'],
+ ['Wij drinken de koffie niet.','We are not drinking the coffee.','drinken',1,['drink','drinkt','drinken'],'Wij','niet']
 ];
 const negationProof=[
  ['Ik ben vandaag niet thuis.','I am not at home today.','zijn',1,['ben','bent','is','zijn'],'Ik','niet'],
