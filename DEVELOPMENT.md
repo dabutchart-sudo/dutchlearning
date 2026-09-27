@@ -274,3 +274,7 @@ The next bounded audit slice expands A1.7 negation practice from 10 to 20 contex
 ## DAB-88 A1.8 practice breadth — 2026-09-27 (local review)
 
 A1.8 question-word practice now has 20 contexts, four each for waar, wat, wanneer, hoe and wie, spanning at least ten verbs and ten subjects. Added Dutch sentences are distinct from all registered course text. Existing identities, teaching and proof records are preserved; daily scheduling, learner history, services and production-release settings are unchanged. Phone/PWA acceptance remains outstanding. Next: A1.9 practice breadth, then the later small pools before ambiguity, format enforcement and teaching coverage.
+
+## DAB-88 A1.9 practice breadth — 2026-09-27 (local review)
+
+A1.9 perfect tense with zijn practice now has 20 contexts across 16 subjects. All six existing verb families have at least three examples; no new verb family is introduced. Added Dutch sentences are distinct from all registered course text. Existing record identities, teaching and proof material are preserved, including A1.10. No learner-data, scheduler, schema, authentication, service, cost or production-release changes are included. Phone/PWA acceptance remains outstanding. Next: A1.10 separable-verb practice breadth, followed by later small pools and the remaining audit work.

@@ -114,3 +114,15 @@ Focused checks cover all five question words, diversity, vocabulary-target and v
 Phone/PWA acceptance remains outstanding: inspect the new items and feedback in typed, choice, word-bank, gap/form and correction views, confirm Check Answer remains reachable, and check playback through the existing listening path. No audio-service or UI changes are included. Rollback is a revert of the additive A1.8 content commit. Next implementation work is A1.9 practice breadth; ambiguity, format enforcement and teaching coverage follow the breadth audit.
 
 Validation: focused tests passed (7/7); full regression suite passed (397/397); whitespace validation passed. No real-device validation was performed.
+
+## A1.9 perfect tense with zijn practice breadth — 27 September 2026
+
+The third local breadth slice expands A1.9 from 10 to 20 unique Dutch sentences and English meanings, spanning 16 subjects. The six already-taught verb families remain unchanged: gaan and blijven have four contexts each; komen, worden, vertrekken and aankomen have three each. The breadth floor for this concept covers all six already-taught verbs. Added contexts cover visiting family, everyday destinations, staying in a hotel, waking up, illness, departure after breakfast and arrival at a station. New English prompts avoid singular/plural “you”.
+
+Every added Dutch sentence is distinct from all other registered course text, including proof material. A comparison against the parent checkpoint confirms all existing pack records and teaching definitions are unchanged, including A1.10. Auxiliary and final-participle slots are explicitly validated, alongside construction and scoring in all eight declared formats, answer-option uniqueness, distractor rejection, capitalisation tolerance, missing tense components, incorrect auxiliaries and word order. Existing progression and offline-inclusion tests remain in scope.
+
+Learner history, daily scheduling, mastery/retention, services, schema, authentication and production version/cache are unchanged. There is no additional service cost. Earlier A1.7/A1.8 breadth checkpoints remain on this branch. No merge, deployment or real-device validation was performed. Phone/PWA acceptance remains outstanding: inspect new items and corrective feedback in typed, choice, word-bank, gap/form and correction views; confirm Check Answer remains reachable and check the existing listening path. Rollback is a revert of this additive A1.9 commit.
+
+Next implementation work is A1.10 separable-verb practice breadth, followed by later small pools, ambiguity, format enforcement and teaching coverage.
+
+Validation: focused tests passed (7/7); the full regression suite passed (401/401); original-record comparison and whitespace validation passed.
