@@ -4,7 +4,7 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.149 on GitHub Pages:
+Production is Zin V5.1.150 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus and current position.
 - The normal Learning session is finite: 20 questions per study day.
@@ -12,9 +12,11 @@ Production is Zin V5.1.149 on GitHub Pages:
 - Practice progresses from recognition and supported construction toward independent English-to-Dutch production.
 - Mastery uses a 20-question unseen proof; retention uses a later 10-question proof.
 - A1.7–A1.21 tests wait until completed practice has introduced enough vocabulary for the unseen proof and its retention reserve.
+- A1.7–A1.21 have at least 90 distinct, practised proof sentences per topic, enough for three failed mastery attempts, a fresh pass and later retention.
 - The daily session includes one hidden-text listening beat.
 - Speaking can add one skippable spoken beat when enabled; skipping converts the same item to typing without adding work.
 - Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting.
+- On phones, the four Flashcards summary figures share one row.
 - The configured new-card limit is a hard ceiling; the current required maximum is 5 per day.
 - Supabase preserves signed-in learner state, and GitHub Pages is the only normal production study origin.
 
