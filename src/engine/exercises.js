@@ -16,7 +16,7 @@ export function correctionParts(item){
 }
 
 export function makeExercise(item,kind,content,{phase='practice',direction='en-nl',seed=uid()}={}){
- const q={presentationVersion:515,id:uid(),sourceId:item.id,concept:item.concept,kind,phase,direction,answer:item.nl,prompt:item.en,alternatives:item.alternatives,verbIndex:item.verbIndex,verbSlots:item.verbSlots||[item.verbIndex],forms:item.forms,assisted:false};
+ const q={presentationVersion:516,id:uid(),sourceId:item.id,concept:item.concept,kind,phase,direction,answer:item.nl,prompt:item.englishPrompt||item.en,alternatives:item.alternatives,verbIndex:item.verbIndex,verbSlots:item.verbSlots||[item.verbIndex],forms:item.forms,assisted:false};
  const nl=displayTokens(sentenceCase(item.nl));let wrong=[...nl];const wrongForm=item.forms.find(x=>normalize(x)!==normalize(nl[item.verbIndex]));wrong[item.verbIndex]=wrongForm||'werken';
  const bad=sentenceCase(wrong.join(' '));const others=content.sentences.filter(x=>x.concept===item.concept&&x.pool==='practice'&&normalize(x.en)!==normalize(item.en));
  if(kind==='choice'||kind==='listening'){
@@ -26,13 +26,13 @@ export function makeExercise(item,kind,content,{phase='practice',direction='en-n
   q.options=shuffle([item.en,...[...new Set([...near,...others].map(x=>x.en))].slice(0,3)],seed);q.audio=item.nl;
  }else if(kind==='wordbank')q.bank=wordBank(item.nl,[...item.forms,'ik wij hij zij de het een niet',...others.slice(0,12).map(x=>x.nl)],seed);
  else if(kind==='gap'||kind==='form'){
-  q.prompt=nl.map((w,i)=>i===item.verbIndex?'_____':w).join(' ');q.cue=item.en;q.answer=nl[item.verbIndex];q.alternatives=[];
+  q.prompt=nl.map((w,i)=>i===item.verbIndex?'_____':w).join(' ');q.cue=item.englishPrompt||item.en;q.answer=nl[item.verbIndex];q.alternatives=[];
   if(kind==='form')q.options=shuffle([...new Set([q.answer,...item.forms].map(w=>item.verbIndex===0?sentenceCase(w):w))],seed);
  }else if(kind==='correct-sentence'){
   const reversed=[...nl];[reversed[0],reversed[1]]=[reversed[1],reversed[0]];
   q.options=shuffle([...new Set([item.nl,bad,sentenceCase(reversed.map((w,i)=>i===1?normalize(w):w).join(' '))])],seed);
  }else if(kind==='correction'){
-  q.correction=correctionParts(item);q.prompt=q.correction.prompt;q.cue=item.en;q.answer=q.correction.missing;q.alternatives=[];
+  q.correction=correctionParts(item);q.prompt=q.correction.prompt;q.cue=item.englishPrompt||item.en;q.answer=q.correction.missing;q.alternatives=[];
  }
  return q;
 }

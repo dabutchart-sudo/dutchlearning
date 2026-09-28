@@ -25,6 +25,10 @@ A failed mastery test becomes eligible on the next study day without eight succe
 
 V5.1.148 releases the additive A1.7 negation, A1.8 question-word and A1.9 perfect-tense-with-zijn practice pools after owner phone acceptance. Each grows from 10 to 20 contexts. The lesson action remains visible on a phone while longer teaching content scrolls. Existing sentence IDs, proof material, mastery and retention rules, learner history, Supabase schema, authentication and services are unchanged. The offline cache is `dutch-v5.1.148-20260928-a17-a19-practice`. Rollback is to the V5.1.147 production commit; keep learner history and the standalone Flashcards fallback.
 
+## DAB-176 fairness work — 2026-09-28 (local review)
+
+The new local branch adds complete A1.7–A1.21 sentence vocabulary metadata, missing target-verb meanings, clarified English “you” prompts, conservative accepted time-fronting, format-suitability scheduling and an automated content audit. No learner-data, schema, authentication, service or deployment change has occurred. The audit reports 329 proof sentences whose words are not all present in earlier course practice. This is a release blocker for the “only practised vocabulary” requirement; coordinate further content work with DAB-175 and DAB-181 before declaring DAB-176 complete. Phone and PWA checks remain outstanding.
+
 ## Agreed development direction — 2026-09-23
 
 The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.

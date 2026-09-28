@@ -37,8 +37,11 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false,canSpeak=fals
  }
  if(s.pending?.phase==='extra')throw Error('Finish extra practice first, or leave it.');
  if(s.pending){
-  if(s.pending.presentationVersion!==515&&['practice','maintenance'].includes(s.pending.phase)){
+  if(s.pending.presentationVersion!==516&&['practice','maintenance'].includes(s.pending.phase)){
    const old=s.pending;s.pending={...makeExercise(c.byId[old.sourceId],old.kind,c,{phase:old.phase,direction:old.direction,seed:old.id}),id:old.id,assisted:old.assisted,retryId:old.retryId};
+  }
+  if(s.pending.presentationVersion!==516&&['mastery','retention'].includes(s.pending.phase)&&s.pending.kind==='typed'){
+   const item=c.byId[s.pending.sourceId];s.pending={...s.pending,presentationVersion:516,prompt:item.englishPrompt||item.en,alternatives:item.alternatives||[]};
   }
   return s.pending;
  }

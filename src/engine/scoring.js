@@ -19,7 +19,7 @@ export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
  if(q.kind==='speaking'){
   const got=normalize(raw),expected=normalize(q.answer);
   if(!got)return result(false,false,'missing_word');
-  if(got===expected)return result(true,true);
+  if([q.answer,...(q.alternatives||[])].some(x=>got===normalize(x)))return result(true,true);
   if(distance(got,expected)<=2)return result(true,false,'spelling');
   return result(false,false,'translation');
  }

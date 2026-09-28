@@ -4,6 +4,12 @@ Status: audit complete; first proof-safety and mastery-fairness slice implemente
 
 Release update, 28 September 2026: the owner accepted the A1.7–A1.9 development preview for production. V5.1.148 includes their expanded practice pools and the phone lesson-action layout fix. Earlier local-review notes below record the state before this release. The broader A1.10–A1.21 breadth, ambiguity, vocabulary and proof-capacity work remains open under DAB-88 and its follow-up stories.
 
+## DAB-176 test-fairness audit — 28 September 2026 (development only)
+
+The focused branch inventories every surface word in all 860 A1.7–A1.21 sentence records, supplies English glosses for the missing target verbs, distinguishes singular/plural English “you” prompts, accepts conservative time-fronting alternatives with Dutch inversion, and enforces `suitableKinds` in normal practice selection. Focused validation exercises every declared format and detects missing vocabulary metadata, ambiguous duplicate prompts and incompatible proof formats. This branch has not been merged or released.
+
+The vocabulary prerequisite scan compares proof sentences with earlier course practice and the current topic's practice pool. **329 proof sentences contain at least one word absent from those practice pools.** This count does not assert that the learner has never met a word in Flashcards or elsewhere; it shows that the course itself cannot guarantee practice before testing it. Fixing all such cases requires substantial additional practice contexts or proof-content changes, and must be coordinated with DAB-175 proof capacity and DAB-181 teaching breadth. Merely showing a word in a briefing is not counted as practice. Do not mark DAB-176 complete or promote this branch until the proof-vocabulary condition and phone acceptance are resolved.
+
 This audit examines the production content and scoring architecture. The first bounded response changes mastery scoring and adds curated proof capacity without rewriting learner history, Supabase data, or the daily scheduler.
 
 ## Executive finding
