@@ -69,7 +69,7 @@ function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(
 function renderLesson(id,continueSession){
  sessionChrome(true);
  const c=content.conceptById[id];if(!unlocked(c,state))return;
- el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to the path')}</div></article></section>`;
+ el.innerHTML=`<section class="session stack"><article class="card question-card lesson-card"><div class="lesson-body"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details></div><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to the path')}</div></article></section>`;
  transaction(s=>teachConcept(s,id,content,{acknowledge:false})).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',async()=>{if(!continueSession){await show('curriculum');return;}await transaction(s=>teachConcept(s,id,content));await openQuestion();});
  refreshChrome();
 }

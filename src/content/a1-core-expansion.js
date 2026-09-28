@@ -21,7 +21,17 @@ const negationPractice=[
  ['De winkel is vandaag niet open.','The shop is not open today.','zijn',2,['ben','bent','is','zijn'],'De winkel','niet'],
  ['Mijn fiets is niet nieuw.','My bicycle is not new.','zijn',2,['ben','bent','is','zijn'],'Mijn fiets','niet'],
  ['Ik spreek niet snel.','I do not speak quickly.','spreken',1,['spreek','spreekt','spreken'],'Ik','niet'],
- ['Wij gaan vanavond niet.','We are not going tonight.','gaan',1,['ga','gaat','gaan'],'Wij','niet']
+ ['Wij gaan vanavond niet.','We are not going tonight.','gaan',1,['ga','gaat','gaan'],'Wij','niet'],
+ ['De soep is niet warm.','The soup is not warm.','zijn',2,['ben','bent','is','zijn'],'De soep','niet'],
+ ['Het brood is niet vers.','The bread is not fresh.','zijn',2,['ben','bent','is','zijn'],'Het brood','niet'],
+ ['Mijn kamer is niet groot.','My room is not big.','zijn',2,['ben','bent','is','zijn'],'Mijn kamer','niet'],
+ ['Ik loop niet langzaam.','I do not walk slowly.','lopen',1,['loop','loopt','lopen'],'Ik','niet'],
+ ['De leraar praat niet hard.','The teacher does not speak loudly.','praten',2,['praat','praten'],'De leraar','niet'],
+ ['Wij wonen niet in Rotterdam.','We do not live in Rotterdam.','wonen',1,['woon','woont','wonen'],'Wij','niet'],
+ ['Hij eet vandaag niet thuis.','He is not eating at home today.','eten',1,['eet','eten'],'Hij','niet'],
+ ['Zij neemt de trein niet.','She is not taking the train.','nemen',1,['neem','neemt','nemen'],'Zij','niet'],
+ ['Ik koop die fiets niet.','I am not buying that bicycle.','kopen',1,['koop','koopt','kopen'],'Ik','niet'],
+ ['Wij drinken de koffie niet.','We are not drinking the coffee.','drinken',1,['drink','drinkt','drinken'],'Wij','niet']
 ];
 const negationProof=[
  ['Ik ben vandaag niet thuis.','I am not at home today.','zijn',1,['ben','bent','is','zijn'],'Ik','niet'],
@@ -67,7 +77,17 @@ const questionPractice=[
  ['Wat koopt zij?','What is she buying?','kopen',1,['koop','koopt','kopen'],'zij','wat'],
  ['Wanneer komen jullie?','When are you coming?','komen',1,['kom','komt','komen'],'jullie','wanneer'],
  ['Hoe gaat het?','How is it going?','gaan',1,['ga','gaat','gaan'],'het','hoe'],
- ['Wie woont hier?','Who lives here?','wonen',1,['woon','woont','wonen'],'wie','wie']
+ ['Wie woont hier?','Who lives here?','wonen',1,['woon','woont','wonen'],'wie','wie'],
+ ['Waar ligt de krant?','Where is the newspaper?','liggen',1,['lig','ligt','liggen'],'de krant','waar'],
+ ['Waar staat jouw auto?','Where is your car?','staan',1,['sta','staat','staan'],'jouw auto','waar'],
+ ['Wat eet de hond?','What is the dog eating?','eten',1,['eet','eten'],'de hond','wat'],
+ ['Wat schrijft mijn zus?','What is my sister writing?','schrijven',1,['schrijf','schrijft','schrijven'],'mijn zus','wat'],
+ ['Wanneer opent het museum?','When does the museum open?','openen',1,['open','opent','openen'],'het museum','wanneer'],
+ ['Wanneer begint de les?','When does the lesson start?','beginnen',1,['begin','begint','beginnen'],'de les','wanneer'],
+ ['Hoe reist jouw vader?','How does your father travel?','reizen',1,['reis','reist','reizen'],'jouw vader','hoe'],
+ ['Hoe betaalt de vrouw?','How does the woman pay?','betalen',1,['betaal','betaalt','betalen'],'de vrouw','hoe'],
+ ['Wie kookt vanavond?','Who is cooking tonight?','koken',1,['kook','kookt','koken'],'wie','wie'],
+ ['Wie helpt de kinderen?','Who is helping the children?','helpen',1,['help','helpt','helpen'],'wie','wie']
 ];
 const questionProof=[
  ['Waar woont zij?','Where does she live?','wonen',1,['woon','woont','wonen'],'zij','waar'],

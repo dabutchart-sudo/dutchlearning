@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.147**.
+- Current documented release: **Zin V5.1.148**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -20,6 +20,10 @@ The production `generate-sentences` and `listen-tts` Supabase Edge Functions use
 ## Mastery retake timing — 2026-09-24
 
 A failed mastery test becomes eligible on the next study day without eight successful remedial answers. The test still needs all 20 daily questions. Earlier saved failures are recognised from proof history without rewriting learner data. Retention failure behaviour is unchanged. Release cache: `dutch-v5.1.147-20260924-mastery-retake`.
+
+## A1.7–A1.9 practice breadth — 2026-09-28
+
+V5.1.148 releases the additive A1.7 negation, A1.8 question-word and A1.9 perfect-tense-with-zijn practice pools after owner phone acceptance. Each grows from 10 to 20 contexts. The lesson action remains visible on a phone while longer teaching content scrolls. Existing sentence IDs, proof material, mastery and retention rules, learner history, Supabase schema, authentication and services are unchanged. The offline cache is `dutch-v5.1.148-20260928-a17-a19-practice`. Rollback is to the V5.1.147 production commit; keep learner history and the standalone Flashcards fallback.
 
 ## Agreed development direction — 2026-09-23
 
@@ -266,3 +270,15 @@ Production study must remain available. A feature being technically mergeable do
 ## V5.1.146 A1.22 and mastery proof safety — 2026-09-23
 
 This release combines A1.22 directions and location with DAB-88 proof safety. A1.22 follows A1.21 as a separate mastered and retained concept. The mastery proof now passes at 19/20 with at least 9/10 in each direction, records the missed item for targeted follow-up, and keeps retention strict at 10/10. A1.7–A1.12 have larger unseen proof pools so a failed attempt can be retried. The offline cache includes the new content. Learner history, Supabase schema and authentication are unchanged. Confirm V5.1.146 on a fresh production load and check the A1.22 lesson on a phone. Do not delete browsing data.
+
+## DAB-88 practice breadth — 2026-09-27 (local review)
+
+The next bounded audit slice expands A1.7 negation practice from 10 to 20 contexts, with a minimum of ten subjects and ten verbs. Existing record identities and proof material are preserved. Added rows are validated across their declared formats and against all registered proof text. No scheduler, learner-data, schema, authentication, service, cost or production-release change is included. Phone/PWA acceptance remains outstanding. Continue practice breadth for later ten-item pools, then ambiguity, format enforcement and teaching coverage in the audit's agreed order.
+
+## DAB-88 A1.8 practice breadth — 2026-09-27 (local review)
+
+A1.8 question-word practice now has 20 contexts, four each for waar, wat, wanneer, hoe and wie, spanning at least ten verbs and ten subjects. Added Dutch sentences are distinct from all registered course text. Existing identities, teaching and proof records are preserved; daily scheduling, learner history, services and production-release settings are unchanged. Phone/PWA acceptance remains outstanding. Next: A1.9 practice breadth, then the later small pools before ambiguity, format enforcement and teaching coverage.
+
+## DAB-88 A1.9 practice breadth — 2026-09-27 (local review)
+
+A1.9 perfect tense with zijn practice now has 20 contexts across 16 subjects. All six existing verb families have at least three examples; no new verb family is introduced. Added Dutch sentences are distinct from all registered course text. Existing record identities, teaching and proof material are preserved, including A1.10. No learner-data, scheduler, schema, authentication, service, cost or production-release changes are included. Phone/PWA acceptance remains outstanding. Next: A1.10 separable-verb practice breadth, followed by later small pools and the remaining audit work.

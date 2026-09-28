@@ -16,7 +16,17 @@ const perfectPractice=[
  ['De trein is vertrokken.','The train left.','vertrekken',2,zijnForms,'De trein',[2,3]],
  ['Mijn broer is gekomen.','My brother came.','komen',2,zijnForms,'Mijn broer',[2,3]],
  ['De kinderen zijn thuis gebleven.','The children stayed at home.','blijven',2,zijnForms,'De kinderen',[2,4]],
- ['Ik ben vroeg aangekomen.','I arrived early.','aankomen',1,zijnForms,'Ik',[1,3]]
+ ['Ik ben vroeg aangekomen.','I arrived early.','aankomen',1,zijnForms,'Ik',[1,3]],
+ ['Mijn moeder is naar de markt gegaan.','My mother went to the market.','gaan',2,zijnForms,'Mijn moeder',[2,6]],
+ ['Wij zijn naar het park gegaan.','We went to the park.','gaan',1,zijnForms,'Wij',[1,5]],
+ ['Hij is naar de winkel gegaan.','He went to the shop.','gaan',1,zijnForms,'Hij',[1,5]],
+ ['De buren zijn op bezoek gekomen.','The neighbours came to visit.','komen',2,zijnForms,'De buren',[2,5]],
+ ['Mijn zus is bij ons gebleven.','My sister stayed with us.','blijven',2,zijnForms,'Mijn zus',[2,5]],
+ ['Wij zijn in het hotel gebleven.','We stayed in the hotel.','blijven',1,zijnForms,'Wij',[1,5]],
+ ['De baby is wakker geworden.','The baby woke up.','worden',2,zijnForms,'De baby',[2,4]],
+ ['Mijn vader is ziek geworden.','My father became ill.','worden',2,zijnForms,'Mijn vader',[2,4]],
+ ['Onze vrienden zijn na het ontbijt vertrokken.','Our friends left after breakfast.','vertrekken',2,zijnForms,'Onze vrienden',[2,6]],
+ ['De bus is bij het station aangekomen.','The bus arrived at the station.','aankomen',2,zijnForms,'De bus',[2,6]]
 ];
 const perfectProof=[
  ['Ik ben gisteren gegaan.','I went yesterday.','gaan',1,zijnForms,'Ik',[1,3]],

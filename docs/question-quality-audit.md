@@ -2,6 +2,8 @@
 
 Status: audit complete; first proof-safety and mastery-fairness slice implemented for review, 23 September 2026.
 
+Release update, 28 September 2026: the owner accepted the A1.7–A1.9 development preview for production. V5.1.148 includes their expanded practice pools and the phone lesson-action layout fix. Earlier local-review notes below record the state before this release. The broader A1.10–A1.21 breadth, ambiguity, vocabulary and proof-capacity work remains open under DAB-88 and its follow-up stories.
+
 This audit examines the production content and scoring architecture. The first bounded response changes mastery scoring and adds curated proof capacity without rewriting learner history, Supabase data, or the daily scheduler.
 
 ## Executive finding
@@ -90,3 +92,39 @@ The first code slice should address proof safety and mastery fairness together b
 - no existing learner history is rewritten.
 
 Automated coverage includes a perfect pass through the existing progression suite, 19/20 with the miss in either direction, 18/20 failure, strict 9/10 retention failure, proof-pool uniqueness, offline inclusion, and fail → remediate → retry → retention. Owner review and phone acceptance remain required before promotion or production deployment.
+
+## Practice breadth slice — 27 September 2026
+
+A1.7 negation practice has been expanded from 10 to 20 unique Dutch sentences and English meanings. The pool now covers at least ten verbs and ten subjects, with adjective, adverb, place/time and definite-object negation. New examples cover food, home, travel and everyday actions. The initial bounded acceptance floor is 20 unique sentence/meaning pairs, ten verbs and ten subjects; this is a content-review floor, not a change to progression requirements or a guarantee of transfer. Later pools still require individual review.
+
+Existing sentence identities, teaching, proof records, mastery/retention rules and learner history remain unchanged. Every added sentence is checked against all registered proof text to avoid reducing unseen proof capacity. The scan also found an existing cross-course overlap for A1.7-p-03; broader legacy overlap remains audit work.
+
+Focused checks cover context breadth, proof separation, valid verb metadata, all eight declared formats, word-bank construction, answer options and rejection of omitted negation. The existing A1.7/A1.8 mastery-to-retention progression tests remain in scope.
+
+Phone acceptance remains outstanding: inspect new items in typed, choice, word-bank, gap/form and correction presentations; confirm readable feedback and reachable Check Answer. No UI or service changes are included. This branch is not a release; production cache/version remain unchanged. Rollback is a revert of the additive content slice.
+
+Validation: focused tests passed (4/4); full regression suite passed (394/394); whitespace validation passed. No real-device validation, merge or deployment was performed.
+
+## A1.8 question-word practice breadth — 27 September 2026
+
+The second local practice-breadth slice expands A1.8 from 10 to 20 unique Dutch sentences and English meanings. Each of waar, wat, wanneer, hoe and wie now has four contexts. The pool meets the same minimum of ten verbs and ten subjects as A1.7. Added contexts cover locating everyday belongings, food, family, opening times, lessons, travel, payment and helping. New English prompts avoid singular/plural “you”; the existing A1.8 ambiguity remains a separate audit task.
+
+All ten added Dutch sentences are distinct from every other registered sentence, including proof records. Existing sentence identities, metadata, teaching, proof material, scheduler and mastery/retention rules are unchanged. The original A1.7 breadth slice is retained on this branch. No learner-data, schema, authentication, service or cost changes are included. Production version/cache remain unchanged; no merge or deployment was performed.
+
+Focused checks cover all five question words, diversity, vocabulary-target and verb metadata, all eight declared formats, word-bank construction, unique answer options, distractor rejection, capitalisation tolerance, missing question words and changed word order. Existing A1.7/A1.8 progression coverage also passes. A one-off comparison against the parent checkpoint confirms every original pack record and teaching definition is unchanged.
+
+Phone/PWA acceptance remains outstanding: inspect the new items and feedback in typed, choice, word-bank, gap/form and correction views, confirm Check Answer remains reachable, and check playback through the existing listening path. No audio-service or UI changes are included. Rollback is a revert of the additive A1.8 content commit. Next implementation work is A1.9 practice breadth; ambiguity, format enforcement and teaching coverage follow the breadth audit.
+
+Validation: focused tests passed (7/7); full regression suite passed (397/397); whitespace validation passed. No real-device validation was performed.
+
+## A1.9 perfect tense with zijn practice breadth — 27 September 2026
+
+The third local breadth slice expands A1.9 from 10 to 20 unique Dutch sentences and English meanings, spanning 16 subjects. The six already-taught verb families remain unchanged: gaan and blijven have four contexts each; komen, worden, vertrekken and aankomen have three each. The breadth floor for this concept covers all six already-taught verbs. Added contexts cover visiting family, everyday destinations, staying in a hotel, waking up, illness, departure after breakfast and arrival at a station. New English prompts avoid singular/plural “you”.
+
+Every added Dutch sentence is distinct from all other registered course text, including proof material. A comparison against the parent checkpoint confirms all existing pack records and teaching definitions are unchanged, including A1.10. Auxiliary and final-participle slots are explicitly validated, alongside construction and scoring in all eight declared formats, answer-option uniqueness, distractor rejection, capitalisation tolerance, missing tense components, incorrect auxiliaries and word order. Existing progression and offline-inclusion tests remain in scope.
+
+Learner history, daily scheduling, mastery/retention, services, schema, authentication and production version/cache are unchanged. There is no additional service cost. Earlier A1.7/A1.8 breadth checkpoints remain on this branch. No merge, deployment or real-device validation was performed. Phone/PWA acceptance remains outstanding: inspect new items and corrective feedback in typed, choice, word-bank, gap/form and correction views; confirm Check Answer remains reachable and check the existing listening path. Rollback is a revert of this additive A1.9 commit.
+
+Next implementation work is A1.10 separable-verb practice breadth, followed by later small pools, ambiguity, format enforcement and teaching coverage.
+
+Validation: focused tests passed (7/7); the full regression suite passed (401/401); original-record comparison and whitespace validation passed.
