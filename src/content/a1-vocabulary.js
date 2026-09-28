@@ -5,13 +5,13 @@ import {tokens,normalize} from '../engine/util.js';
 export const verbGloss={
  aandoen:'put on',aankomen:'arrive',aanzetten:'switch on',afwassen:'wash up',beginnen:'begin',begrijpen:'understand',
  bellen:'call',betalen:'pay',blijven:'stay',dichtdoen:'close',doen:'do',dragen:'wear',drinken:'drink',eten:'eat',
- fietsen:'cycle',gaan:'go',hangen:'hang',hebben:'have',helpen:'help',heten:'be called',hoeven:'need to',
+ fietsen:'cycle',gaan:'go',hangen:'hang',hebben:'have',helpen:'help',heten:'be called',hoeven:'need to',horen:'hear',
  koken:'cook',komen:'come',kopen:'buy',kosten:'cost',kunnen:'be able to',leggen:'put',leren:'learn',
  lezen:'read',liggen:'lie',lopen:'walk',maken:'make',meenemen:'take along',moeten:'have to',mogen:'may',
  nemen:'take',opbellen:'call',openen:'open',opengaan:'open',openmaken:'open',opruimen:'tidy up',
  opstaan:'get up',praten:'talk',reizen:'travel',rijden:'drive',schrijven:'write',slapen:'sleep',
  sluiten:'close',spelen:'play',spreken:'speak',staan:'stand',stoppen:'stop',terugbellen:'call back',
- terugkomen:'come back',uitdoen:'take off',uitgaan:'go out',vertrekken:'leave',wachten:'wait',
+ terugkomen:'come back',uitdoen:'take off',uitgaan:'go out',vertrekken:'leave',vinden:'find',wachten:'wait',
  wandelen:'walk',werken:'work',willen:'want',wonen:'live',worden:'become',zetten:'put',zien:'see',
  zijn:'be',zitten:'sit',zoeken:'look for'
 };
@@ -36,7 +36,7 @@ export const extraGloss={
  maandag:'Monday',mannen:'men',meer:'more',mei:'May',melk:'milk',moe:'tired',
  morgenmiddag:'tomorrow afternoon',museum:'museum',nieuwe:'new',oma:'grandmother',ontbijt:'breakfast',
  onze:'our',oude:'old',ouders:'parents',park:'park',pasta:'pasta',raam:'window',ramen:'windows',
- restaurant:'restaurant',rijst:'rice',rode:'red',rotterdam:'Rotterdam',schoenen:'shoes',
+ plan:'plan',restaurant:'restaurant',rijst:'rice',rode:'red',rotterdam:'Rotterdam',schoenen:'shoes',
  september:'September',sleutel:'key',sleutels:'keys',soep:'soup',stoelen:'chairs',straks:'soon',
  supermarkt:'supermarket',tafels:'tables',tandarts:'dentist',tas:'bag',tassen:'bags',
  thee:'tea',thuisgekomen:'come home',tomaten:'tomatoes',utrecht:'Utrecht',vanmiddag:'this afternoon',vanmorgen:'this morning',

@@ -87,7 +87,8 @@ test('forty ordinary A1.7 answers can reach vocabulary-ready mastery without ext
 test('insufficient fresh proof content has an explicit safe explanation',()=>{
  const state=stateFor('A1.13');
  completePractice(state,'A1.13');
- const exposed=eligibleProof(state,content,'A1.13').slice(0,20);
+ const available=content.sentences.filter(row=>row.concept==='A1.13'&&row.pool==='proof');
+ const exposed=available.slice(0,available.length-29);
  for(const item of exposed)state.exposures.push({nl:normalize(item.nl),reason:'proof'});
  const offer=dailyProofOffer(state,content,now);
  assert.equal(offer.canStartToday,false);
