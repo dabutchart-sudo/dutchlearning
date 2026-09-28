@@ -17,7 +17,7 @@ const rows=content.sentences.filter(inScope);
 test('content audit reports missing vocabulary and ambiguous prompts',()=>{
  const result=auditA1Fairness(content);
  assert.deepEqual(result.errors,[]);
- assert.ok(result.unpractisedProof.length>0,'proof-only vocabulary must be visible to the audit');
+ assert.deepEqual(result.unpractisedProof,[],'proof must use words introduced in prior or current practice');
  const row={...content.byId['A1.8-t-02'],englishPrompt:content.byId['A1.8-p-01'].englishPrompt,vocabulary:[],suitableKinds:['typed']};
  const changed={...content,sentences:content.sentences.map(s=>s.id===row.id?row:s)};
  const broken=auditA1Fairness(changed).errors;
@@ -26,13 +26,24 @@ test('content audit reports missing vocabulary and ambiguous prompts',()=>{
  assert.ok(broken.some(x=>x.includes('proof needs choice and typed')));
 });
 
+test('finite verbs, auxiliaries and participles have accurate positions and meanings',()=>{
+ const perfect=content.byId['A1.9-p-01'];
+ assert.deepEqual(perfect.verbSlots,[1,4]);
+ assert.equal(perfect.vocabulary.find(word=>word.nl==='ben')?.en,'be (perfect tense)');
+ assert.equal(perfect.vocabulary.find(word=>word.nl==='gegaan')?.en,'gone');
+ const enough=content.byId['A1.19-p-10'];
+ assert.equal(enough.verbIndex,3);
+ assert.equal(enough.vocabulary.find(word=>word.nl==='genoeg')?.en,'enough');
+});
+
 test('the full-vocabulary module is included in the offline course cache',()=>{
  const worker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
  assert.match(worker,/\.\/src\/content\/a1-vocabulary\.js/);
+ assert.match(worker,/\.\/src\/content\/a1-fair-practice\.js/);
 });
 
 test('A1.7–A1.21 sentence vocabulary names every surface word and gives real English target meanings',()=>{
- assert.equal(rows.length,860);
+ assert.equal(rows.length,1011);
  for(const row of rows){
   const inventory=new Set(row.vocabulary.flatMap(word=>tokens(word.nl)));
   for(const word of tokens(row.nl))assert.ok(inventory.has(word),`${row.id}: ${word} missing from vocabulary`);
@@ -41,6 +52,22 @@ test('A1.7–A1.21 sentence vocabulary names every surface word and gives real E
    assert.ok(verbGloss[row.verb],`${row.id}: no curated verb meaning`);
    assert.notEqual(normalize(word.en),normalize(word.nl),`${row.id}: untranslated target verb`);
   }
+ }
+});
+
+test('new fairness practice has distinct wording from every proof and valid verb positions',()=>{
+ const added=rows.filter(row=>row.id.includes('-fair-p-'));
+ assert.equal(added.length,151);
+ const proof=new Set(content.sentences.filter(row=>row.pool==='proof').map(row=>normalize(row.nl)));
+ const seen=new Set();
+ for(const row of added){
+  assert.ok(!proof.has(normalize(row.nl)),`${row.id}: repeats proof`);
+  assert.ok(!seen.has(normalize(row.nl)),`${row.id}: duplicate practice`);
+  seen.add(normalize(row.nl));
+  const words=tokens(row.nl);
+  assert.ok(row.verbIndex>=0&&row.verbIndex<words.length,`${row.id}: invalid verb position`);
+  assert.ok(row.forms.some(form=>normalize(form)===words[row.verbIndex]),`${row.id}: finite form does not match verb metadata`);
+  for(const slot of row.verbSlots)assert.ok(slot>=0&&slot<words.length,`${row.id}: invalid verb slot`);
  }
 });
 

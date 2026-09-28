@@ -15,9 +15,11 @@ export function auditA1Fairness(content){
    const prompts=new Map();
    for(const row of rows){
     if(!row.en?.trim())errors.push(`${row.id}: missing English sentence meaning`);
-    const inventory=new Set((row.vocabulary||[]).flatMap(w=>tokens(w.nl)));
-    for(const word of tokens(row.nl))if(!inventory.has(word))errors.push(`${row.id}: missing vocabulary word ${word}`);
+    const sentence=tokens(row.nl),inventory=new Set((row.vocabulary||[]).flatMap(w=>tokens(w.nl)));
+    for(const word of sentence)if(!inventory.has(word))errors.push(`${row.id}: missing vocabulary word ${word}`);
     for(const word of row.vocabulary||[])if(!word.en?.trim())errors.push(`${row.id}: missing English meaning for ${word.nl}`);
+    if(row.verbIndex<0||row.verbIndex>=sentence.length||!row.forms?.some(form=>normalize(form)===sentence[row.verbIndex]))errors.push(`${row.id}: invalid finite-verb metadata`);
+    if((row.verbSlots||[]).some(index=>index<0||index>=sentence.length))errors.push(`${row.id}: invalid verb slot`);
     if(!row.suitableKinds?.length||row.suitableKinds.some(k=>!allowed.has(k)))errors.push(`${row.id}: invalid suitableKinds`);
     if(row.pool==='proof'&&!['choice','typed'].every(k=>row.suitableKinds?.includes(k)))errors.push(`${row.id}: proof needs choice and typed`);
     const prompt=normalize(row.englishPrompt||row.en),earlier=prompts.get(prompt);

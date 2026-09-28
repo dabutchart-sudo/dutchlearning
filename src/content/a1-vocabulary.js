@@ -22,9 +22,9 @@ export const extraGloss={
  aangekomen:'arrived',amsterdam:'Amsterdam',appel:'apple',appels:'apples',april:'April',augustus:'August',
  baby:'baby',bakker:'baker',bananen:'bananas',beter:'better',bezoek:'visit',bibliotheek:'library',
  blauwe:'blue',bloemen:'flowers',boeken:'books',boodschappen:'groceries',brieven:'letters',
- broden:'loaves',brood:'bread',broodjes:'rolls',buren:'neighbours',cursus:'course',dagen:'days',
+ broden:'loaves',brood:'bread',broodje:'bread roll',broodjes:'rolls',buren:'neighbours',cursus:'course',dagen:'days',
  den:'Den',dertig:'thirty',dichtbij:'nearby',dinsdag:'Tuesday',donderdag:'Thursday',
- 'e-mail':'email',eieren:'eggs',elf:'eleven',elke:'every',euro:'euro',fietsen:'cycling',
+ 'e-mail':'email',eieren:'eggs',elf:'eleven',elke:'every',en:'and',euro:'euro',fietsen:'cycling',
  flessen:'bottles',gasten:'guests',gegaan:'gone',gekomen:'come',glazen:'glasses',groene:'green',
  groente:'vegetables',groningen:'Groningen',grote:'big',haag:'Haag',halve:'half',heen:'to',
  hele:'whole',hotel:'hotel',huiswerk:'homework',huizen:'houses',ingang:'entrance',is:'is',
@@ -39,7 +39,7 @@ export const extraGloss={
  restaurant:'restaurant',rijst:'rice',rode:'red',rotterdam:'Rotterdam',schoenen:'shoes',
  september:'September',sleutel:'key',sleutels:'keys',soep:'soup',stoelen:'chairs',straks:'soon',
  supermarkt:'supermarket',tafels:'tables',tandarts:'dentist',tas:'bag',tassen:'bags',
- thee:'tea',tomaten:'tomatoes',utrecht:'Utrecht',vanmiddag:'this afternoon',vanmorgen:'this morning',
+ thee:'tea',thuisgekomen:'come home',tomaten:'tomatoes',utrecht:'Utrecht',vanmiddag:'this afternoon',vanmorgen:'this morning',
  veilig:'safely',vers:'fresh',vertrokken:'left',vijftien:'fifteen',vijftig:'fifty',
  vis:'fish',vlees:'meat',voetbal:'football',volgende:'next',vrienden:'friends',
  vrijdag:'Friday',vrijdagavond:'Friday evening',vrouwen:'women',waarom:'why',winkels:'shops',
@@ -270,6 +270,17 @@ export const cardGloss={
  "zwart": "black"
 };
 
+const perfectGloss={
+ aangekomen:'arrived',gebleven:'stayed',gegaan:'gone',gekomen:'come',geworden:'become',
+ thuisgekomen:'come home',vertrokken:'left',gebeld:'called',gedaan:'done',gedronken:'drunk',
+ gegeten:'eaten',gehoord:'heard',gekeken:'watched',gekookt:'cooked',gekocht:'bought',
+ geleerd:'learned',gelezen:'read',gemaakt:'made',gespeeld:'played',gesproken:'spoken',
+ geschreven:'written',gewerkt:'worked',gezien:'seen',gevonden:'found',verteld:'told'
+};
+const auxiliaryGloss={ben:'be (perfect tense)',bent:'be (perfect tense)',is:'be (perfect tense)',zijn:'be (perfect tense)',
+ heb:'have (perfect tense)',hebt:'have (perfect tense)',heeft:'have (perfect tense)',hebben:'have (perfect tense)'};
+const particleGloss={aan:'on',af:'off',dicht:'closed',mee:'along',op:'up',open:'open',terug:'back',uit:'out'};
+
 const timeWords=new Set('vandaag morgen gisteren vanavond maandag dinsdag woensdag donderdag vrijdag zaterdag zondag vanmiddag vanmorgen straks later nu'.split(' '));
 function timeFronting(item,words){
  if(/[?]$/.test(item.nl))return [];
@@ -302,14 +313,21 @@ function englishPrompt(item){
 
 export function completeA1Vocabulary(item){
  const sentence=tokens(item.nl);
+ const verbSlots=(item.verbSlots||[item.verbIndex]).map(index=>index>=sentence.length&&item.concept==='A1.9'?sentence.length-1:index);
  const target=item.vocabulary.map(w=>w.en&&normalize(w.en)!==normalize(w.nl)?w:{...w,en:verbGloss[w.nl]||w.en});
  const existing=new Set(target.flatMap(w=>tokens(w.nl)));
  const support=sentence.flatMap((surface,index)=>{
   if(existing.has(surface))return [];
-  const gloss=(item.verbSlots||[item.verbIndex]).includes(index)&&surface!=='is'?verbGloss[item.verb]:extraGloss[surface]||cardGloss[surface];
+  const structural=verbSlots.includes(index);
+  const gloss=structural&&['A1.9','A1.13'].includes(item.concept)
+   ?index===item.verbIndex?auxiliaryGloss[surface]:perfectGloss[surface]
+   :structural&&['A1.10','A1.16'].includes(item.concept)&&index!==item.verbIndex
+    ?particleGloss[surface]
+    :structural?verbGloss[surface]||verbGloss[item.verb]
+    :extraGloss[surface]||cardGloss[surface]||verbGloss[surface];
   if(!gloss)throw Error(`${item.id}: missing English meaning for ${surface}`);
   return [{id:`a1surface:${surface}`,nl:surface,en:gloss,mature:false,supportOnly:true}];
  });
- return {...item,vocabulary:[...target,...support],englishPrompt:englishPrompt(item),
+ return {...item,verbSlots,vocabulary:[...target,...support],englishPrompt:englishPrompt(item),
   alternatives:[...new Set([...(item.alternatives||[]),...timeFronting(item,sentence)])]};
 }
