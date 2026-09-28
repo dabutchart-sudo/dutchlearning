@@ -1,5 +1,6 @@
 import {spellingBlocked} from './word-recall.js';
 import {hash,normalize} from './util.js';
+import {eligibleProof,practiceVocabularyGain} from './proof-vocabulary.js';
 export function itemPriority(item,state){
  const recent=state.exposures.slice(-20);let weight=10 + item.vocabulary.filter(w=>w.mature).length * .3;
  for(const x of recent){const age=recent.length-recent.indexOf(x);weight-=x.nl===normalize(item.nl)?40/age:0;weight-=x.verb===item.verb?12/age:0;weight-=x.subject===item.subject?7/age:0;weight-=x.family===item.family?5/age:0;for(const w of item.vocabulary)if(x.words.includes(w.id))weight-=3/age;}
@@ -112,13 +113,14 @@ export function selectPractice(state,content,current,date,canListen,canSpeak=fal
  if(phase==='maintenance'&&state.progress[concept].status!=='reinforcement'&&kind!=='listening'&&kind!=='speaking')kind='typed';
  ({pool,kind}=compatiblePractice(pool,all,kind,state));
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
- const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
+ const vocabularyGains=new Map(phase==='practice'?pool.map(item=>[item.id,practiceVocabularyGain(item,state,content,concept)]):[]);
+ const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b)+(vocabularyGains.get(b.id)||0))-(itemPriority(a,state)+practiceContextWeight(a)+(vocabularyGains.get(a.id)||0)))[0];
  if(!item)throw Error('No practice content available');
  return {item,kind,phase,retryId:due?.id};
 }
 export function selectProof(state,content,concept,count){
  const seen=new Set(state.exposures.map(x=>x.nl));
- const candidates=content.sentences.filter(x=>x.concept===concept&&x.pool==='proof'&&supportsKind(x,'choice')&&supportsKind(x,'typed')&&!seen.has(normalize(x.nl)));
+ const candidates=eligibleProof(state,content,concept).filter(x=>supportsKind(x,'choice')&&supportsKind(x,'typed')&&!seen.has(normalize(x.nl)));
  const picked=[];const temp={...state,exposures:[...state.exposures]};
  while(picked.length<count&&candidates.length){candidates.sort((a,b)=>itemPriority(b,temp)-itemPriority(a,temp));const x=candidates.shift();picked.push(x);temp.exposures.push({nl:normalize(x.nl),verb:x.verb,subject:x.subject,family:x.family,words:x.vocabulary.map(w=>w.id)});}
  if(picked.length!==count)throw Error('Not enough unseen proof sentences remain in this pack. Add a content pack before another test; seen questions will never be recycled as unseen.');

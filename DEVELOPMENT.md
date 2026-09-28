@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.148**.
+- Current documented release: **Zin V5.1.149**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -25,9 +25,9 @@ A failed mastery test becomes eligible on the next study day without eight succe
 
 V5.1.148 releases the additive A1.7 negation, A1.8 question-word and A1.9 perfect-tense-with-zijn practice pools after owner phone acceptance. Each grows from 10 to 20 contexts. The lesson action remains visible on a phone while longer teaching content scrolls. Existing sentence IDs, proof material, mastery and retention rules, learner history, Supabase schema, authentication and services are unchanged. The offline cache is `dutch-v5.1.148-20260928-a17-a19-practice`. Rollback is to the V5.1.147 production commit; keep learner history and the standalone Flashcards fallback.
 
-## DAB-176 fairness work — 2026-09-28 (local review)
+## DAB-176 fair tests and personal readiness — 2026-09-28
 
-The local branch adds complete A1.7–A1.21 sentence vocabulary metadata, missing English meanings, clarified English “you” prompts, conservative accepted time-fronting, format-suitability scheduling and an automated content audit. The initial audit found 329 proof sentences containing at least one word absent from earlier or same-topic course practice. With owner-approved scope expansion, 151 curated practice contexts now introduce those words before their topic's proof pool; the content-level audit reports zero gaps. The new contexts do not duplicate any proof sentence. Existing A1.9 perfect-tense verb slots and one A1.19 finite-verb index were also repaired. This does not guarantee that an individual learner will encounter every practice context in the first 40 answers, so a personal-exposure readiness gate remains an open policy/design question. No learner-data, schema, authentication, service or deployment change has occurred. Human Dutch-content review and phone/PWA acceptance remain outstanding; coordinate proof capacity with DAB-175 and lesson breadth with DAB-181 before release.
+V5.1.149 adds complete A1.7–A1.21 sentence vocabulary metadata, missing English meanings, clarified English “you” prompts, conservative accepted time-fronting, format-suitability scheduling and an automated content audit. The initial audit found 329 proof sentences containing at least one word absent from earlier or same-topic course practice. With owner-approved scope expansion, 151 curated practice contexts now introduce those words before their topic's proof pool; the content-level audit reports zero gaps. New practice does not duplicate proof. Existing A1.9 perfect-tense verb slots and one A1.19 finite-verb index are repaired. A learner-specific gate counts completed practice answers, waits for at least 30 familiar-word unseen items before mastery (20 for mastery and ten held for retention), and waits for ten before retention. Normal practice favours contexts that make more proof items eligible. The 40-answer minimum and daily 20 remain; a lesson reveal or unanswered question does not count as practice. No learner-data, schema, authentication or service change is required. The offline cache is `dutch-v5.1.149-20260928-a1-fair-proof`; rollback is V5.1.148 plus the standalone Flashcards fallback. DAB-175 remains the next priority: A1.13–A1.21 still need larger proof pools for repeated failures. Owner phone/PWA acceptance and a final human Dutch-content review remain outstanding.
 
 ## Agreed development direction — 2026-09-23
 

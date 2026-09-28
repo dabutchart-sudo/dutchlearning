@@ -3,6 +3,7 @@ import {selectPractice,selectProof,selectExtraPractice} from './scheduler.js';
 import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
+import {proofVocabularyNeed} from './proof-vocabulary.js';
 export const DAY_SIZE=20;
 export const EXTRA_PRACTICE_SIZE=5;
 export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,proofHistory:[]};}
@@ -70,6 +71,10 @@ export function dailyProofOffer(s,c,now=new Date()){
  const remaining=Math.max(0,DAY_SIZE-count);
  if(s.proof)return {id,type,needed,remaining,canStartToday:false,reason:'Finish the test already in progress.'};
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
+ const vocabulary=proofVocabularyNeed(s,c,id,type);
+ if(vocabulary?.missing)return {id,type,needed,remaining,canStartToday:false,reason:vocabulary.potential<vocabulary.required
+  ?'More fresh test sentences are needed for this topic before another test. You can keep practising meanwhile.'
+  :`Practise more of this topic’s vocabulary before the test. ${vocabulary.available} of ${vocabulary.required} fresh test sentences currently use words you have practised.`};
  return {id,type,needed,remaining,canStartToday:true,reason:null};
 }
 export function extraPracticeEligibility(s,id){
@@ -113,6 +118,10 @@ export function proofEligibility(s,c,id,type,now=new Date()){
  if(s.pending)return 'Finish the current question first.';
  if(type==='mastery'&&status!=='proof-ready'||type==='retention'&&status!=='retention-ready')return 'This test is not ready yet.';
  if(DAY_SIZE-count<n)return `This test needs ${n} of your daily 20 questions. Start it on your next study day.`;
+ const vocabulary=proofVocabularyNeed(s,c,id,type);
+ if(vocabulary?.missing)return vocabulary.potential<vocabulary.required
+  ?'More fresh test sentences are needed for this topic before another test.'
+  :`Practise more of this topic’s vocabulary first (${vocabulary.available} of ${vocabulary.required} suitable fresh test sentences).`;
  return null;
 }
 export function startProof(s,c,id,type,now=new Date()){

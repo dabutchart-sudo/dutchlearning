@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
 import {activeConcept,freshState,prepareQuestion,proofEligibility,startProof,submit,teachConcept} from '../src/engine/learner.js';
+import {seedCompletedPractice} from './helpers/practice-evidence.js';
 
 const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
 const content=registerPacks([base]);
@@ -11,6 +12,7 @@ function answerProof(state,now){
  while(state.proof){const q=prepareQuestion(state,content,now,false);assert.ok(q?.id);submit(state,content,q.id,q.answer,now);}
 }
 function proveAndRetain(state,id,date){
+ seedCompletedPractice(state,content,id);
  const p=state.progress[id];Object.assign(p,{practiceAttempts:40,recognised:4,constructed:4,independent:12,status:'proof-ready',taught:true});state.pending=null;state.daily={date:date.toISOString().slice(0,10),count:0};
  assert.equal(proofEligibility(state,content,id,'mastery',date),null);startProof(state,content,id,'mastery',date);assert.equal(state.proof.questions.length,20);assert.equal(new Set(state.proof.questions.map(q=>q.sourceId)).size,20);answerProof(state,date);
  const retention=new Date(date);retention.setUTCDate(retention.getUTCDate()+3);state.daily={date:retention.toISOString().slice(0,10),count:0};assert.equal(activeConcept(state,content),id);assert.equal(proofEligibility(state,content,id,'retention',retention),null);startProof(state,content,id,'retention',retention);assert.equal(state.proof.questions.length,10);assert.equal(new Set(state.proof.questions.map(q=>q.sourceId)).size,10);answerProof(state,retention);return retention;

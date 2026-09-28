@@ -1,6 +1,6 @@
 {
   "name": "zin",
-  "version": "5.1.148",
+  "version": "5.1.149",
   "private": true,
   "type": "module",
   "scripts": { "test": "node --test" }

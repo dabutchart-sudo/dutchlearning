@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
+import {seedCompletedPractice} from './helpers/practice-evidence.js';
 import {
   activeConcept,
   freshState,
@@ -45,6 +46,7 @@ test('every Foundation concept can progress through real mastery and retention m
     progress.constructed=4;
     progress.independent=12;
     progress.status='proof-ready';
+    seedCompletedPractice(state,content,concept.id);
     state.pending=null;
     state.daily={date:now.toISOString().slice(0,10),count:0};
 
