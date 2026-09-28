@@ -2,6 +2,8 @@
 
 Status: audit complete; first proof-safety and mastery-fairness slice implemented for review, 23 September 2026.
 
+Release update, 28 September 2026: the owner accepted the A1.7–A1.9 development preview for production. V5.1.148 includes their expanded practice pools and the phone lesson-action layout fix. Earlier local-review notes below record the state before this release. The broader A1.10–A1.21 breadth, ambiguity, vocabulary and proof-capacity work remains open under DAB-88 and its follow-up stories.
+
 This audit examines the production content and scoring architecture. The first bounded response changes mastery scoring and adds curated proof capacity without rewriting learner history, Supabase data, or the daily scheduler.
 
 ## Executive finding

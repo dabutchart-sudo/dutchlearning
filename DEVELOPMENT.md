@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.147**.
+- Current documented release: **Zin V5.1.148**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -20,6 +20,10 @@ The production `generate-sentences` and `listen-tts` Supabase Edge Functions use
 ## Mastery retake timing — 2026-09-24
 
 A failed mastery test becomes eligible on the next study day without eight successful remedial answers. The test still needs all 20 daily questions. Earlier saved failures are recognised from proof history without rewriting learner data. Retention failure behaviour is unchanged. Release cache: `dutch-v5.1.147-20260924-mastery-retake`.
+
+## A1.7–A1.9 practice breadth — 2026-09-28
+
+V5.1.148 releases the additive A1.7 negation, A1.8 question-word and A1.9 perfect-tense-with-zijn practice pools after owner phone acceptance. Each grows from 10 to 20 contexts. The lesson action remains visible on a phone while longer teaching content scrolls. Existing sentence IDs, proof material, mastery and retention rules, learner history, Supabase schema, authentication and services are unchanged. The offline cache is `dutch-v5.1.148-20260928-a17-a19-practice`. Rollback is to the V5.1.147 production commit; keep learner history and the standalone Flashcards fallback.
 
 ## Agreed development direction — 2026-09-23
 
