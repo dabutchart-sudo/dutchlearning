@@ -5,6 +5,7 @@ const practice=q=>['practice','maintenance'].includes(q.phase);
 export function wordTargets(item,kind){
  const sentence=tokens(item.nl),targets=[];
  for(const word of item.vocabulary){
+  if(word.supportOnly)continue;
   const key=normalize(word.nl),parts=tokens(word.nl);
   let indices=[];
   if(key===normalize(item.verb)&&item.concept==='A1.6')indices=(item.verbSlots||[]).filter(i=>i!==item.verbIndex);

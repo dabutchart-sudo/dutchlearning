@@ -4,6 +4,12 @@ Status: audit complete; first proof-safety and mastery-fairness slice implemente
 
 Release update, 28 September 2026: the owner accepted the A1.7–A1.9 development preview for production. V5.1.148 includes their expanded practice pools and the phone lesson-action layout fix. Earlier local-review notes below record the state before this release. The broader A1.10–A1.21 breadth, ambiguity, vocabulary and proof-capacity work remains open under DAB-88 and its follow-up stories.
 
+## DAB-176 test-fairness audit — 28 September 2026
+
+The fairness release inventories every surface word in the original 860 A1.7–A1.21 sentence records, supplies English glosses for missing target verbs, distinguishes singular/plural English “you” prompts, accepts conservative time-fronting alternatives with Dutch inversion, and enforces `suitableKinds` in normal practice selection. Focused validation exercises every declared format and detects missing vocabulary metadata, ambiguous duplicate prompts and incompatible proof formats.
+
+The vocabulary prerequisite scan compares proof sentences with earlier course practice and the current topic's practice pool. Its baseline was **329 proof sentences containing at least one word absent from those practice pools**. The owner approved expanded DAB-176 content work. The release adds 151 independently phrased practice contexts across A1.7–A1.21; the same scan reports **zero** proof-vocabulary gaps. Each new practice sentence is distinct from every proof sentence. A personal-exposure gate then counts completed practice to make sure a learner's actual unseen proof candidates use familiar words. Mastery needs 20 suitable items plus ten reserved for retention; the 40-answer floor remains. Practice selection favours contexts that unlock proof material. Briefing exposure and unanswered questions do not count. DAB-175 proof capacity, DAB-181 teaching breadth, human Dutch review, and phone acceptance remain relevant follow-up work.
+
 This audit examines the production content and scoring architecture. The first bounded response changes mastery scoring and adds curated proof capacity without rewriting learner history, Supabase data, or the daily scheduler.
 
 ## Executive finding

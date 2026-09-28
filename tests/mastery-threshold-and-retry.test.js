@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
+import {seedCompletedPractice} from './helpers/practice-evidence.js';
 import {freshState,prepareQuestion,startProof,submit} from '../src/engine/learner.js';
 
 const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
@@ -14,6 +15,7 @@ function readyState(concept='A1.7',date='2026-09-23'){
   Object.assign(state.progress[item.id],{status:'mastered',masteredAt:'2026-09-22',taught:true,lessonAcknowledged:true,nextMaintenance:'2099-01-01'});
  }
  Object.assign(state.progress[concept],{status:'proof-ready',practiceAttempts:40,recognised:10,constructed:10,independent:20,taught:true,lessonAcknowledged:true});
+ seedCompletedPractice(state,content,concept);
  return {state,now};
 }
 

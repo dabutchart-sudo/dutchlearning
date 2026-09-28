@@ -1,5 +1,6 @@
 import {spellingBlocked} from './word-recall.js';
 import {hash,normalize} from './util.js';
+import {eligibleProof,practiceVocabularyGain} from './proof-vocabulary.js';
 export function itemPriority(item,state){
  const recent=state.exposures.slice(-20);let weight=10 + item.vocabulary.filter(w=>w.mature).length * .3;
  for(const x of recent){const age=recent.length-recent.indexOf(x);weight-=x.nl===normalize(item.nl)?40/age:0;weight-=x.verb===item.verb?12/age:0;weight-=x.subject===item.subject?7/age:0;weight-=x.family===item.family?5/age:0;for(const w of item.vocabulary)if(x.words.includes(w.id))weight-=3/age;}
@@ -65,16 +66,33 @@ export function spreadPracticePool(pool,state,{keepVerb=false}={}){
  }
  return pool;
 }
+const fallbackKinds=['choice','wordbank','typed','gap','form','correct-sentence','correction'];
+const supportsKind=(item,kind)=>!Array.isArray(item.suitableKinds)||item.suitableKinds.includes(kind)||kind==='speaking'&&item.suitableKinds.includes('typed');
+function compatiblePractice(pool,all,kind,state){
+ const suitable=(rows,k)=>rows.filter(item=>supportsKind(item,k));
+ let selected=suitable(pool,kind);
+ if(!selected.length)selected=suitable(all,kind);
+ if(!selected.length){
+  kind=fallbackKinds.find(k=>suitable(all,k).length);
+  if(!kind)throw Error('No compatible practice content available');
+  selected=suitable(all,kind);
+ }
+ let eligible=selected.filter(item=>!spellingBlocked(state,item,kind));
+ if(!eligible.length){
+  const alternative=['wordbank',...fallbackKinds.filter(k=>k!=='wordbank')].find(k=>suitable(all,k).some(item=>!spellingBlocked(state,item,k)));
+  if(alternative){kind=alternative;eligible=suitable(all,kind).filter(item=>!spellingBlocked(state,item,kind));}
+  else{kind='choice';eligible=suitable(all,kind);}
+ }
+ if(!eligible.length)throw Error('No compatible practice content available');
+ return {pool:eligible,kind};
+}
 export function selectExtraPractice(state,content,concept,canListen=false,canSpeak=false){
- let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
+ const all=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
+ let pool=all;
  pool=spreadPracticePool(pool,state);
  let kind=practiceKind(state.progress[concept]||{},canListen,canSpeak,practiceSession(state,'extra'));
- const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
- if(eligible.length)pool=eligible;
- else{
-  const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
-  if(alternatives.length)pool=spreadPracticePool(alternatives,state);else kind='wordbank';
- }
+ ({pool,kind}=compatiblePractice(pool,all,kind,state));
+ pool=spreadPracticePool(pool,state);
  const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
  if(!item)throw Error('No practice content available');
  return {item,kind,phase:'extra'};
@@ -86,25 +104,23 @@ export function selectPractice(state,content,current,date,canListen,canSpeak=fal
  if(maintenance.length&&(state.daily.count%5===4||state.progress[current].status==='mastered')){concept=maintenance.sort((a,b)=>state.progress[a.id].nextMaintenance.localeCompare(state.progress[b.id].nextMaintenance))[0].id;phase='maintenance'}
  const due=state.retries.find(r=>r.after<=state.attempts.length&&(!r.date||r.date<=date));
  if(due&&state.progress[due.concept].taught){concept=due.concept;phase=state.progress[concept].masteredAt?'maintenance':'practice';}
- let pool=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice'),focusedRetry=false;
+ const all=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
+ let pool=all,focusedRetry=false;
  if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length){pool=focused;focusedRetry=true;}}
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
  const session=practiceSession(state,phase);
  let kind=practiceKind(state.progress[concept],canListen,canSpeak,session);
  if(phase==='maintenance'&&state.progress[concept].status!=='reinforcement'&&kind!=='listening'&&kind!=='speaking')kind='typed';
- const eligible=pool.filter(item=>!spellingBlocked(state,item,kind));
- if(eligible.length)pool=eligible;
- else {
-  const alternatives=content.sentences.filter(item=>item.concept===concept&&item.pool==='practice'&&!spellingBlocked(state,item,kind));
-  if(alternatives.length)pool=spreadPracticePool(alternatives,state);else kind='wordbank';
- }
- const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b))-(itemPriority(a,state)+practiceContextWeight(a)))[0];
+ ({pool,kind}=compatiblePractice(pool,all,kind,state));
+ pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
+ const vocabularyGains=new Map(phase==='practice'?pool.map(item=>[item.id,practiceVocabularyGain(item,state,content,concept)]):[]);
+ const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b)+(vocabularyGains.get(b.id)||0))-(itemPriority(a,state)+practiceContextWeight(a)+(vocabularyGains.get(a.id)||0)))[0];
  if(!item)throw Error('No practice content available');
  return {item,kind,phase,retryId:due?.id};
 }
 export function selectProof(state,content,concept,count){
  const seen=new Set(state.exposures.map(x=>x.nl));
- const candidates=content.sentences.filter(x=>x.concept===concept&&x.pool==='proof'&&!seen.has(normalize(x.nl)));
+ const candidates=eligibleProof(state,content,concept).filter(x=>supportsKind(x,'choice')&&supportsKind(x,'typed')&&!seen.has(normalize(x.nl)));
  const picked=[];const temp={...state,exposures:[...state.exposures]};
  while(picked.length<count&&candidates.length){candidates.sort((a,b)=>itemPriority(b,temp)-itemPriority(a,temp));const x=candidates.shift();picked.push(x);temp.exposures.push({nl:normalize(x.nl),verb:x.verb,subject:x.subject,family:x.family,words:x.vocabulary.map(w=>w.id)});}
  if(picked.length!==count)throw Error('Not enough unseen proof sentences remain in this pack. Add a content pack before another test; seen questions will never be recycled as unseen.');

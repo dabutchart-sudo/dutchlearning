@@ -1,0 +1,333 @@
+import {tokens,normalize} from '../engine/util.js';
+
+// Course meanings are deliberately explicit. A missing gloss must fail content
+// validation instead of falling back to the Dutch spelling.
+export const verbGloss={
+ aandoen:'put on',aankomen:'arrive',aanzetten:'switch on',afwassen:'wash up',beginnen:'begin',begrijpen:'understand',
+ bellen:'call',betalen:'pay',blijven:'stay',dichtdoen:'close',doen:'do',dragen:'wear',drinken:'drink',eten:'eat',
+ fietsen:'cycle',gaan:'go',hangen:'hang',hebben:'have',helpen:'help',heten:'be called',hoeven:'need to',
+ koken:'cook',komen:'come',kopen:'buy',kosten:'cost',kunnen:'be able to',leggen:'put',leren:'learn',
+ lezen:'read',liggen:'lie',lopen:'walk',maken:'make',meenemen:'take along',moeten:'have to',mogen:'may',
+ nemen:'take',opbellen:'call',openen:'open',opengaan:'open',openmaken:'open',opruimen:'tidy up',
+ opstaan:'get up',praten:'talk',reizen:'travel',rijden:'drive',schrijven:'write',slapen:'sleep',
+ sluiten:'close',spelen:'play',spreken:'speak',staan:'stand',stoppen:'stop',terugbellen:'call back',
+ terugkomen:'come back',uitdoen:'take off',uitgaan:'go out',vertrekken:'leave',wachten:'wait',
+ wandelen:'walk',werken:'work',willen:'want',wonen:'live',worden:'become',zetten:'put',zien:'see',
+ zijn:'be',zitten:'sit',zoeken:'look for'
+};
+
+// Surface forms absent from the mature-card export. These include common
+// inflections and names that occur in the A1.7–A1.21 course sentences.
+export const extraGloss={
+ aangekomen:'arrived',amsterdam:'Amsterdam',appel:'apple',appels:'apples',april:'April',augustus:'August',
+ baby:'baby',bakker:'baker',bananen:'bananas',beter:'better',bezoek:'visit',bibliotheek:'library',
+ blauwe:'blue',bloemen:'flowers',boeken:'books',boodschappen:'groceries',brieven:'letters',
+ broden:'loaves',brood:'bread',broodje:'bread roll',broodjes:'rolls',buren:'neighbours',cursus:'course',dagen:'days',
+ den:'Den',dertig:'thirty',dichtbij:'nearby',dinsdag:'Tuesday',donderdag:'Thursday',
+ 'e-mail':'email',eieren:'eggs',elf:'eleven',elke:'every',en:'and',euro:'euro',fietsen:'cycling',
+ flessen:'bottles',gasten:'guests',gegaan:'gone',gekomen:'come',glazen:'glasses',groene:'green',
+ groente:'vegetables',groningen:'Groningen',grote:'big',haag:'Haag',halve:'half',heen:'to',
+ hele:'whole',hotel:'hotel',huiswerk:'homework',huizen:'houses',ingang:'entrance',is:'is',
+ jassen:'coats',jou:'you',jouw:'your',juni:'June',kaarten:'cards',kaartje:'ticket',
+ kaartjes:'tickets',kaas:'cheese',kantoor:'office',kapstok:'coat rack',kat:'cat',
+ keuken:'kitchen',kilo:'kilogram',kinderen:'children',klas:'class',kleine:'small',
+ koekje:'biscuit',koffies:'coffees',kopjes:'cups',koppen:'cups',kranten:'newspapers',
+ kwart:'quarter',langer:'longer',later:'later',leraar:'teacher',liter:'litre',lunch:'lunch',
+ maandag:'Monday',mannen:'men',meer:'more',mei:'May',melk:'milk',moe:'tired',
+ morgenmiddag:'tomorrow afternoon',museum:'museum',nieuwe:'new',oma:'grandmother',ontbijt:'breakfast',
+ onze:'our',oude:'old',ouders:'parents',park:'park',pasta:'pasta',raam:'window',ramen:'windows',
+ restaurant:'restaurant',rijst:'rice',rode:'red',rotterdam:'Rotterdam',schoenen:'shoes',
+ september:'September',sleutel:'key',sleutels:'keys',soep:'soup',stoelen:'chairs',straks:'soon',
+ supermarkt:'supermarket',tafels:'tables',tandarts:'dentist',tas:'bag',tassen:'bags',
+ thee:'tea',thuisgekomen:'come home',tomaten:'tomatoes',utrecht:'Utrecht',vanmiddag:'this afternoon',vanmorgen:'this morning',
+ veilig:'safely',vers:'fresh',vertrokken:'left',vijftien:'fifteen',vijftig:'fifty',
+ vis:'fish',vlees:'meat',voetbal:'football',volgende:'next',vrienden:'friends',
+ vrijdag:'Friday',vrijdagavond:'Friday evening',vrouwen:'women',waarom:'why',winkels:'shops',
+ woensdag:'Wednesday',woorden:'words',zestien:'sixteen',zwaar:'heavy',zwarte:'black',één:'one',zijn:'his'
+};
+
+// Filled with the card-export terms used in this syllabus by the checked-in
+// list below. A local copy avoids a runtime network request for offline study.
+export const cardGloss={
+ "aan": "to",
+ "acht": "eight",
+ "af": "off",
+ "afspraak": "appointment",
+ "alleen": "alone",
+ "antwoord": "answer",
+ "auto": "car",
+ "avond": "evening",
+ "bed": "bed",
+ "begrijpen": "to understand",
+ "bellen": "to ring, to call",
+ "bij": "near (to)",
+ "binnen": "within",
+ "blauw": "blue",
+ "blijven": "to remain",
+ "boek": "book",
+ "boos": "angry",
+ "brief": "letter",
+ "broer": "brother",
+ "buiten": "outside",
+ "bus": "bus",
+ "daar": "there",
+ "dag": "day",
+ "dat": "that",
+ "de": "the",
+ "deur": "door",
+ "deze": "this, these",
+ "dicht": "closed",
+ "die": "a) that, those b) that, who",
+ "dit": "this",
+ "doen": "to do",
+ "dokter": "doctor, GP",
+ "drie": "three",
+ "drinken": "to drink",
+ "duits": "German",
+ "een": "a",
+ "eerst": "first",
+ "engels": "English",
+ "eten": "to eat",
+ "familie": "family",
+ "fiets": "bicycle",
+ "film": "film",
+ "fles": "bottle",
+ "foto": "photo",
+ "frans": "French",
+ "gaan": "to go",
+ "gebruiken": "to use",
+ "geen": "no",
+ "genoeg": "enough",
+ "gisteren": "yesterday",
+ "glas": "glass",
+ "goed": "good",
+ "groen": "green",
+ "groot": "a) big b) great",
+ "haar": "a) her b) her (poss)",
+ "half": "half",
+ "hard": "hard",
+ "hebben": "to have",
+ "heel": "whole",
+ "helft": "half",
+ "het": "1) the 2) it",
+ "hier": "here",
+ "hij": "he",
+ "hoe": "how",
+ "hoeven": "to need (to)",
+ "hond": "dog",
+ "honderd": "hundred",
+ "huis": "house",
+ "hun": "a) their b) (to) them",
+ "ik": "I",
+ "in": "in",
+ "interessant": "interesting",
+ "jas": "coat",
+ "je": "you",
+ "jij": "you",
+ "jong": "young",
+ "jullie": "you",
+ "kamer": "room",
+ "kind": "child",
+ "klaar": "ready",
+ "klein": "little",
+ "koffie": "coffee",
+ "komen": "to come",
+ "kopen": "to buy",
+ "kost": "cost(s)",
+ "kosten": "to cost",
+ "koud": "cold",
+ "krant": "newspaper",
+ "kunnen": "to be able",
+ "laat": "late",
+ "lang": "long, tall",
+ "langzaam": "slow",
+ "leren": "to learn",
+ "les": "lesson",
+ "lezen": "to read",
+ "licht": "light",
+ "lief": "nice",
+ "liggen": "to lie",
+ "loop": "course",
+ "lopen": "to walk",
+ "maken": "a) to make b) to repair",
+ "man": "man",
+ "markt": "market",
+ "mee": "with",
+ "meisje": "girl",
+ "met": "with",
+ "middag": "afternoon",
+ "mij": "me",
+ "mijn": "my",
+ "moeder": "mother",
+ "moeten": "to have to, must",
+ "mogen": "to be allowed",
+ "mooi": "nice",
+ "morgen": "tomorrow",
+ "muziek": "music",
+ "na": "after",
+ "naar": "to",
+ "naast": "next to",
+ "nederlands": "Dutch",
+ "negen": "nine",
+ "nemen": "to take",
+ "niet": "not",
+ "niets": "nothing",
+ "nieuw": "new",
+ "nog": "still",
+ "nu": "now",
+ "ochtend": "morning",
+ "om": "(a)round",
+ "ons": "a) us b) our",
+ "op": "on",
+ "open": "open",
+ "oud": "old",
+ "over": "a) over b) about",
+ "rood": "red",
+ "ruim": "spacious",
+ "rustig": "quiet",
+ "samen": "together",
+ "school": "school",
+ "slaap": "sleep",
+ "slapen": "to sleep",
+ "snel": "fast",
+ "spelen": "to play",
+ "spreken": "to speak",
+ "staan": "to stand",
+ "staat": "state",
+ "station": "station",
+ "stoel": "chair",
+ "stoppen": "to stop",
+ "straat": "street",
+ "student": "student",
+ "tafel": "table",
+ "te": "to",
+ "telefoon": "telephone",
+ "televisie": "television",
+ "terug": "back",
+ "thuis": "at home",
+ "tien": "ten",
+ "tijd": "time",
+ "tot": "to",
+ "trein": "train",
+ "tuin": "garden",
+ "twaalf": "twelve",
+ "twee": "two",
+ "twintig": "twenty",
+ "uit": "from",
+ "uitgaan": "to go out",
+ "uur": "hour",
+ "vaak": "often",
+ "vader": "father",
+ "van": "of",
+ "vanavond": "tonight",
+ "vandaag": "today",
+ "veel": "much",
+ "ver": "far",
+ "verhaal": "story",
+ "verjaardag": "birthday",
+ "vertrekken": "to leave",
+ "vier": "four",
+ "vijf": "five",
+ "voor": "a) for b) in front of",
+ "vraag": "question",
+ "vriend": "friend",
+ "vrij": "free",
+ "vroeg": "early",
+ "vrouw": "woman",
+ "waar": "where",
+ "wachten": "to wait",
+ "wakker": "awake",
+ "wanneer": "when",
+ "warm": "hot",
+ "wat": "what",
+ "water": "water",
+ "we": "we",
+ "week": "week",
+ "weekend": "weekend",
+ "weer": "again",
+ "werk": "work",
+ "werken": "to work",
+ "wie": "who",
+ "wij": "we",
+ "willen": "to want",
+ "winkel": "shop",
+ "wonen": "to live",
+ "zaterdag": "Saturday",
+ "ze": "a) she b) they",
+ "zes": "six",
+ "zetten": "to put",
+ "zeven": "seven",
+ "ziek": "ill",
+ "zien": "to see",
+ "zij": "a) she b) they",
+ "zijn": "to be",
+ "zin": "a) sentence b) sense",
+ "zitten": "to sit",
+ "zoeken": "to search",
+ "zondag": "Sunday",
+ "zonder": "without",
+ "zus": "sister",
+ "zwart": "black"
+};
+
+const perfectGloss={
+ aangekomen:'arrived',gebleven:'stayed',gegaan:'gone',gekomen:'come',geworden:'become',
+ thuisgekomen:'come home',vertrokken:'left',gebeld:'called',gedaan:'done',gedronken:'drunk',
+ gegeten:'eaten',gehoord:'heard',gekeken:'watched',gekookt:'cooked',gekocht:'bought',
+ geleerd:'learned',gelezen:'read',gemaakt:'made',gespeeld:'played',gesproken:'spoken',
+ geschreven:'written',gewerkt:'worked',gezien:'seen',gevonden:'found',verteld:'told'
+};
+const auxiliaryGloss={ben:'be (perfect tense)',bent:'be (perfect tense)',is:'be (perfect tense)',zijn:'be (perfect tense)',
+ heb:'have (perfect tense)',hebt:'have (perfect tense)',heeft:'have (perfect tense)',hebben:'have (perfect tense)'};
+const particleGloss={aan:'on',af:'off',dicht:'closed',mee:'along',op:'up',open:'open',terug:'back',uit:'out'};
+
+const timeWords=new Set('vandaag morgen gisteren vanavond maandag dinsdag woensdag donderdag vrijdag zaterdag zondag vanmiddag vanmorgen straks later nu'.split(' '));
+function timeFronting(item,words){
+ if(/[?]$/.test(item.nl))return [];
+ const subject=tokens(item.subject);
+ if(!subject.length||timeWords.has(subject[0]))return [];
+ const verbIndex=item.verbIndex;
+ const startsWithSubject=subject.every((w,i)=>words[i]===w)&&verbIndex===subject.length;
+ if(startsWithSubject){
+  if(item.verb==='zijn'&&subject.length===1&&subject[0]==='het')return [];
+  const at=words.findIndex((w,i)=>i>verbIndex&&timeWords.has(w)&&!['op','om','na','voor','tot'].includes(words[i-1]));
+  if(at<0)return [];
+  if(words[at]==='later'&&words.some((w,i)=>i!==at&&timeWords.has(w)))return [];
+  const rest=words.filter((_,i)=>i!==at);
+  const finite=subject[0]==='jij'||subject[0]==='je'?normalize(item.forms?.[0]||words[verbIndex]):words[verbIndex];
+  return [[words[at],finite,...subject,...rest.slice(verbIndex+1)].join(' ')];
+ }
+ const startsWithTime=timeWords.has(words[0])&&words.slice(2,2+subject.length).every((w,i)=>w===subject[i])&&verbIndex===1;
+ if(startsWithTime){const finite=subject[0]==='jij'||subject[0]==='je'?normalize(item.forms?.[1]||words[1]):words[1];return [[...subject,finite,words[0],...words.slice(2+subject.length)].join(' ')];}
+ return [];
+}
+
+function englishPrompt(item){
+ if(!/\b(you|your)\b/i.test(item.en))return item.en;
+ const words=new Set(tokens(item.nl));
+ if(words.has('jullie'))return `${item.en} (speaking to several people)`;
+ if(['jij','je','jou','jouw'].some(w=>words.has(w)))return `${item.en} (speaking to one person)`;
+ if(words.has('u'))return `${item.en} (polite form)`;
+ return item.en;
+}
+
+export function completeA1Vocabulary(item){
+ const sentence=tokens(item.nl);
+ const verbSlots=(item.verbSlots||[item.verbIndex]).map(index=>index>=sentence.length&&item.concept==='A1.9'?sentence.length-1:index);
+ const target=item.vocabulary.map(w=>w.en&&normalize(w.en)!==normalize(w.nl)?w:{...w,en:verbGloss[w.nl]||w.en});
+ const existing=new Set(target.flatMap(w=>tokens(w.nl)));
+ const support=sentence.flatMap((surface,index)=>{
+  if(existing.has(surface))return [];
+  const structural=verbSlots.includes(index);
+  const gloss=structural&&['A1.9','A1.13'].includes(item.concept)
+   ?index===item.verbIndex?auxiliaryGloss[surface]:perfectGloss[surface]
+   :structural&&['A1.10','A1.16'].includes(item.concept)&&index!==item.verbIndex
+    ?particleGloss[surface]
+    :structural?verbGloss[surface]||verbGloss[item.verb]
+    :extraGloss[surface]||cardGloss[surface]||verbGloss[surface];
+  if(!gloss)throw Error(`${item.id}: missing English meaning for ${surface}`);
+  return [{id:`a1surface:${surface}`,nl:surface,en:gloss,mature:false,supportOnly:true}];
+ });
+ return {...item,verbSlots,vocabulary:[...target,...support],englishPrompt:englishPrompt(item),
+  alternatives:[...new Set([...(item.alternatives||[]),...timeFronting(item,sentence)])]};
+}
