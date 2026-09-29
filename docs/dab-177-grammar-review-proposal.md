@@ -1,6 +1,6 @@
 # DAB-177 — grammar review scheduling proposal
 
-Status: **owner approved; implementation in progress**. The scheduler and local V5 progress now use this policy on the DAB-177 branch. Device and cross-device checks remain before release.
+Status: **V5.1.151 released to GitHub Pages**. The owner confirmed the development preview on iPhone and MacBook, and the signed-in production Mac app loaded existing progress after release. Live iPhone sync comparison is pending.
 
 ## Current behaviour and constraints
 
