@@ -97,26 +97,49 @@ export function selectExtraPractice(state,content,concept,canListen=false,canSpe
  if(!item)throw Error('No practice content available');
  return {item,kind,phase:'extra'};
 }
+export function grammarReviewBudget(state,content,date){
+ const retained=content.concepts.filter(c=>state.progress[c.id]?.masteredAt).length;
+ if(!retained)return 0;
+ const current=content.concepts.find(c=>!state.progress[c.id]?.masteredAt);
+ const p=current&&state.progress[current.id];
+ const proofDue=p&&(p.status==='proof-ready'||p.retentionDue&&p.retentionDue<=date);
+ const reserved=state.proof?.type==='mastery'||proofDue&&p.status==='proof-ready'?20:state.proof?.type==='retention'||proofDue?10:0;
+ const proofAnswered=(state.attempts||[]).filter(a=>a.date===date&&['mastery','retention'].includes(a.phase)).length;
+ return Math.max(0,Math.min(6,1+Math.floor(retained/4),Math.floor((20-Math.max(reserved,proofAnswered))/2)));
+}
 export function selectPractice(state,content,current,date,canListen,canSpeak=false){
  const allMastered=content.concepts.every(c=>state.progress[c.id].masteredAt);
- const maintenance=content.concepts.filter(c=>state.progress[c.id].masteredAt&&(allMastered||state.progress[c.id].nextMaintenance<=date));
+ const today=(state.attempts||[]).filter(a=>a.date===date&&a.phase==='maintenance');
+ const budget=grammarReviewBudget(state,content,date);
+ const reviewed=new Set(today.filter(a=>!a.reviewFollowUp).map(a=>a.concept));
+ const maintenance=content.concepts.filter(c=>{const p=state.progress[c.id];return p.masteredAt&&!reviewed.has(c.id)&&(!p.nextMaintenance||p.nextMaintenance<=date);});
  let concept=current;let phase='practice';
- if(maintenance.length&&(state.daily.count%5===4||state.progress[current].status==='mastered')){concept=maintenance.sort((a,b)=>state.progress[a.id].nextMaintenance.localeCompare(state.progress[b.id].nextMaintenance))[0].id;phase='maintenance'}
+ const dueReview=maintenance.length&&today.length<budget&&(allMastered||state.daily.count>=Math.floor((today.length+1)*20/budget)-1);
+ if(dueReview){concept=maintenance.sort((a,b)=>{
+  const x=state.progress[a.id],y=state.progress[b.id];
+  return (x.nextMaintenance||'').localeCompare(y.nextMaintenance||'')
+   ||Number(y.status==='reinforcement')-Number(x.status==='reinforcement')
+   ||(x.lastIndependentReview||'').localeCompare(y.lastIndependentReview||'')
+   ||content.concepts.indexOf(a)-content.concepts.indexOf(b);
+ })[0].id;phase='maintenance'}
  const due=state.retries.find(r=>r.after<=state.attempts.length&&(!r.date||r.date<=date));
- if(due&&state.progress[due.concept].taught){concept=due.concept;phase=state.progress[concept].masteredAt?'maintenance':'practice';}
+ const reviewFollowUp=!!due&&!!state.progress[due.concept]?.masteredAt&&due.date===date&&reviewed.has(due.concept)&&!today.some(a=>a.concept===due.concept&&a.reviewFollowUp)&&today.length<budget;
+ if(due&&state.progress[due.concept]?.taught&&(!state.progress[due.concept].masteredAt||reviewFollowUp)){
+  concept=due.concept;phase=state.progress[concept].masteredAt?'maintenance':'practice';
+ }
  const all=content.sentences.filter(x=>x.concept===concept&&x.pool==='practice');
  let pool=all,focusedRetry=false;
  if(due&&due.concept===concept){const focused=pool.filter(x=>x.verb===due.verb&&x.id!==due.sourceId&&!state.exposures.slice(-2).some(e=>e.nl===normalize(x.nl)));if(focused.length){pool=focused;focusedRetry=true;}}
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
  const session=practiceSession(state,phase);
  let kind=practiceKind(state.progress[concept],canListen,canSpeak,session);
- if(phase==='maintenance'&&state.progress[concept].status!=='reinforcement'&&kind!=='listening'&&kind!=='speaking')kind='typed';
+ if(phase==='maintenance')kind=reviewFollowUp&&due?.concept===concept?'wordbank':'typed';
  ({pool,kind}=compatiblePractice(pool,all,kind,state));
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
  const vocabularyGains=new Map(phase==='practice'?pool.map(item=>[item.id,practiceVocabularyGain(item,state,content,concept)]):[]);
  const item=[...pool].sort((a,b)=>(itemPriority(b,state)+practiceContextWeight(b)+(vocabularyGains.get(b.id)||0))-(itemPriority(a,state)+practiceContextWeight(a)+(vocabularyGains.get(a.id)||0)))[0];
  if(!item)throw Error('No practice content available');
- return {item,kind,phase,retryId:due?.id};
+ return {item,kind,phase,retryId:due?.concept===concept?due.id:null,reviewFollowUp:phase==='maintenance'&&reviewFollowUp&&due?.concept===concept};
 }
 export function selectProof(state,content,concept,count){
  const seen=new Set(state.exposures.map(x=>x.nl));
