@@ -6,6 +6,7 @@ import {classifyOrigin,environmentPresentation} from '../src/engine/study-origin
 const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../src/ui/styles.css',import.meta.url),'utf8');
+const shell=readFileSync(new URL('../src/ui/shell.css',import.meta.url),'utf8');
 const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
 const ui=readFileSync(new URL('../src/ui/study-origin.js',import.meta.url),'utf8');
 const docs=readFileSync(new URL('../DEVELOPMENT.md',import.meta.url),'utf8');
@@ -24,10 +25,10 @@ test('development presentation cannot be mistaken for production',()=>{
  const prod=environmentPresentation('dabutchart-sudo.github.io','V5.1.122');
  const local=environmentPresentation('192.168.1.20','V5.1.122');
  assert.equal(prod.genuine,true);
- assert.equal(prod.subtitle,'Sentence construction · V5.1.122');
+ assert.equal(prod.subtitle,'V5.1.122');
  assert.equal(prod.banner,null);
  assert.equal(local.genuine,false);
- assert.match(local.subtitle,/Development · not for genuine study/);
+ assert.equal(local.subtitle,'Development · V5.1.122');
  assert.match(local.banner,/GitHub Pages is the study origin/);
  assert.equal(local.appleTitle,'Zin Dev');
 });
@@ -44,13 +45,11 @@ test('origin distinction is shipped, cached and documented',()=>{
  assert.match(design,/GitHub Pages is the only normal origin for genuine study/);
 });
 
-test('the Development banner stays out of the tab row so Flashcards remains usable',()=>{
+test('the Development banner stays outside the shell and the icon navigation remains reachable',()=>{
  assert.match(ui,/insertAdjacentElement\('beforebegin',banner\)/);
  assert.doesNotMatch(ui,/topbar\.prepend\(banner\)/);
- assert.match(css,/body\.is-development \.topbar\{[^}]*flex-direction:column/);
- assert.match(css,/body\.is-development \.tabs\{[^}]*width:100%/);
- assert.match(css,/body\.is-development \.tabs\{[^}]*order:3/);
- assert.doesNotMatch(css,/body\.is-development \.tabs\{[^}]*flex:1 0 100%/);
- assert.match(css,/body\.is-development \.app\{grid-template-rows:auto auto auto minmax\(0,1fr\) auto\}/);
+ assert.match(shell,/body\.is-development \.app\{grid-template-rows:auto auto auto minmax\(0,1fr\)\}/);
+ assert.match(shell,/body\.is-development \.tabs\{order:initial;width:100%\}/);
+ assert.match(shell,/\.tabs\{position:fixed/);
  assert.match(css,/\.study-origin-banner\{[^}]*display:block/);
 });

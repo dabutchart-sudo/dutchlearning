@@ -129,8 +129,8 @@ test('an explicit Learning reset is not undone by the recovery copy',()=>{
 test('the course path has an explicit finished state after 20 and no Today start button',async()=>{
  const source=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/ui/app.js',import.meta.url),'utf8'));
  const overview=await import('node:fs/promises').then(fs=>fs.readFile(new URL('../src/ui/course-overview.js',import.meta.url),'utf8'));
- assert.match(overview,/Today’s 20 are done/);
- assert.match(overview,/daily\?\.done/);
+ assert.match(overview,/Learning complete for today/);
+ assert.match(overview,/daily\.done/);
  assert.match(source,/view='curriculum'/);
  assert.doesNotMatch(source,/function renderToday/);
 });

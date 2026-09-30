@@ -9,22 +9,22 @@ test('mouse/touch/pen release and cancellation erase peek; click does not latch'
  for(const pointerType of ['mouse','touch','pen'])for(const release of ['pointerup','pointercancel','pointerleave','lostpointercapture','blur']){
   let uses=0;const {button,hint,dispose}=setup(async()=>uses++);
   event(button,'pointerdown',{button:0,pointerId:1,pointerType});await tick();assert.equal(hint.textContent,'schrijven — write');assert.equal(uses,1);
-  event(button,release);assert.equal(hint.textContent,'Hold to see dictionary words.');event(button,'click');assert.equal(button.attrs['aria-pressed'],'false');dispose();
+  event(button,release);assert.equal(hint.textContent,'');event(button,'click');assert.equal(button.attrs['aria-pressed'],'false');dispose();
  }
 });
 test('keyboard Space and Enter reveal only while held; repeats do not duplicate use',async()=>{
  for(const key of [' ','Enter']){let uses=0;const {button,hint,dispose}=setup(async()=>uses++);
   event(button,'keydown',{key,repeat:false});event(button,'keydown',{key,repeat:true});await tick();assert.equal(uses,1);assert.equal(button.attrs['aria-pressed'],'true');
-  event(button,'keyup',{key});assert.equal(hint.textContent,'Hold to see dictionary words.');dispose();
+  event(button,'keyup',{key});assert.equal(hint.textContent,'');dispose();
  }
 });
 test('release during a pending save never reveals late, while assistance is still recorded',async()=>{
  let resolve,uses=0;const {button,hint,dispose}=setup(()=>{uses++;return new Promise(r=>resolve=r)});
- event(button,'pointerdown',{button:0,pointerId:1});event(button,'pointerup');resolve();await tick();assert.equal(uses,1);assert.equal(hint.textContent,'Hold to see dictionary words.');dispose();
+ event(button,'pointerdown',{button:0,pointerId:1});event(button,'pointerup');resolve();await tick();assert.equal(uses,1);assert.equal(hint.textContent,'');dispose();
 });
 test('window blur, hidden document and disposal erase help and detach listeners',async()=>{
  for(const reason of ['blur','hidden','dispose']){const {button,hint,win,doc,dispose}=setup();event(button,'keydown',{key:' ',repeat:false});await tick();
   if(reason==='blur')event(win,'blur');if(reason==='hidden'){doc.hidden=true;event(doc,'visibilitychange')}if(reason==='dispose')dispose();
-  assert.equal(hint.textContent,'Hold to see dictionary words.');dispose();event(button,'keydown',{key:' ',repeat:false});await tick();assert.equal(button.attrs['aria-pressed'],'false');
+  assert.equal(hint.textContent,'');dispose();event(button,'keydown',{key:' ',repeat:false});await tick();assert.equal(button.attrs['aria-pressed'],'false');
  }
 });

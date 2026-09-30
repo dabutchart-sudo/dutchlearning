@@ -10,7 +10,10 @@ let syncing=false,lastRevision=-1;
 
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const localState=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch{return null}};
-const setStatus=t=>{const f=document.querySelector('#offline-status');if(f)f.textContent=t};
+const setStatus=(text,kind='checking')=>{
+ const footer=document.querySelector('#offline-status');if(footer)footer.textContent=text;
+ document.dispatchEvent(new CustomEvent('zin:sync-status',{detail:{kind,text}}));
+};
 
 function injectSyncPanel(){
  const settings=document.querySelector('.settings-row')?.parentElement;if(!settings||document.querySelector('#v51-sync'))return;
@@ -21,7 +24,7 @@ function injectSyncPanel(){
 async function renderSyncPanel(){
  const body=document.querySelector('#v51-sync-body');if(!body)return;
  const {data:{user},error}=await supabase.auth.getUser();
- if(error)console.warn('Supabase auth:',error);
+ if(error){console.warn('Supabase auth:',error);body.innerHTML='<p class="muted small">Sign-in could not be checked. Your Learning answers remain on this device; try again when connected.</p>';return;}
  if(user){
    body.innerHTML=`<p class="small sync-good">✓ Signed in as <strong>${escapeHtml(user.email||'your account')}</strong></p><p class="muted small">Progress is saved locally immediately and synced after answers, when the app opens, and when it comes back online.</p><div class="assist-row"><button class="secondary" id="sync-now">Sync now</button><button class="secondary" id="sync-out">Sign out</button></div><p id="sync-message" class="muted small"></p>`;
    document.querySelector('#sync-now').onclick=()=>syncNow(true);
@@ -71,8 +74,10 @@ async function pullAttempts(user){
 async function syncNow(manual=false){
  if(syncing)return;syncing=true;
  try{
-   const {data:{user}}=await supabase.auth.getUser();
-   if(!user){if(manual)setStatus('Progress saved locally · sign in in Settings to sync');return;}
+   const {data:{user},error:authError}=await supabase.auth.getUser();
+   if(authError)throw authError;
+   if(!user){setStatus('Learning saved on this device · sign in to sync','local');return;}
+   setStatus('Syncing Learning progress','syncing');
    const local=localState();
    const {data:remote,error}=await supabase.from('trainer_state').select('state,updated_at').eq('user_id',user.id).maybeSingle();if(error)throw error;
    let content=null;
@@ -87,20 +92,20 @@ async function syncNow(manual=false){
     if(merged.added){next=merged.state;result.writeLocal=true;}
    }catch(e){console.warn('Trainer history merge:',e);}
    if(result.action==='download'||(result.writeLocal&&next)){
-     localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setStatus('Learning history updated — reloading…');setTimeout(()=>location.reload(),250);return;
+     localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setStatus('Learning history updated — reloading…','syncing');setTimeout(()=>location.reload(),250);return;
    }
    if(result.action==='upload'){
      const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:next||local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,next||local);
    }else if(result.pushAttempts){
      await pushAttempts(user,next||local);
    }else if(result.reason==='invalid-remote'||result.reason==='content-unavailable'){
-     setStatus('Progress saved locally');
+     setStatus('Learning saved locally · remote state needs checking','error');
      if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Remote Learning state was not applied because it could not be validated.';}
      return;
    }
-   lastRevision=Number(localState()?.revision||0);setStatus('Progress synced');
+   lastRevision=Number(localState()?.revision||0);setStatus('Learning synced','synced');
    if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Synced just now.';renderSyncPanel();}
- }catch(e){setStatus('Offline — progress saved locally');console.warn('Trainer sync:',e);const msg=document.querySelector('#sync-message');if(manual&&msg)msg.textContent='Sync failed: '+e.message}
+ }catch(e){setStatus(navigator.onLine?'Learning saved locally · sync failed':'Offline · Learning saved locally',navigator.onLine?'error':'offline');console.warn('Trainer sync:',e);const msg=document.querySelector('#sync-message');if(manual&&msg)msg.textContent='Sync failed: '+e.message}
  finally{syncing=false}
 }
 
@@ -112,4 +117,4 @@ const observer=new MutationObserver(enhance);observer.observe(document.documentE
 window.addEventListener('online',()=>syncNow());
 supabase.auth.onAuthStateChange(()=>{renderSyncPanel();setTimeout(()=>syncNow(),0)});
 setInterval(()=>{const r=Number(localState()?.revision||0);if(r!==lastRevision)syncNow()},2500);
-setTimeout(async()=>{enhance();const {data:{user}}=await supabase.auth.getUser();setStatus(user?'Progress synced across devices':'Ready offline · progress saved locally');syncNow()},400);
+setTimeout(async()=>{enhance();setStatus('Checking Learning sync','checking');syncNow()},400);
