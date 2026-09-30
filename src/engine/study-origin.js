@@ -11,7 +11,7 @@ export function environmentPresentation(hostname,version='V5.1.123'){
  return {
   kind,
   genuine,
-  subtitle:genuine?`Sentence construction · ${version}`:`Development · not for genuine study · ${version}`,
+  subtitle:genuine?version:`Development · ${version}`,
   appleTitle:genuine?'Zin':'Zin Dev',
   banner:genuine?null:'Development copy · GitHub Pages is the study origin. Progress here is separate.'
  };

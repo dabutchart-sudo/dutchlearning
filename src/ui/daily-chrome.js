@@ -12,20 +12,18 @@ export function flashcardsChromeState(storage=globalThis.localStorage,today=dayK
  return 'ready';
 }
 
-export function learningChromeLabel({count=0,done=false,testReady=false}={}){
- if(testReady)return 'Learning · test ready';
- if(done||count>=20)return 'Learning done';
- return `Learning ${count} / 20`;
+export function learningChromeLabel({count=0,done=false}={}){
+ return done||count>=20?'Learning complete':'Learning to do';
 }
 
 export function flashcardsChromeLabel(state='ready'){
- return state==='done'?'Flashcards done':'Flashcards ready';
+ return state==='done'?'Flashcards complete':'Flashcards to do';
 }
 
-export function learningChromeFromStorage(storage=globalThis.localStorage){
+export function learningChromeFromStorage(storage=globalThis.localStorage,today=dayKey()){
  try{
   const state=JSON.parse(storage?.getItem(STORAGE_KEY)||'{}')||{};
-  const count=Number(state.daily?.count)||0;
+  const count=state.daily?.date===today?Number(state.daily.count)||0:0;
   return {count,done:count>=20,extra:state.pending?.phase==='extra'||!!state.extra};
  }catch{
   return {count:0,done:false,extra:false};

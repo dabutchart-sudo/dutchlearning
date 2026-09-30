@@ -25,8 +25,15 @@ test('Course opens on the path, not the evidence charts',()=>{
  const html=coursePage(state,content,{today:'2026-09-20'});
  assert.match(html,/data-course-path/);
  assert.match(html,/data-course-home/);
+ assert.ok(html.indexOf('data-course-focus')<html.indexOf('class="course-unit"'));
  assert.match(html,/You’re here/);
+ assert.doesNotMatch(html,/Where you are|See the whole path, then start from here\./);
+ assert.match(html,/<h2 class="sr-only" tabindex="-1">Course<\/h2>/);
+ assert.doesNotMatch(html,/course-path-here|You’re here —/);
  assert.match(html,/data-course-start="F1"/);
+ assert.equal((html.match(/data-course-start=/g)||[]).length,1);
+ assert.match(html,/Retain F1 first/);
+ assert.doesNotMatch(html,/required practice answers|course-method/);
  assert.match(html,/Coming later|Place and movement|A1\.21/);
  assert.doesNotMatch(html,/course-trend-chart/);
  assert.doesNotMatch(html,/data-course-pane/);
@@ -38,7 +45,7 @@ test('a retained topic offers extra practice and the current topic can start fro
  const state=freshState(content,new Date('2026-09-20T12:00:00Z'));
  Object.assign(state.progress.F1,{status:'mastered',masteredAt:'2026-09-19',taught:true,lessonAcknowledged:true,practiceAttempts:40});
  const path=coursePage(state,content,{today:'2026-09-20'});
- assert.match(path,/data-course-extra="F1"/);
+ assert.doesNotMatch(path,/data-course-extra="F1"/);
  assert.match(path,/data-course-start="A1.1"/);
  const retained=topicPage(state,content,'F1',{today:'2026-09-20'});
  assert.match(retained,/id="extra-course"/);
@@ -46,17 +53,23 @@ test('a retained topic offers extra practice and the current topic can start fro
  const current=topicPage(state,content,'A1.1',{today:'2026-09-20',dailyCount:0,dailyDone:false});
  assert.match(current,/id="start-course"/);
  assert.doesNotMatch(current,/id="extra-course"/);
+ assert.ok(current.indexOf('id="start-course"')<current.indexOf('What you’ll learn'));
+ assert.match(current,/<details class="course-topic-evidence">/);
+ assert.match(current,/0 of 40 required practice answers/);
 });
 
 test('a finished day and a ready test are obvious on the path',()=>{
  const state=freshState(content,new Date('2026-09-20T12:00:00Z'));
  state.daily={date:'2026-09-20',count:20};
  const done=coursePage(state,content,{today:'2026-09-20'});
- assert.match(done,/Today’s 20 are done/);
+ assert.match(done,/Learning complete for today/);
  assert.doesNotMatch(done,/data-course-start="F1"/);
  const ready=freshState(content,new Date('2026-09-20T12:00:00Z'));
- const testHtml=coursePage(ready,content,{today:'2026-09-20',offer:{canStartToday:true,type:'mastery'}});
- assert.match(testHtml,/A mastery test is ready/);
+ const testHtml=coursePage(ready,content,{today:'2026-09-20',offer:{id:'F1',canStartToday:true,type:'mastery'}});
+ assert.match(testHtml,/Start mastery test/);
+ const stale=coursePage(state,content,{today:'2026-09-21'});
+ assert.match(stale,/data-course-start="F1"/);
+ assert.doesNotMatch(stale,/Learning complete for today/);
 });
 
 test('Evidence remains available and still plots a completed Learning day',()=>{

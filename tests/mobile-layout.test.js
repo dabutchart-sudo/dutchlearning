@@ -1,17 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const styles=readFileSync(new URL('../src/ui/styles.css',import.meta.url),'utf8');const polish=readFileSync(new URL('../src/ui/mobile-polish.css',import.meta.url),'utf8');const refinements=readFileSync(new URL('../src/ui/mobile-flashcard-refinements.js',import.meta.url),'utf8');const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');const progressNav=readFileSync(new URL('../src/ui/progress-nav.js',import.meta.url),'utf8');const flashcards=readFileSync(new URL('../src/ui/flashcards-preview.js',import.meta.url),'utf8');const reporting=readFileSync(new URL('../src/ui/reporting.js',import.meta.url),'utf8');const flashcardStyles=readFileSync(new URL('../src/ui/flashcards-preview.css',import.meta.url),'utf8');
-test('mobile shell stays inside the viewport and keeps the four primary tabs on one row',()=>{assert.match(styles,/html,body\{max-width:100%;overflow-x:hidden\}/);assert.match(styles,/\.app,\.topbar,#content,\.stack,\.home-grid,\.course-grid,\.evidence,\.session,.card\{min-width:0;max-width:100%\}/);assert.match(styles,/@media\(max-width:900px\)\{\.topbar\{align-items:flex-start;flex-direction:column\}/);assert.match(styles,/\.tabs,\.daily-chrome\{display:flex;flex-wrap:nowrap;width:100%;align-self:stretch;overflow:visible\}/);assert.match(styles,/\.tabs>\.tab\{flex:1 1 0;min-width:0\}/);});
-test('top tab labels stay centred in equal slots',()=>{assert.match(styles,/\.tabs>\.tab\{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center\}/);assert.match(styles,/\.tab\{[^}]*text-align:center/);
+const styles=readFileSync(new URL('../src/ui/styles.css',import.meta.url),'utf8');const shell=readFileSync(new URL('../src/ui/shell.css',import.meta.url),'utf8');const polish=readFileSync(new URL('../src/ui/mobile-polish.css',import.meta.url),'utf8');const refinements=readFileSync(new URL('../src/ui/mobile-flashcard-refinements.js',import.meta.url),'utf8');const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');const progressNav=readFileSync(new URL('../src/ui/progress-nav.js',import.meta.url),'utf8');const flashcards=readFileSync(new URL('../src/ui/flashcards-preview.js',import.meta.url),'utf8');const reporting=readFileSync(new URL('../src/ui/reporting.js',import.meta.url),'utf8');const flashcardStyles=readFileSync(new URL('../src/ui/flashcards-preview.css',import.meta.url),'utf8');
+test('mobile shell keeps bottom navigation visible and clear of Learning controls',()=>{assert.match(styles,/html,body\{max-width:100%;overflow-x:hidden\}/);assert.match(styles,/\.app,\.topbar,#content,\.stack,\.home-grid,\.course-grid,\.evidence,\.session,.card\{min-width:0;max-width:100%\}/);assert.match(shell,/\.tabs\{position:fixed/);assert.match(shell,/body\.session-active \.app\{padding-bottom:calc\(86px \+ env\(safe-area-inset-bottom\)\)/);assert.doesNotMatch(shell,/body\.session-active \.tabs[^}]*display:none!important/);assert.match(flashcards,/document\.body\.classList\.remove\('session-active'\)/);});
+test('icon navigation has four equal accessible touch targets',()=>{assert.match(shell,/\.tabs>\.tab\{height:54px;min-height:54px/);assert.match(shell,/\.tabs svg/);
  assert.doesNotMatch(flashcardStyles,/\.tabs \.tab\{flex:0 0 auto\}/);
 });
 test('the top menu shows four study destinations and keeps the rest inside Progress',()=>{
  const tabs=index.match(/<nav class="tabs"[^>]*>.*?<\/nav>/)[0];
- assert.match(tabs,/data-view="curriculum">Course/);
+ assert.match(tabs,/data-view="curriculum"[^>]*aria-label="Course"/);
  assert.match(tabs,/id="flashcards-preview-tab"/);
  assert.match(tabs,/id="progress-tab"/);
- assert.match(tabs,/data-view="settings">Settings/);
+ assert.match(tabs,/data-view="settings"[^>]*aria-label="Settings"/);
+ for(const label of ['Course','Flashcards','Progress','Settings'])assert.match(tabs,new RegExp(`<span class="sr-only">${label}</span>`));
+ assert.match(index,/id="sync-status"/);
+ assert.match(index,/id="sync-details"/);
+ assert.match(index,/shell\.css\?v=5\.1\.\d+/);
+ assert.match(index,/shell\.js\?v=5\.1\.\d+/);
  assert.doesNotMatch(tabs,/>Today</);
  assert.doesNotMatch(tabs,/id="report-tab"/);
  assert.doesNotMatch(tabs,/data-view="mistakes"/);
@@ -33,6 +38,7 @@ test('the top menu shows four study destinations and keeps the rest inside Progr
 });
 test('mobile flashcards use compact icon controls and robust speech wiring',()=>{assert.match(polish,/flashcard-listen::before/);assert.match(polish,/flashcard-tool-row button::before/);assert.match(refinements,/Listen to Dutch pronunciation/);assert.match(refinements,/speak\(text/);});
 test('flashcard Listen speaks the Dutch word without the part-of-word label',()=>{assert.match(refinements,/cloneNode\(true\)/);assert.match(refinements,/querySelector\?\.\('\.flashcard-part'\)\?\.remove\(\)/);assert.match(refinements,/spoken\.textContent/);});
-test('mobile header metadata moves into the top-right area',()=>{assert.match(polish,/\.brand p\{position:absolute;top:5px;right:0/);});
+test('mobile header keeps version, daily completion and sync status on one row',()=>{assert.match(shell,/\.topbar\{display:grid!important;grid-template-columns:minmax\(0,1fr\) auto auto/);assert.match(shell,/\.daily-chrome\{grid-column:2;grid-row:1/);assert.match(shell,/\.sync-status\{grid-column:3;grid-row:1/);assert.match(shell,/body\.session-active \.brand p\{display:block!important\}/);assert.match(index,/id="sync-status"/);});
+test('Flashcard start opens the protected daily queue without a confirmation',()=>{const start=flashcards.split('function startSession(){')[1]?.split('function current(){')[0];assert.ok(start);assert.match(start,/if\(c\.complete\|\|\(!c\.dueReview&&!c\.dueNew\)\)return/);assert.match(start,/newLimit:c\.dueNew/);assert.match(start,/renderCard\(\)/);assert.doesNotMatch(start,/confirm\(/);assert.doesNotMatch(index,/flashcard-start-warning\.js/);});
 test('mobile polish remains shipped in the current build',()=>{assert.match(index,/V5\.1\.\d+/);assert.match(index,/mobile-polish\.css\?v=5\.1\.\d+/);assert.match(index,/mobile-flashcard-refinements\.js\?v=5\.1\.\d+/);});
 test('Listen starts in the same tap so iPhone can play audio',()=>{assert.doesNotMatch(app,/Promise\.resolve\(\)\.then\(fn\)/);assert.match(app,/const result=fn\(\)/);assert.match(app,/listen-example.*speak\(/);assert.match(app,/is-development/);});

@@ -4,7 +4,7 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.150 on GitHub Pages:
+Production is Zin V5.1.151 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus and current position.
 - The normal Learning session is finite: 20 questions per study day.
@@ -18,6 +18,7 @@ Production is Zin V5.1.150 on GitHub Pages:
 - Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting.
 - On phones, the four Flashcards summary figures share one row.
 - The configured new-card limit is a hard ceiling; the current required maximum is 5 per day.
+- Retained grammar review follows a 3/7/14/30-day interval ladder within the existing 20-question daily session.
 - Supabase preserves signed-in learner state, and GitHub Pages is the only normal production study origin.
 
 Completing the current A1 syllabus is an important stage, not the final destination and not an official CEFR qualification.

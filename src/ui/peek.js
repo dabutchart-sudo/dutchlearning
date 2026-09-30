@@ -1,7 +1,7 @@
 // A reveal has no persistent visible state. Save assistance before showing any words.
 export function bindPeek(button,hint,{reveal,onUse,onError=()=>{},window:win=globalThis.window,document:doc=globalThis.document}){
  const controller=new AbortController(),options={signal:controller.signal};
- const idle='Hold to see dictionary words.';
+ const idle='';
  let held=false,generation=0;
  function stop(){held=false;generation++;hint.textContent=idle;button.setAttribute('aria-pressed','false');}
  async function start(){

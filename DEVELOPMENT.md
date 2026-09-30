@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.150**.
+- Current documented release: **Zin V5.1.151**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -36,6 +36,20 @@ V5.1.150 adds versioned bilingual proof patterns for A1.7–A1.21. Original sent
 ## DAB-177 grammar review scheduling — production release, 2026-09-29
 
 The owner approved the policy in `docs/dab-177-grammar-review-proposal.md`. V5.1.151 applies a 3/7/14/30-day grammar review ladder, next-day independent review after a miss, due-date priority, and an adaptive daily budget capped at six within the existing 20. An optional V5 progress field tracks the interval step; existing due dates and proof history remain intact. Focused scheduling and cross-device simulation tests and the full automated suite pass. The owner confirmed the development preview on iPhone and MacBook; 428 local tests, GitHub CI and the GitHub Pages build passed. V5.1.151 is deployed at the production study origin and the signed-in Mac app loaded existing F1 progress with “Progress synced.” The owner approved live iPhone sync verification after release, and that comparison is pending. No production data rewrite, Supabase schema, authentication, or service change was made. Rollback is the V5.1.150 source and the standalone Flashcards fallback.
+
+## UI Stage 1 — local candidate, 2026-09-30
+
+V5.1.152 is a local Stage 1 interface candidate based on the verified V5.1.151 production `main` baseline. It adds a consistent app shell with icon navigation, a visible version, and a sync detail view that distinguishes confirmed Learning sync from Flashcards connection and save results. The outdated Settings statement that V5 never syncs automatically is corrected. Learning and Flashcard progression, proof requirements, scheduling, storage formats, Supabase schema, authentication, services, and hosting are unchanged. No merge or deployment has been made. See `docs/ui-stage-1-review.md` for checks and remaining device review.
+
+The owner accepted the Stage 1 interface after reviewing the compact Course header, reduced Course copy, and direct Flashcard start. This is design acceptance of the local candidate; release and real-device verification remain separate steps.
+
+## UI Stage 2 — local candidate, 2026-09-30
+
+V5.1.154 builds on the accepted Stage 1 branch and updates Course and topic presentation. The current topic and its next action appear before the compact timeline; locked topics state the prerequisite; practice counts and proof guidance sit in expandable topic details. A follow-up correction keeps the bottom navigation visible during Learning and reserves space above it for the question controls. The existing evidence calculations, unlock rules, daily 20, proof gates, extra practice, storage, and sync paths are unchanged. The complete automated suite passes (427 tests). The owner approved proceeding to Stage 3 after the navigation correction. Phone checks remain; no merge or deployment has been made. See `docs/ui-stage-2-review.md`.
+
+## UI Stage 3 — local candidate, 2026-09-30
+
+V5.1.155 builds on the Stage 2 checkpoint and simplifies the Learning question shell. A finite count and topic stay at the top, the Pause action is an icon, proof rules and answer scoring details are available on demand, and full sentence teaching feedback stays visible. Word help no longer repeats its instruction. The Check answer and Continue action remains above bottom navigation. The complete automated suite passes (430 tests). Phone and installed-PWA checks remain. Evidence calculations, daily limits, proof gates, persistence, sync, learner data, services, and production are unchanged. See `docs/ui-stage-3-review.md`.
 
 ## Agreed development direction — 2026-09-23
 
