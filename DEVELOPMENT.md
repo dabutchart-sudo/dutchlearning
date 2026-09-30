@@ -53,7 +53,7 @@ V5.1.155 builds on the Stage 2 checkpoint and simplifies the Learning question s
 
 ## UI stages 1–3 — production release, 2026-09-30
 
-The owner approved release after reviewing Stage 3 and confirming its Learning question, evidence disclosure, bottom navigation, and Pause action on iPhone. PR #121 passed GitHub Actions and merged as `5af7e4ef92813f43a8b935f207fd39c47287540a`. GitHub Pages serves V5.1.155; the published service worker, Learning UI helper, and shell stylesheet match the tested source. The offline cache is `dutch-v5.1.155-20260930-ui-learning`. Installed-PWA cache refresh and post-release signed-in sync remain to be confirmed on the owner's phone. No learner-data rewrite, Supabase schema, authentication, service, scheduling, or running-cost change occurred. Rollback source is V5.1.151 at `c9f4f08cc0a21d4d9b76148ebe86e0e316eee554`; the standalone Flashcards app remains available.
+The owner approved release after reviewing Stage 3 and confirming its Learning question, evidence disclosure, bottom navigation, and Pause action on iPhone. PR #121 passed GitHub Actions and merged as `5af7e4ef92813f43a8b935f207fd39c47287540a`. GitHub Pages serves V5.1.155; the published service worker, Learning UI helper, and shell stylesheet match the tested source. The offline cache is `dutch-v5.1.155-20260930-ui-learning`. After release, the owner confirmed the installed phone app's V5.1.155 version and sync status. No learner-data rewrite, Supabase schema, authentication, service, scheduling, or running-cost change occurred. Rollback source is V5.1.151 at `c9f4f08cc0a21d4d9b76148ebe86e0e316eee554`; the standalone Flashcards app remains available.
 
 ## Agreed development direction — 2026-09-23
 
