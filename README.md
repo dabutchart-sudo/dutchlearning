@@ -4,9 +4,11 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.151 on GitHub Pages:
+Production is Zin V5.1.155 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus and current position.
+- The app shell keeps Course, Flashcards, Progress, and Settings in a four-icon bottom bar, with visible sync status and version.
+- Course puts the current topic and next action first; Learning keeps its answer action above the bottom bar and shows detailed evidence on demand.
 - The normal Learning session is finite: 20 questions per study day.
 - New concepts are taught before they are assessed.
 - Practice progresses from recognition and supported construction toward independent English-to-Dutch production.
