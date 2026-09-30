@@ -33,7 +33,7 @@ test('feedback keeps the teaching context visible and folds detailed evidence',(
  assert.match(html,/She writes at home/);
  assert.match(html,/Match the verb to the subject/);
  assert.match(html,/<details class="session-evidence"><summary>How this answer counts<\/summary>/);
- assert.match(html,/Word help used/);
+ assert.match(html,/Guidance used/);
  assert.match(html,/does not count as independent Dutch writing/);
  assert.doesNotMatch(html,/Independent Dutch writing<\/span>/);
 });

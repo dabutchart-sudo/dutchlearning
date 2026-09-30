@@ -1,4 +1,5 @@
 import {courseOutline,learningProgress} from '../engine/course-progress.js';
+import {dailyRecap} from './teaching-support.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const percent=n=>n===null?'—':`${Math.round(n*100)}%`;
 const dateLabel=day=>new Date(day+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
@@ -55,9 +56,14 @@ function pathNode(c){
  </li>`;
 }
 function plannedNode(c){return `<li class="course-path-node is-planned"><div class="course-node-wrap"><span class="course-node" aria-hidden="true"></span></div><div class="course-path-card"><div class="course-planned-label"><span class="course-topic-code">${esc(c.id)}</span><strong>${esc(c.title)}</strong><span class="course-topic-status">Coming later</span></div></div></li>`;}
-function pathView(outline,daily,offer){
+function recapCard(recap){
+ if(!recap)return '';
+ return `<article class="card course-daily-recap"><div class="eyebrow">TODAY'S LEARNING</div><h3>Your daily recap</h3><p>You finished all ${recap.answered} questions. ${recap.independent} answers showed independent Dutch writing${recap.supported?`; ${recap.supported} used help`:''}.</p>${recap.revisit.length?`<h4>Useful patterns to revisit</h4><ul>${recap.revisit.map(item=>`<li><strong>${esc(item.concept)} · ${esc(item.title)}</strong><span lang="nl">${esc(item.sentence)}</span><small>${esc(item.meaning)}</small></li>`).join('')}</ul>`:'<p>Your last 20 answers had no grammar or spelling misses to revisit.</p>'}<p class="course-caption">This recap reflects recorded answers. It does not change your course evidence or add questions.</p></article>`;
+}
+function pathView(outline,daily,offer,recap){
  return `<section class="course-path" data-course-path>
   ${courseFocus(outline,daily,offer)}
+  ${recapCard(recap)}
   ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(pathNode).join('')}</ol></section>`;}).join('')}
   ${outline.planned.length?`<section class="course-unit"><header class="course-unit-banner is-planned"><span>Still to come</span><h3>Completing A1</h3><small>${outline.planned.length} planned</small></header><ol class="course-path-list">${outline.planned.map(plannedNode).join('')}</ol></section>`:''}
   <section class="course-future"><span class="eyebrow">Later</span><h3>A2 · Beyond the basics</h3><p>A2 is planned, but its syllabus and exercises are not available yet. Finishing Zin’s course is not an official CEFR qualification.</p></section>
@@ -69,7 +75,7 @@ export function coursePage(state,content,{today,pane='path',days=30,cohort='inde
  const view=paneName(pane);
  const dailyCount=state.daily?.date===today?state.daily.count||0:0;
  const daily={done:dailyCount>=20};
- return `<section class="course-dashboard" data-course-overview ${view==='path'?'data-course-home':'data-course-evidence'}><header class="course-heading">${view==='path'?'<div class="eyebrow">Your course</div><h2 class="sr-only" tabindex="-1">Course</h2>':'<div><div class="eyebrow">Your evidence</div><h2 tabindex="-1">How your answers are changing</h2><p>The numbers behind your Learning answers, when you want them.</p></div>'}</header>${view==='path'?pathView(outline,daily,offer):progressView(outline,progress,days,content)}</section>`;
+ return `<section class="course-dashboard" data-course-overview ${view==='path'?'data-course-home':'data-course-evidence'}><header class="course-heading">${view==='path'?'<div class="eyebrow">Your course</div><h2 class="sr-only" tabindex="-1">Course</h2>':'<div><div class="eyebrow">Your evidence</div><h2 tabindex="-1">How your answers are changing</h2><p>The numbers behind your Learning answers, when you want them.</p></div>'}</header>${view==='path'?pathView(outline,daily,offer,dailyRecap(state,content,today)):progressView(outline,progress,days,content)}</section>`;
 }
 export function topicPage(state,content,id,{today,proofHTML='',dailyCount=0,dailyDone=false}={}){
  const c=courseOutline(state,content,{today}).topics.find(c=>c.id===id);if(!c)return '';
