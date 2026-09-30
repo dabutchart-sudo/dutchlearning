@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.151**.
+- Current documented release: **Zin V5.1.155**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -49,7 +49,11 @@ V5.1.154 builds on the accepted Stage 1 branch and updates Course and topic pres
 
 ## UI Stage 3 — local candidate, 2026-09-30
 
-V5.1.155 builds on the Stage 2 checkpoint and simplifies the Learning question shell. A finite count and topic stay at the top, the Pause action is an icon, proof rules and answer scoring details are available on demand, and full sentence teaching feedback stays visible. Word help no longer repeats its instruction. The Check answer and Continue action remains above bottom navigation. The complete automated suite passes (430 tests). Phone and installed-PWA checks remain. Evidence calculations, daily limits, proof gates, persistence, sync, learner data, services, and production are unchanged. See `docs/ui-stage-3-review.md`.
+V5.1.155 builds on the Stage 2 checkpoint and simplifies the Learning question shell. A finite count and topic stay at the top, the Pause action is an icon, proof rules and answer scoring details are available on demand, and full sentence teaching feedback stays visible. Word help no longer repeats its instruction. The Check answer and Continue action remains above bottom navigation. The complete automated suite passes (430 tests). The owner confirmed the Learning layout and Pause action on iPhone. Evidence calculations, daily limits, proof gates, persistence, sync, learner data, and services are unchanged. See `docs/ui-stage-3-review.md`.
+
+## UI stages 1–3 — production release, 2026-09-30
+
+The owner approved release after reviewing Stage 3 and confirming its Learning question, evidence disclosure, bottom navigation, and Pause action on iPhone. PR #121 passed GitHub Actions and merged as `5af7e4ef92813f43a8b935f207fd39c47287540a`. GitHub Pages serves V5.1.155; the published service worker, Learning UI helper, and shell stylesheet match the tested source. The offline cache is `dutch-v5.1.155-20260930-ui-learning`. Installed-PWA cache refresh and post-release signed-in sync remain to be confirmed on the owner's phone. No learner-data rewrite, Supabase schema, authentication, service, scheduling, or running-cost change occurred. Rollback source is V5.1.151 at `c9f4f08cc0a21d4d9b76148ebe86e0e316eee554`; the standalone Flashcards app remains available.
 
 ## Agreed development direction — 2026-09-23
 

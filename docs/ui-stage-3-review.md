@@ -1,6 +1,8 @@
 # UI Stage 3 review — V5.1.155 local candidate
 
-Stage 3 starts from the Stage 2 local checkpoint `a6c0367` on `feature/zin-ui-stage-3`. Production remains V5.1.151. Stage 2 remains unmerged.
+Stage 3 started from the Stage 2 local checkpoint `a6c0367` on `feature/zin-ui-stage-3`. At review time, production remained V5.1.151 and Stage 2 was unmerged.
+
+Release outcome: the owner approved and iPhone-checked this layout. Stages 1–3 were merged in [PR #121](https://github.com/dabutchart-sudo/dutchlearning/pull/121) and GitHub Pages now serves V5.1.155. The notes below record the pre-release review state.
 
 ## What changed
 
