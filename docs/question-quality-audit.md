@@ -2,13 +2,13 @@
 
 Status: DAB-88 remains in progress. The initial read-only audit and several implementation slices have shipped; the notes below retain their original dates.
 
-## Format-choice fairness follow-up — 1 October 2026 (local candidate)
+## Format-choice fairness follow-up — 1 October 2026 (production V5.1.157)
 
-V5.1.156 classifies an incorrect `form` selection as a translation/meaning error, although the choices are forms of the target verb. That gives the learner translation advice and mislabels the saved attempt in Mistakes & weak areas. This local candidate classifies the miss as `verb_form`, so existing feedback names the expected form in its full sentence.
+Before V5.1.157, an incorrect `form` selection was classified as a translation/meaning error, although the choices are forms of the target verb. That gave the learner translation advice and mislabelled the saved attempt in Mistakes & weak areas. V5.1.157 classifies the miss as `verb_form`, so existing feedback names the expected form in its full sentence.
 
 A generated `correct-sentence` audit found five F6 items where the model uses `jij kan` but `jij kunt` appears as a supposedly wrong choice; both are already accepted Dutch answers. New questions now select a different verb-form distractor. An older saved question still accepts the valid alternative when selected. Wrong choices now receive verb-form or word-order feedback according to their actual error. A content-wide regression checks that no generated sentence-choice distractor is accepted Dutch and that each gives one of those two explanations; all 3,752 current questions retain three choices. This does not change the correct answer, daily scheduling, proof rules, stored-field shape or other formats.
 
-Human Dutch review and phone/PWA acceptance remain open. Other formats still need the wider DAB-88 review. This candidate has not been merged or deployed.
+PR #126 passed GitHub checks and merged as `19b38047c72a98b024030220918fbe2d45bb2ae9` after the owner authorised deployment. GitHub Pages served the V5.1.157 shell, service worker and changed engine files byte for byte. Human Dutch review and installed phone/PWA acceptance remain open. Other formats still need the wider DAB-88 review.
 
 Release update, 28 September 2026: the owner accepted the A1.7–A1.9 development preview for production. V5.1.148 includes their expanded practice pools and the phone lesson-action layout fix. Earlier local-review notes below record the state before this release. The broader A1.10–A1.21 breadth, ambiguity, vocabulary and proof-capacity work remains open under DAB-88 and its follow-up stories.
 
