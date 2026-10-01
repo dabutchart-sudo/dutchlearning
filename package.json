@@ -1,6 +1,6 @@
 {
   "name": "zin",
-  "version": "5.1.159",
+  "version": "5.1.160",
   "private": true,
   "type": "module",
   "scripts": { "test": "node --test", "audit:proof": "node scripts/audit-proof-capacity.js" }
