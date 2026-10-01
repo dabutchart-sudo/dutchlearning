@@ -1,0 +1,9 @@
+# DAB-169 trustworthy progress — local review
+
+Course remains home. Its path now uses six plain-language journey states. **Proven** means mastery passed but delayed retention remains; **Retaining** means the delayed check passed. **Needs attention** covers a failed proof or a maintenance miss without erasing earlier retention. Each topic explains why it has its state and what comes next.
+
+The Course evidence view shows seven separate capability areas with recorded counts, not an overall fluency score. Word recall uses distinct words in saved unassisted word evidence. Grammar construction uses guided word bank, gap and form answers; passed mastery is called out separately. Reading uses visible Dutch-to-English choices. Listening uses hidden-audio questions, while a text fallback becomes reading. Writing uses unassisted typed English-to-Dutch answers, including typed speech fallback. Speaking uses spoken-transcript answers but makes no pronunciation claim. Interaction remains unassessed until a multi-turn format records suitable evidence. Missing fields in older answers remain unclassified rather than being guessed.
+
+All values are reconstructed at display time from existing learner records. No field, migration or service is added. The existing Learning trend and separate Flashcard report remain available. The daily 20, mastery and retention standards, proof novelty, sync and Flashcards are unchanged.
+
+For phone review, open **Progress** in the development copy. Check the journey explanation, seven capability cards, long text wrapping, and access to the existing Learning trends and Flashcard report. A fresh sandbox should show honest empty areas. An existing sandbox with practice and a failed proof should distinguish support, independent writing and Needs attention. This is a local candidate; owner phone acceptance and installed-PWA review remain open. Production stays at V5.1.158, with the standalone Flashcards fallback.

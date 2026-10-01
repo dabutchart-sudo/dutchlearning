@@ -13,6 +13,20 @@ const validDay=value=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return false;co
 const attemptDay=a=>validDay(a.date)?a.date:validDay(String(a.occurredAt||'').slice(0,10))?String(a.occurredAt).slice(0,10):null;
 export const isIndependentAttempt=a=>a.kind==='typed'&&a.direction==='en-nl'&&a.assisted===false;
 const count=n=>Math.max(0,Number(n)||0);
+function journeyOf(p,status,available){
+ const latest=p.proofHistory?.at(-1);
+ if(!available)return {label:'Not started',reason:'This topic unlocks after its prerequisite is retained.'};
+ if(status==='reinforcement')return {label:'Needs attention',reason:'A maintenance answer needs review. Earlier retention proof is still kept.'};
+ if(latest?.passed===false&&!p.retentionDue&&!p.masteredAt)return latest.type==='mastery'
+  ?{label:'Needs attention',reason:'The latest mastery test was not passed. Targeted practice is available before a full retake.'}
+  :{label:'Needs attention',reason:'The delayed retention test was not passed. Practice is needed before another retention check.'};
+ if(status==='mastered')return {label:'Retaining',reason:`A delayed retention test was passed${p.masteredAt?` on ${p.masteredAt}`:''}. Future reviews keep this topic in use.`};
+ if(['retention-wait','retention-ready'].includes(status))return {label:'Proven',reason:'The mastery test passed. A delayed retention check is still needed.'};
+ if(status==='proof-ready')return {label:'Practising',reason:'The practice requirement is met; a mastery test is the next independent check.'};
+ if(status==='lesson')return {label:'Not started',reason:'The lesson and practice have not started yet.'};
+ if(count(p.practiceAttempts))return {label:'Practising',reason:`${count(p.practiceAttempts)} practice answers recorded. Practice alone does not prove mastery.`};
+ return {label:'Learning',reason:'The lesson has begun; practice and proof are still ahead.'};
+}
 export function courseOutline(state,content,{today=dayKey()}={}){
  const currentId=content.concepts.find(c=>unlocked(c,state)&&!state.progress[c.id]?.masteredAt)?.id||null;
  const topics=content.concepts.map(c=>{
@@ -33,7 +47,8 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   else if(p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false)nextStep='Your mastery retake opens on your next study day. You can practise today.';
   else nextStep=[remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} to reach the ${required}-answer test requirement.`:'Practice requirement reached.',p.remedial?`${p.remedial} successful practice ${p.remedial===1?'answer':'answers'} still needed after your last test.`:''].filter(Boolean).join(' ');
   const needsMoreVocabulary=status==='proof-ready'&&/vocabulary|fresh test sentences/i.test(nextStep);
-  return {...c,status,label:needsMoreVocabulary?'More practice':statusLabels[status]||'In practice',available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,nextStep};
+  const journey=journeyOf(p,status,available);
+  return {...c,status,label:needsMoreVocabulary?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,nextStep};
  });
  return {topics,current:topics.find(c=>c.current)||null,retained:topics.filter(c=>c.retained).length,total:topics.length,
   planned:plannedTopics.filter(p=>!content.conceptById[p.id]),levels:[...new Set(topics.map(c=>c.level))]};
