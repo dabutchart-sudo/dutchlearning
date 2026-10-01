@@ -1,4 +1,4 @@
-# DAB-181 teaching support — V5.1.156 local candidate
+# DAB-181 teaching support — V5.1.156 production release
 
 The lesson keeps the existing rule and worked sentence, then adds two focused pattern notes and two contrasting sentences from the topic's practice pool. Foundation and A1.1–A1.6 continue to use their existing rule as the pattern note. No proof sentence is used as a lesson example.
 
@@ -10,4 +10,4 @@ During normal practice and grammar maintenance, a pattern reminder is available 
 
 Once all 20 normal Learning questions are recorded for a study day, Course shows a recap of those answers. It lists independent writing and help use, and up to three recent grammar or spelling misses with the full model sentence and meaning. It is derived from existing attempts, disappears on the next day, and does not change saved progress, scoring, scheduling, or daily capacity. Optional extra practice is excluded.
 
-Before release, review the A1.7–A1.22 pattern notes and 29 new contexts for natural Dutch, translations and teaching accuracy. On a phone and installed PWA, check a long lesson, the reminder before and after eight practice answers, reachable Check answer, assisted feedback, proof without help, and the recap after a completed daily 20. Confirm the new teaching and content helpers are available offline. No production release or live device check is recorded yet.
+Release outcome, 1 October 2026: the owner authorised release. PR #124 passed GitHub Actions and merged as `28eb4e275ef55e5ef3d06de621036152f8734c24`. GitHub Pages serves V5.1.156, and the published shell, service worker, changed UI modules and new content module match the tested source byte for byte. A separate human Dutch-language review and live iPhone/installed-PWA check are not recorded. Those checks should cover a long lesson, the reminder before and after eight practice answers, reachable Check answer, assisted feedback, proof without help, and the recap after a completed daily 20. V5.1.155 remains the rollback source.
