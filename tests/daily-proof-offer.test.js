@@ -2,21 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {dailyProofOffer,freshState,releaseUnscoredPractice} from '../src/engine/learner.js';
+import {registerPacks} from '../src/content/registry.js';
 
-function contentFixture(){
- const concept={id:'F1',level:'Foundation',title:'First sentences',rule:'A simple rule.',example:'Ik werk.',translation:'I work.',exampleId:'p1',prerequisites:[],minPractice:40};
- const item={id:'p1',concept:'F1',pool:'practice',nl:'Ik werk.',en:'I work.',alternatives:[],verb:'werken',subject:'ik',family:'present',verbIndex:1,verbSlots:[1],forms:['werk','werkt','werken'],vocabulary:[{id:'w1',nl:'werken',en:'to work',mature:false}]};
- return {concepts:[concept],sentences:[item],conceptById:{F1:concept},byId:{p1:item}};
-}
-
-const content=contentFixture();
+const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-09-21T12:00:00');
 const ready=(status='proof-ready',count=0,pending=false)=>{
  const s=freshState(content,now);
  s.progress.F1.status=status;
  s.progress.F1.practiceAttempts=40;
  s.daily={date:'2026-09-21',count};
- if(pending)s.pending={id:'q1',phase:'practice',kind:'typed',sourceId:'p1'};
+ if(pending)s.pending={id:'q1',phase:'practice',kind:'typed',sourceId:content.sentences.find(item=>item.concept==='F1'&&item.pool==='practice').id};
  return s;
 };
 

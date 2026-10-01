@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.159**.
+- Current documented release: **Zin V5.1.160**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -70,6 +70,10 @@ The review candidate groups missed mastery patterns by direction and error type,
 ## DAB-169 trustworthy progress — production release, 2026-10-01
 
 The Course journey now derives Not started, Learning, Practising, Proven, Retaining and Needs attention from existing topic progress and proof history, with a short explanation of the evidence and next step. The Course evidence view adds separate counts for vocabulary recall, grammar construction, reading, listening, writing, speaking and interaction. It classifies only recorded attempts with matching formats and support state; empty or older incomplete evidence stays unproven. A passed mastery test is stated separately from guided practice. Learning trends and the separate Flashcard report remain available. This is a read-only interpretation: no learner-history rewrite, schema, sync, scheduler, daily-session, proof, service or cost change. The owner accepted the development phone preview and approved deployment on 1 October. All 446 local tests, both PR #131 checks, the post-merge main test run and GitHub Pages deployment passed. PR #131 merged as `83f486f8142d23bfca3e2adccb3b8418f0e6a011`. Live `index.html`, `sw.js`, capability and Course progress modules, Course UI and CSS match the release source byte for byte. The offline cache is `dutch-v5.1.159-20261001-trustworthy-progress`. After release, the owner confirmed the installed phone app shows V5.1.159 with progress synced. Rollback is V5.1.158 source at `f0ceeb4`; keep learner history and the standalone Flashcards fallback. See `docs/dab-169-progress-review.md`.
+
+## Mastery offer readiness — V5.1.160 release, 2026-10-01
+
+An initial mastery offer now checks the documented practice minimum as well as the saved test-ready state. This guards older or inconsistent progress without changing recorded history. A saved failed mastery still permits the next-study-day full retake. Course presents an eligible test as a choice alongside continued practice. A follow-up to the owner's phone report makes test-start failures visible on the test screen and checks unseen compatible test capacity before an offer or start. All 450 local tests pass; the actual phone error remains unobserved. The owner approved production release on 1 October. The offline cache is `dutch-v5.1.160-20261001-mastery-start`. The daily limit, proof standards, saved learner data, sync, schema, authentication, services and costs are unchanged. Rollback is V5.1.159 source at `c8e65069c7bca1ac9033cc5d984e68f01fed406d`; retain learner history and the standalone Flashcards fallback. Installed-phone validation of the V5.1.160 start path remains pending. See `docs/mastery-offer-readiness-review.md`.
 
 ## Agreed development direction — 2026-09-23
 

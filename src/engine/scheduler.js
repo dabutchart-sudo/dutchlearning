@@ -68,6 +68,10 @@ export function spreadPracticePool(pool,state,{keepVerb=false}={}){
 }
 const fallbackKinds=['choice','wordbank','typed','gap','form','correct-sentence','correction'];
 const supportsKind=(item,kind)=>!Array.isArray(item.suitableKinds)||item.suitableKinds.includes(kind)||kind==='speaking'&&item.suitableKinds.includes('typed');
+export function availableProofCount(state,content,concept){
+ const seen=new Set(state.exposures.map(x=>x.nl));
+ return eligibleProof(state,content,concept).filter(x=>supportsKind(x,'choice')&&supportsKind(x,'typed')&&!seen.has(normalize(x.nl))).length;
+}
 function compatiblePractice(pool,all,kind,state){
  const suitable=(rows,k)=>rows.filter(item=>supportsKind(item,k));
  let selected=suitable(pool,kind);

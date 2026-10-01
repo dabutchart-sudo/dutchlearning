@@ -19,7 +19,14 @@ let listeningSession=null,listeningRun=0;
 let disposePeek=()=>{};
 let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
-function notify(t){message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';}
+function notify(t){
+ message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';
+ el.querySelector('.session-error')?.remove();
+ if(t&&document.body.classList.contains('session-active')){
+  const card=el.querySelector('.session .question-card');
+  if(card)(card.querySelector('.actions')||card).insertAdjacentHTML(card.querySelector('.actions')?'beforebegin':'afterbegin',`<div class="error-message session-error" role="alert">${esc(t)}</div>`);
+ }
+}
 function canListenNow(){return !!state?.settings?.listening&&(canUseServerListen()||!!dutchVoice());}
 function button(id,label,primary=true,disabled=false){return `<button id="${id}" class="${primary?'primary':'secondary'}" ${disabled?'disabled':''}>${esc(label)}</button>`;}
 function on(id,fn){document.getElementById(id)?.addEventListener('click',()=>{try{const result=fn();if(result&&typeof result.then==='function')result.catch(e=>notify(e.message));}catch(e){notify(e.message);}});}
@@ -68,7 +75,7 @@ async function show(v){view=v;selectedConcept=null;lastFeedback=null;skipProofGa
 function proofAction(id,offer=dailyProofOffer(state,content,now())){const p=state.progress[id],ph=phase(p,dayKey(now()));
  if(ph==='proof-ready'||ph==='retention-ready'){
  const type=ph==='proof-ready'?'mastery':'retention',reason=offer&&offer.id===id?offer.reason:null,hideButton=offer?.canStartToday&&offer.id===id;
- return `<div class="rule"><strong>${reason&&/vocabulary|fresh test sentences/i.test(reason)?'More practice before the test':type==='mastery'?'Ready for mastery proof':'Ready to check retention'}</strong><p class="small">${type==='mastery'?'10 unseen Dutch → English and 10 unseen typed English → Dutch. Pass with 19/20 grammar overall and at least 9/10 in each direction.':'5 unseen Dutch → English and 5 unseen typed English → Dutch. Retention still requires 10/10 grammar.'} No word help. The test uses this day’s questions, so start it before ordinary practice if you want it today.</p>${hideButton?'':button('proof',type==='mastery'?'Start Mastery Test':'Start Retention Test',true,!!reason)}${!hideButton&&reason?`<p class="small muted">${esc(reason)}</p>`:''}</div>`;
+ return `<div class="rule"><strong>${reason?/practice answer|vocabulary|fresh test sentences/i.test(reason)?'More practice before the test':'Test not available today':type==='mastery'?'Ready for mastery proof':'Ready to check retention'}</strong><p class="small">${type==='mastery'?'10 unseen Dutch → English and 10 unseen typed English → Dutch. Pass with 19/20 grammar overall and at least 9/10 in each direction.':'5 unseen Dutch → English and 5 unseen typed English → Dutch. Retention still requires 10/10 grammar.'} No word help. The test uses this day’s questions, so start it before ordinary practice if you want it today.</p>${hideButton?'':button('proof',type==='mastery'?'Start Mastery Test':'Start Retention Test',true,!!reason)}${!hideButton&&reason?`<p class="small muted">${esc(reason)}</p>`:''}</div>`;
  }
  if(ph==='retention-wait')return `<div class="rule"><strong>Retention test opens ${esc(p.retentionDue)}</strong><p class="small">Three days after mastery. Until then, practise and revisit vocabulary within your daily 20.</p></div>`;
  const failedMastery=p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false;
@@ -100,7 +107,11 @@ function renderProofGate(offer){
  const title=offer.type==='mastery'?'Mastery Test':'Retention Test';
  const recovery=state.lastProof?.concept===offer.id?masteryRecovery(state,content):null;
  el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">${esc(offer.id)} · ready today</span><h2>Take the ${title} before practice</h2><p>This test uses ${offer.needed} of today’s 20 questions. Practising first uses the day, and the test then waits until tomorrow.</p>${recovery?.failures>=2?'<p class="tipbox">Choose Practice anyway for a simpler step on a missed pattern using a familiar sentence. It uses today’s questions; the full retake remains available on a later study day.</p>':''}<div class="actions">${button('gate-proof','Start '+title)}${button('gate-practice','Practice anyway',false)}</div></article></section>`;
- on('gate-proof',()=>proofPreparation(offer.id));
+ on('gate-proof',async()=>{
+  const start=document.getElementById('gate-proof');
+  start.disabled=true;start.textContent='Starting test…';
+  try{await proofPreparation(offer.id)}catch(error){start.disabled=false;start.textContent='Start '+title;throw error;}
+ });
  on('gate-practice',()=>{skipProofGate=true;openQuestion()});
  refreshChrome();
 }

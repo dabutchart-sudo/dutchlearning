@@ -1,5 +1,5 @@
 import {uid,dayKey,addDays,normalize} from './util.js';
-import {selectPractice,selectProof,selectExtraPractice} from './scheduler.js';
+import {selectPractice,selectProof,selectExtraPractice,availableProofCount} from './scheduler.js';
 import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
@@ -71,11 +71,14 @@ export function dailyProofOffer(s,c,now=new Date()){
  const count=date>s.daily.date?0:s.daily.count;
  const remaining=Math.max(0,DAY_SIZE-count);
  if(s.proof)return {id,type,needed,remaining,canStartToday:false,reason:'Finish the test already in progress.'};
+ const practice=type==='mastery'?masteryPracticeNeed(s,c,id):null;
+ if(practice)return {id,type,needed,remaining,canStartToday:false,reason:practice};
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
  const vocabulary=proofVocabularyNeed(s,c,id,type);
  if(vocabulary?.missing)return {id,type,needed,remaining,canStartToday:false,reason:vocabulary.potential<vocabulary.required
   ?'More fresh test sentences are needed for this topic before another test. You can keep practising meanwhile.'
   :`Practise more of this topic’s vocabulary before the test. ${vocabulary.available} of ${vocabulary.required} fresh test sentences currently use words you have practised.`};
+ if(availableProofCount(s,c,id)<needed)return {id,type,needed,remaining,canStartToday:false,reason:'Not enough unseen test sentences remain for this topic. You can keep practising meanwhile.'};
  return {id,type,needed,remaining,canStartToday:true,reason:null};
 }
 export function extraPracticeEligibility(s,id){
@@ -112,17 +115,32 @@ export function releaseUnscoredPractice(s){
  if(s.pending&&!s.proof&&['practice','maintenance','extra'].includes(s.pending.phase)){s.pending=null;s.revision++;}
  return s;
 }
+export function masteryPracticeNeed(s,c,id){
+ const progress=s.progress[id];
+ // A recorded mastery attempt has already crossed the initial practice gate.
+ // Preserve next-day retakes for older histories without rewriting their counts.
+ if(progress?.proofHistory?.some(report=>report.type==='mastery'))return null;
+ const required=Math.max(1,Number(c.conceptById[id]?.minPractice)||40);
+ const answered=Math.max(0,Number(progress?.practiceAttempts)||0);
+ const remaining=Math.max(0,required-answered);
+ return remaining?`${remaining} more ${remaining===1?'practice answer is':'practice answers are'} needed before the first mastery test (${answered} of ${required} recorded).`:null;
+}
 export function proofEligibility(s,c,id,type,now=new Date()){
  const p=s.progress[id],date=dayKey(now),status=phase(p,date),n=type==='mastery'?20:10;
  const count=date>s.daily.date?0:s.daily.count;
  if(s.proof)return 'Finish the test already in progress.';
  if(s.pending)return 'Finish the current question first.';
  if(type==='mastery'&&status!=='proof-ready'||type==='retention'&&status!=='retention-ready')return 'This test is not ready yet.';
+ if(type==='mastery'){
+  const practice=masteryPracticeNeed(s,c,id);
+  if(practice)return practice;
+ }
  if(DAY_SIZE-count<n)return `This test needs ${n} of your daily 20 questions. Start it on your next study day.`;
  const vocabulary=proofVocabularyNeed(s,c,id,type);
  if(vocabulary?.missing)return vocabulary.potential<vocabulary.required
   ?'More fresh test sentences are needed for this topic before another test.'
   :`Practise more of this topic’s vocabulary first (${vocabulary.available} of ${vocabulary.required} suitable fresh test sentences).`;
+ if(availableProofCount(s,c,id)<n)return 'Not enough unseen test sentences remain for this topic. You can keep practising meanwhile.';
  return null;
 }
 export function startProof(s,c,id,type,now=new Date()){
