@@ -133,6 +133,10 @@ export function selectPractice(state,content,current,date,canListen,canSpeak=fal
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});
  const session=practiceSession(state,phase);
  let kind=practiceKind(state.progress[concept],canListen,canSpeak,session);
+ if(due?.concept===concept&&due.reason==='mastery-recovery'){
+  const failures=(state.progress[concept]?.proofHistory||[]).filter(report=>report.type==='mastery'&&!report.passed).length;
+  kind=due.direction==='nl-en'?'choice':failures>=2?'wordbank':'typed';
+ }
  if(phase==='maintenance')kind=reviewFollowUp&&due?.concept===concept?'wordbank':'typed';
  ({pool,kind}=compatiblePractice(pool,all,kind,state));
  pool=spreadPracticePool(pool,state,{keepVerb:focusedRetry});

@@ -4,7 +4,7 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.157 on GitHub Pages:
+Production is Zin V5.1.158 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus and current position.
 - The app shell keeps Course, Flashcards, Progress, and Settings in a four-icon bottom bar, with visible sync status and version.
@@ -14,7 +14,7 @@ Production is Zin V5.1.157 on GitHub Pages:
 - Lessons include focused pattern notes and contrasting examples; practice guidance fades and records assisted use.
 - Course shows a read-only recap after the normal daily 20.
 - Practice progresses from recognition and supported construction toward independent English-to-Dutch production.
-- Mastery uses a 20-question unseen proof; retention uses a later 10-question proof.
+- Mastery uses a 20-question unseen proof; retention uses a later 10-question proof. A failed mastery result explains missed patterns and offers targeted practice before a full next-day retake.
 - A1.7–A1.21 tests wait until completed practice has introduced enough vocabulary for the unseen proof and its retention reserve.
 - A1.7–A1.21 have at least 90 distinct, practised proof sentences per topic, enough for three failed mastery attempts, a fresh pass and later retention.
 - The daily session includes one hidden-text listening beat.

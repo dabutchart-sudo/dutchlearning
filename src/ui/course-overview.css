@@ -20,6 +20,7 @@
 .course-focus .eyebrow{color:#c9e7f0}.course-focus h3{font-size:clamp(1.35rem,4vw,1.7rem);letter-spacing:-.035em;margin:8px 0 6px}.course-focus p{color:#e4f1f5;margin:0 0 16px;font-size:.88rem;line-height:1.45}
 .course-focus-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:16px}.course-focus-actions button{min-height:44px;border-radius:12px;padding:9px 15px;font-weight:750}.course-focus-actions .primary{width:auto;flex:1 1 150px}.course-focus-details{border:1px solid #ffffff7a;background:#ffffff16;color:#fff}
 .course-last-proof{border:1px solid var(--separator);border-radius:14px;background:#fff;padding:0 14px}.course-last-proof summary{font-size:.85rem;color:var(--accent);font-weight:700}.course-last-proof .proof-report{margin:0 0 14px;box-shadow:none}
+.mastery-patterns{margin:16px 0}.mastery-patterns h3{font-size:1rem;margin:0 0 8px}.mastery-patterns ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.mastery-patterns li{display:grid;gap:3px;min-width:0;padding:12px;border:1px solid var(--separator);border-radius:10px;overflow-wrap:anywhere}.mastery-patterns li strong{font-size:.85rem}.mastery-patterns li span[lang=nl]{font-weight:650}.mastery-patterns li p{margin:3px 0 0;color:var(--muted);font-size:.85rem}
 .course-unit{display:grid;gap:0}
 .course-unit-banner{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;padding:13px 15px;border-radius:16px;color:white;margin-bottom:4px}
 .course-unit-banner span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.85}

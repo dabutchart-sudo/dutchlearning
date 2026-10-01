@@ -4,6 +4,7 @@ import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
 import {proofVocabularyNeed} from './proof-vocabulary.js';
+import {recoveryTargets} from './mastery-recovery.js';
 export const DAY_SIZE=20;
 export const EXTRA_PRACTICE_SIZE=5;
 export function blankProgress(){return {status:'learning',taught:false,lessonAcknowledged:false,practiceAttempts:0,recognised:0,constructed:0,independent:0,weakness:0,remedial:0,masteredAt:null,retentionDue:null,nextMaintenance:null,reviewStep:0,proofHistory:[]};}
@@ -139,12 +140,19 @@ function finishProof(s,now){
  const passed=proof.type==='mastery'?complete&&correct>=19&&Object.values(directions).every(x=>x.correct>=9):complete&&Object.values(directions).every(x=>x.correct===n);
  const missed=attempts.filter(x=>x.grammar!==true||x.assisted);
  const report={id:proof.id,type:proof.type,concept:proof.concept,completedAt:now.toISOString(),studyDate:dayKey(now),directions,correct,total:attempts.length,required:proof.type==='mastery'?19:10,passed};p.proofHistory.push(report);s.lastProof=report;
+ if(proof.type==='mastery')s.retries=s.retries.filter(retry=>retry.reason!=='mastery-recovery'||retry.concept!==proof.concept);
  if(passed&&proof.type==='mastery'){
   p.status='retention-wait';p.retentionDue=addDays(dayKey(now),3);
   for(const attempt of missed)s.retries.push({id:uid(),concept:proof.concept,verb:attempt.verb,sourceId:attempt.sourceId,after:s.attempts.length+2,date:dayKey(now),reason:'mastery-follow-up'});
  }
  else if(passed){p.status='mastered';p.masteredAt=dayKey(now);p.reviewStep=0;p.nextMaintenance=addDays(dayKey(now),3);p.retentionDue=null;p.weakness=0;}
- else{p.status='learning';p.retentionDue=null;p.remedial=proof.type==='mastery'?0:8;p.weakness=Math.max(p.weakness,4);}
+ else{
+  p.status='learning';p.retentionDue=null;p.remedial=proof.type==='mastery'?0:8;p.weakness=Math.max(p.weakness,4);
+  if(proof.type==='mastery'){
+   const recovery=recoveryTargets(missed).map(attempt=>({id:uid(),concept:proof.concept,verb:attempt.verb,sourceId:attempt.sourceId,direction:attempt.direction,errorType:attempt.errorType,after:s.attempts.length,date:dayKey(now),reason:'mastery-recovery'}));
+   s.retries.unshift(...recovery);
+  }
+ }
  s.proof=null;
 }
 export function submit(s,c,questionId,raw,now=new Date()){
