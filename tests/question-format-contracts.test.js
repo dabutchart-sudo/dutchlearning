@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {kinds} from '../src/engine/exercises.js';
+import {readFileSync} from 'node:fs';
+import {kinds,makeExercise,correctiveFeedback} from '../src/engine/exercises.js';
+import {assess} from '../src/engine/scoring.js';
+import {registerPacks} from '../src/content/registry.js';
 import {CAPABILITIES,QUESTION_FORMATS,RELEASE_LEVELS,SUPPORT_LEVELS,formatKinds,questionFormat,validateQuestionFormats} from '../src/engine/question-formats.js';
 
 test('every generated course question kind has one valid format contract',()=>{
@@ -39,4 +42,24 @@ test('invalid contracts fail validation with actionable format names',()=>{
   'sample: fallback is required',
   'sample: attempt evidence is required'
  ]);
+});
+
+test('sentence-choice distractors are genuinely wrong and explain form or order',()=>{
+ const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
+ for(const row of content.sentences.filter(item=>item.suitableKinds.includes('correct-sentence'))){
+  const q=makeExercise(row,'correct-sentence',content,{seed:row.id});
+  assert.equal(q.options.length,3,`${row.id}: sentence choice needs three distinct options`);
+  for(const option of q.options.filter(option=>option!==q.answer)){
+   assert.notEqual(assess({...q,kind:'typed'},option).grammar,true,`${row.id}: valid Dutch used as a distractor`);
+   assert.ok(['verb_form','word_order'].includes(assess(q,option).errorType),`${row.id}: unhelpful distractor feedback`);
+  }
+ }
+ const modal=content.byId['F6-890fef0336ea'];
+ const q=makeExercise(modal,'correct-sentence',content,{seed:modal.id});
+ assert.ok(!q.options.some(option=>option.includes('Jij kunt')));
+ assert.equal(assess(q,'Jij kunt de deur openen.').grammar,true,'a saved older question must accept valid Dutch');
+ const wrongForm=q.options.find(option=>assess(q,option).errorType==='verb_form');
+ const feedback=correctiveFeedback(q,modal,wrongForm,assess(q,wrongForm));
+ assert.match(feedback.explanation,/modal/);
+ assert.equal(feedback.meaning,modal.en);
 });
