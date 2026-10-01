@@ -91,7 +91,7 @@ test('pending V5.1.4 questions upgrade in the engine without losing assistance o
  const q=prepareQuestion(s,content,now);assert.equal(q.id,id);assert.equal(q.assisted,true);assert.equal(q.prompt,'Wij schr_____.');
 });
 test('proof remains unassisted, twenty questions, with independent unseen material',()=>{
- const s=state();s.progress.F1.status='proof-ready';startProof(s,content,'F1','mastery',now);
+ const s=state();Object.assign(s.progress.F1,{status:'proof-ready',practiceAttempts:40});startProof(s,content,'F1','mastery',now);
  assert.equal(s.proof.questions.length,20);assert.equal(new Set(s.proof.questions.map(q=>q.sourceId)).size,20);
  prepareQuestion(s,content,now);assert.throws(()=>useHelp(s),/unavailable/);
  for(let i=0;i<20;i++){const q=prepareQuestion(s,content,now);submit(s,content,q.id,q.answer,now);}

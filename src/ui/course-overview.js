@@ -43,8 +43,8 @@ function courseFocus(outline,daily,offer){
  const c=outline.current;
  if(!c)return `<article class="course-focus"><span class="eyebrow">Course complete so far</span><h3>All available topics retained</h3><p>More A1 topics are planned. Retained topics remain available below.</p></article>`;
  const ready=!daily.done&&offer?.canStartToday&&(!offer.id||offer.id===c.id);
- const action=ready?`Start ${offer.type==='retention'?'retention':'mastery'} test`:daily.done?'':c.status==='lesson'?'Start learning':'Continue learning';
- const note=daily.done?'Learning complete for today.':c.status==='lesson'?'Begins with the lesson.':'';
+ const action=ready?'Choose test or practice':daily.done?'':c.status==='lesson'?'Start learning':'Continue learning';
+ const note=daily.done?'Learning complete for today.':ready?offer.type==='mastery'?'A full mastery test is available today, or you can keep practising. Availability does not predict a pass.':'A delayed retention test is available today, or you can keep practising.':c.status==='lesson'?'Begins with the lesson.':'';
  return `<article class="course-focus" data-course-focus><span class="eyebrow">Current topic · ${esc(c.id)}</span><h3>${esc(c.title)}</h3>${note?`<p>${esc(note)}</p>`:''}<div class="course-focus-actions">${action?`<button type="button" class="primary" data-course-start="${esc(c.id)}">${esc(action)}</button>`:''}<button type="button" class="course-focus-details" data-course-concept="${esc(c.id)}">Topic details</button></div></article>`;
 }
 function pathNode(c){

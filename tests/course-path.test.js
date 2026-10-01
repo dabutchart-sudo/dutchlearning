@@ -66,7 +66,8 @@ test('a finished day and a ready test are obvious on the path',()=>{
  assert.doesNotMatch(done,/data-course-start="F1"/);
  const ready=freshState(content,new Date('2026-09-20T12:00:00Z'));
  const testHtml=coursePage(ready,content,{today:'2026-09-20',offer:{id:'F1',canStartToday:true,type:'mastery'}});
- assert.match(testHtml,/Start mastery test/);
+ assert.match(testHtml,/Choose test or practice/);
+ assert.match(testHtml,/Availability does not predict a pass/);
  const stale=coursePage(state,content,{today:'2026-09-21'});
  assert.match(stale,/data-course-start="F1"/);
  assert.doesNotMatch(stale,/Learning complete for today/);
