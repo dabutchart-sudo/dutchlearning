@@ -73,7 +73,7 @@ The Course journey now derives Not started, Learning, Practising, Proven, Retain
 
 ## Mastery offer readiness — local correction, 2026-10-01
 
-An initial mastery offer now checks the documented practice minimum as well as the saved test-ready state. This guards older or inconsistent progress without changing recorded history. A saved failed mastery still permits the next-study-day full retake. Course presents an eligible test as a choice alongside continued practice. The full 449-test local suite passes; this correction is not merged or deployed. See `docs/mastery-offer-readiness-review.md`.
+An initial mastery offer now checks the documented practice minimum as well as the saved test-ready state. This guards older or inconsistent progress without changing recorded history. A saved failed mastery still permits the next-study-day full retake. Course presents an eligible test as a choice alongside continued practice. A follow-up to the owner's phone report makes test-start failures visible on the test screen and checks unseen compatible test capacity before an offer or start. All 450 local tests pass; the actual phone error remains unobserved. This correction is not merged or deployed. See `docs/mastery-offer-readiness-review.md`.
 
 ## Agreed development direction — 2026-09-23
 

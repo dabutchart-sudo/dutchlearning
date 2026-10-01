@@ -19,7 +19,14 @@ let listeningSession=null,listeningRun=0;
 let disposePeek=()=>{};
 let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
-function notify(t){message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';}
+function notify(t){
+ message.innerHTML=t?`<div class="error-message">${esc(t)}</div>`:'';
+ el.querySelector('.session-error')?.remove();
+ if(t&&document.body.classList.contains('session-active')){
+  const card=el.querySelector('.session .question-card');
+  if(card)(card.querySelector('.actions')||card).insertAdjacentHTML(card.querySelector('.actions')?'beforebegin':'afterbegin',`<div class="error-message session-error" role="alert">${esc(t)}</div>`);
+ }
+}
 function canListenNow(){return !!state?.settings?.listening&&(canUseServerListen()||!!dutchVoice());}
 function button(id,label,primary=true,disabled=false){return `<button id="${id}" class="${primary?'primary':'secondary'}" ${disabled?'disabled':''}>${esc(label)}</button>`;}
 function on(id,fn){document.getElementById(id)?.addEventListener('click',()=>{try{const result=fn();if(result&&typeof result.then==='function')result.catch(e=>notify(e.message));}catch(e){notify(e.message);}});}
@@ -100,7 +107,11 @@ function renderProofGate(offer){
  const title=offer.type==='mastery'?'Mastery Test':'Retention Test';
  const recovery=state.lastProof?.concept===offer.id?masteryRecovery(state,content):null;
  el.innerHTML=`<section class="session stack"><article class="card question-card"><span class="direction">${esc(offer.id)} · ready today</span><h2>Take the ${title} before practice</h2><p>This test uses ${offer.needed} of today’s 20 questions. Practising first uses the day, and the test then waits until tomorrow.</p>${recovery?.failures>=2?'<p class="tipbox">Choose Practice anyway for a simpler step on a missed pattern using a familiar sentence. It uses today’s questions; the full retake remains available on a later study day.</p>':''}<div class="actions">${button('gate-proof','Start '+title)}${button('gate-practice','Practice anyway',false)}</div></article></section>`;
- on('gate-proof',()=>proofPreparation(offer.id));
+ on('gate-proof',async()=>{
+  const start=document.getElementById('gate-proof');
+  start.disabled=true;start.textContent='Starting test…';
+  try{await proofPreparation(offer.id)}catch(error){start.disabled=false;start.textContent='Start '+title;throw error;}
+ });
  on('gate-practice',()=>{skipProofGate=true;openQuestion()});
  refreshChrome();
 }

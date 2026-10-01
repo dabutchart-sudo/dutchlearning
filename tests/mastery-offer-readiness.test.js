@@ -5,6 +5,7 @@ import {registerPacks} from '../src/content/registry.js';
 import {dailyProofOffer,freshState,proofEligibility,startProof} from '../src/engine/learner.js';
 import {courseOutline} from '../src/engine/course-progress.js';
 import {coursePage} from '../src/ui/course-overview.js';
+import {normalize} from '../src/engine/util.js';
 
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-10-02T12:00:00Z');
@@ -42,4 +43,15 @@ test('saved failed mastery still permits the next-day full retake with an older 
  const offer=dailyProofOffer(state,content,now);
  assert.equal(offer.canStartToday,true);
  assert.equal(proofEligibility(state,content,'F1','mastery',now),null);
+});
+
+test('a ready label cannot offer or start a test without enough unseen sentences',()=>{
+ const state=readyStatus();state.progress.F1.practiceAttempts=40;
+ const proof=content.sentences.filter(item=>item.concept==='F1'&&item.pool==='proof');
+ state.exposures=proof.slice(0,-19).map(item=>({nl:normalize(item.nl)}));
+ const offer=dailyProofOffer(state,content,now);
+ assert.equal(offer.canStartToday,false);
+ assert.match(offer.reason,/Not enough unseen test sentences/);
+ assert.match(proofEligibility(state,content,'F1','mastery',now),/Not enough unseen test sentences/);
+ assert.throws(()=>startProof(state,content,'F1','mastery',now),/Not enough unseen test sentences/);
 });
