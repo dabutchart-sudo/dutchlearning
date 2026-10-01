@@ -14,6 +14,7 @@ import {completeA1Vocabulary} from './a1-vocabulary.js';
 import {fairPracticeRows} from './a1-fair-practice.js';
 import {teachingPracticeRows} from './a1-teaching-practice.js';
 import a1ProofCapacity from './a1-proof-capacity.js';
+import {f1ProofRecoveryRows} from './f1-proof-recovery.js';
 import {normalize,tokens} from '../engine/util.js';
 export function registerPacks(packs){
  const includesMainCourse=packs.some(p=>p?.id==='foundation-a1');
@@ -22,6 +23,7 @@ export function registerPacks(packs){
  for(const p of sources){if(p.schemaVersion!==1)throw Error('Unsupported content pack version');for(const c of p.concepts){if(ids.has(c.id))throw Error('Duplicate concept');ids.add(c.id);concepts.push(c)}sentences.push(...p.sentences)}
  if(includesMainCourse)sentences.push(...fairPracticeRows(sentences));
  if(includesMainCourse)sentences.push(...teachingPracticeRows(sentences));
+ if(includesMainCourse)sentences.push(...f1ProofRecoveryRows(sentences));
  for(let i=0;i<sentences.length;i++)if(/^A1\.(?:[7-9]|1\d|2[01])$/.test(sentences[i].concept))sentences[i]=completeA1Vocabulary(sentences[i]);
  const knownWords=new Map(sentences.flatMap(item=>(item.vocabulary||[])
   .filter(word=>tokens(word.nl).length===1&&word.en)

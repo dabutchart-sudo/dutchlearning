@@ -76,9 +76,9 @@ export function dailyProofOffer(s,c,now=new Date()){
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
  const vocabulary=proofVocabularyNeed(s,c,id,type);
  if(vocabulary?.missing)return {id,type,needed,remaining,canStartToday:false,reason:vocabulary.potential<vocabulary.required
-  ?'More fresh test sentences are needed for this topic before another test. You can keep practising meanwhile.'
+  ?'More fresh test sentences are needed for this topic before another test. Practice is still available, but it cannot restore used test questions.'
   :`Practise more of this topic’s vocabulary before the test. ${vocabulary.available} of ${vocabulary.required} fresh test sentences currently use words you have practised.`};
- if(availableProofCount(s,c,id)<needed)return {id,type,needed,remaining,canStartToday:false,reason:'Not enough unseen test sentences remain for this topic. You can keep practising meanwhile.'};
+ if(availableProofCount(s,c,id)<needed)return {id,type,needed,remaining,canStartToday:false,reason:'More fresh test sentences are needed for this topic before another test. Practice is still available, but it cannot restore used test questions.'};
  return {id,type,needed,remaining,canStartToday:true,reason:null};
 }
 export function extraPracticeEligibility(s,id){
@@ -138,9 +138,9 @@ export function proofEligibility(s,c,id,type,now=new Date()){
  if(DAY_SIZE-count<n)return `This test needs ${n} of your daily 20 questions. Start it on your next study day.`;
  const vocabulary=proofVocabularyNeed(s,c,id,type);
  if(vocabulary?.missing)return vocabulary.potential<vocabulary.required
-  ?'More fresh test sentences are needed for this topic before another test.'
+  ?'More fresh test sentences are needed for this topic before another test. Practice cannot restore used test questions.'
   :`Practise more of this topic’s vocabulary first (${vocabulary.available} of ${vocabulary.required} suitable fresh test sentences).`;
- if(availableProofCount(s,c,id)<n)return 'Not enough unseen test sentences remain for this topic. You can keep practising meanwhile.';
+ if(availableProofCount(s,c,id)<n)return 'More fresh test sentences are needed for this topic before another test. Practice cannot restore used test questions.';
  return null;
 }
 export function startProof(s,c,id,type,now=new Date()){
