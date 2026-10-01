@@ -8,6 +8,7 @@ import {coursePage,topicPage} from './course-overview.js';
 import {paintDailyChrome} from './daily-chrome.js';
 import {bindPeek} from './peek.js';
 import {questionHeader,answerFeedback} from './learning-session-ui.js';
+import {lessonMaterial,guidanceFor,patternTipFor} from './teaching-support.js';
 import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen} from './speech.js';
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
@@ -70,7 +71,8 @@ function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(
 function renderLesson(id,continueSession){
  sessionChrome(true);
  const c=content.conceptById[id];if(!unlocked(c,state))return;
- el.innerHTML=`<section class="session stack"><article class="card question-card lesson-card"><div class="lesson-body"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details></div><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to the path')}</div></article></section>`;
+ const material=lessonMaterial(content,id);
+ el.innerHTML=`<section class="session stack"><article class="card question-card lesson-card"><div class="lesson-body"><span class="direction">Teach · not scored</span><h2>${esc(id)} · ${esc(c.title)}</h2><p>${esc(c.rule)}</p><div class="teach-panel"><div class="prompt" lang="nl">${esc(c.example)}</div><p>${esc(c.translation)}</p>${button('listen-example','Listen to the example',false)}</div><h3>What to notice</h3><ul class="lesson-focus">${material.focus.map(point=>`<li>${esc(point)}</li>`).join('')}</ul>${material.examples.length?`<h3>See it in another sentence</h3><div class="lesson-examples">${material.examples.map(example=>`<div><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`).join('')}</div>`:''}<details><summary>Vocabulary for this concept</summary>${vocabularyHTML(vocabularyFor(id))}</details></div><div class="actions">${button('learned',continueSession?'Got it — let’s practise':'Back to the path')}</div></article></section>`;
  transaction(s=>teachConcept(s,id,content,{acknowledge:false})).catch(e=>notify(e.message));on('listen-example',()=>speak(c.example,notify));on('learned',async()=>{if(!continueSession){await show('curriculum');return;}await transaction(s=>teachConcept(s,id,content));await openQuestion();});
  refreshChrome();
 }
@@ -160,7 +162,9 @@ function renderQuestion(q){
  const offer=state.proof||extra?null:dailyProofOffer(state,content,now());
  const proofNote=offer?.canStartToday?`<p class="session-offer">The ${esc(offer.id)} ${offer.type} test needs ${offer.needed} free questions today. Pause and start it now, or it waits until tomorrow.</p>`:offer?`<p class="session-offer">${esc(offer.reason)}</p>`:'';
  const header=questionHeader({question:q,dailyCount:state.daily.count,proof:state.proof,extraIndex,extraSize:EXTRA_PRACTICE_SIZE,topicTitle:content.conceptById[q.concept]?.title||q.concept});
- el.innerHTML=`<section class="session">${header}${proofNote}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article></section>`;
+ const guidance=guidanceFor(q,state.progress[q.concept],content.conceptById[q.concept],item);
+ el.innerHTML=`<section class="session">${header}${proofNote}<article class="card question-card"><span class="direction">${q.direction==='en-nl'?'English → Dutch':'Dutch → English'}</span><div class="q-type">${titles[q.kind]}</div><h2 class="prompt" ${q.direction==='nl-en'&&q.kind!=='listening'||['gap','form','correction'].includes(q.kind)?'lang="nl"':''}>${esc(q.prompt)}</h2>${q.cue?`<p class="muted">Meaning: ${esc(q.cue)}</p>`:''}${q.kind==='listening'?`${button('play','Play Dutch audio',false)}<button id="text-fallback" class="text-link">Audio unavailable? Use text</button>`:''}${q.kind==='speaking'?'<p class="muted">Say the Dutch sentence, or skip and type if you cannot talk now.</p>':''}<div id="answer-area"></div><div id="help-area"></div>${guidance?`<div class="pattern-guidance ${guidance.prominent?'is-early':''}"><button type="button" id="pattern-help" class="text-link">${esc(guidance.label)}</button><p id="pattern-reminder" class="small" hidden>${esc(guidance.text)}</p></div>`:''}<div id="feedback" aria-live="polite"></div><div class="actions">${button('check','Check answer')}</div></article></section>`;
+ on('pattern-help',async()=>{await transaction(s=>{if(s.pending?.id!==q.id)throw Error('This question has changed.');useHelp(s)});document.getElementById('pattern-reminder').hidden=false;document.getElementById('pattern-help').disabled=true;});
  const area=document.getElementById('answer-area');
  if(q.options){area.innerHTML=`<div class="answers">${q.options.map((o,i)=>`<button class="choice" data-choice="${i}" aria-pressed="false">${esc(o)}</button>`).join('')}</div>`;area.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{raw=q.options[Number(b.dataset.choice)];area.querySelectorAll('button').forEach(x=>{x.classList.toggle('selected',x===b);x.setAttribute('aria-pressed',String(x===b))})});}
  else if(q.kind==='speaking'){
@@ -191,6 +195,7 @@ function renderQuestion(q){
  }
  async function check(){if(locked)return;if(!raw.trim()){notify('Enter or choose an answer first.');return;}locked=true;disposePeek();
   try{const rec=await transaction(s=>submit(s,content,q.id,raw,now()));lastFeedback=rec;refreshChrome({extra:q.phase==='extra'});const feedback=correctiveFeedback(q,item,raw,rec);
+   if(rec.grammar===false&&['practice','maintenance'].includes(q.phase))feedback.patternTip=patternTipFor(q.concept,item.nl,content.conceptById[q.concept]);
    el.querySelectorAll('input,button').forEach(b=>b.disabled=true);document.getElementById('feedback').innerHTML=answerFeedback(rec,feedback);
    const extraDone=q.phase==='extra'&&!state.extra;
    document.querySelector('.actions').innerHTML=button('next',extraDone?'Back to the path':state.daily.count===20?'Finish today’s 20':!state.proof&&['mastery','retention'].includes(q.phase)?'View test result':'Continue');
