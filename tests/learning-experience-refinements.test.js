@@ -37,6 +37,22 @@ test('correction feedback reconstructs and displays the complete sentence contex
  assert.equal(feedback.meaning,'She writes at home.');
 });
 
+test('choosing the wrong finite form gives verb-form feedback in sentence context',()=>{
+ const q=makeExercise(item,'form',content,{phase:'practice'});
+ assert.ok(q.options.includes('schrijf'));
+ const bad=assess(q,'schrijf');
+ assert.equal(bad.grammar,false);
+ assert.equal(bad.errorType,'verb_form');
+ assert.match(bad.tip,/finite verb/);
+ const feedback=correctiveFeedback(q,item,'schrijf',bad);
+ assert.ok(feedback.differences.includes('schrijf → schrijft'));
+ assert.equal(feedback.meaning,item.en);
+ assert.match(feedback.explanation,/schrijven becomes schrijft/);
+ const good=assess(q,q.answer);
+ assert.equal(good.grammar,true);
+ assert.equal(good.errorType,null);
+});
+
 test('practice ranking strongly prefers useful four-to-eight-word context over two-word fragments',()=>{
  assert.ok(practiceContextWeight({...item,nl:'Ik hoor de deur sluiten.'})>practiceContextWeight({...item,nl:'Ik hoor.'}));
  assert.ok(practiceContextWeight({...item,nl:'Wij schrijven een korte zin.'})>practiceContextWeight({...item,nl:'Wij schrijven.'}));

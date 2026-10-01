@@ -23,7 +23,13 @@ export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
   if(distance(got,expected)<=2)return result(true,false,'spelling');
   return result(false,false,'translation');
  }
- if(q.direction==='nl-en'||['choice','form','correct-sentence'].includes(q.kind))return result(normalize(raw)===normalize(q.answer),null,normalize(raw)===normalize(q.answer)?null:'translation');
+ if(q.kind==='form')return result(normalize(raw)===normalize(q.answer),null,normalize(raw)===normalize(q.answer)?null:'verb_form');
+ if(q.kind==='correct-sentence'){
+  if([q.answer,...(q.alternatives||[])].some(answer=>normalize(raw)===normalize(answer)))return result(true,null);
+  const diagnosis=assess({...q,kind:'typed'},raw,{assisted,knownWords});
+  return result(false,null,diagnosis.errorType||'translation');
+ }
+ if(q.direction==='nl-en'||q.kind==='choice')return result(normalize(raw)===normalize(q.answer),null,normalize(raw)===normalize(q.answer)?null:'translation');
  if(q.kind==='correction'){
   const got=normalize(String(raw)).replace(/\s+/g,'');
   const expected=normalize(String(q.answer)).replace(/\s+/g,'');

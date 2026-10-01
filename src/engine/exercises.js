@@ -17,8 +17,7 @@ export function correctionParts(item){
 
 export function makeExercise(item,kind,content,{phase='practice',direction='en-nl',seed=uid()}={}){
  const q={presentationVersion:516,id:uid(),sourceId:item.id,concept:item.concept,kind,phase,direction,answer:item.nl,prompt:item.englishPrompt||item.en,alternatives:item.alternatives,verbIndex:item.verbIndex,verbSlots:item.verbSlots||[item.verbIndex],forms:item.forms,assisted:false};
- const nl=displayTokens(sentenceCase(item.nl));let wrong=[...nl];const wrongForm=item.forms.find(x=>normalize(x)!==normalize(nl[item.verbIndex]));wrong[item.verbIndex]=wrongForm||'werken';
- const bad=sentenceCase(wrong.join(' '));const others=content.sentences.filter(x=>x.concept===item.concept&&x.pool==='practice'&&normalize(x.en)!==normalize(item.en));
+ const nl=displayTokens(sentenceCase(item.nl));const others=content.sentences.filter(x=>x.concept===item.concept&&x.pool==='practice'&&normalize(x.en)!==normalize(item.en));
  if(kind==='choice'||kind==='listening'){
   q.direction='nl-en';q.prompt=kind==='listening'?'Listen, then choose the meaning.':item.nl;q.answer=item.en;
   // Prefer distractors sharing a subject or verb: real, controlled sentence meanings.
@@ -29,8 +28,10 @@ export function makeExercise(item,kind,content,{phase='practice',direction='en-n
   q.prompt=nl.map((w,i)=>i===item.verbIndex?'_____':w).join(' ');q.cue=item.englishPrompt||item.en;q.answer=nl[item.verbIndex];q.alternatives=[];
   if(kind==='form')q.options=shuffle([...new Set([q.answer,...item.forms].map(w=>item.verbIndex===0?sentenceCase(w):w))],seed);
  }else if(kind==='correct-sentence'){
+  const accepted=new Set([item.nl,...(item.alternatives||[])].map(normalize));
+  const bad=item.forms.map(form=>{const wrong=[...nl];wrong[item.verbIndex]=form;return sentenceCase(wrong.join(' '));}).find(candidate=>!accepted.has(normalize(candidate)));
   const reversed=[...nl];[reversed[0],reversed[1]]=[reversed[1],reversed[0]];
-  q.options=shuffle([...new Set([item.nl,bad,sentenceCase(reversed.map((w,i)=>i===1?normalize(w):w).join(' '))])],seed);
+  q.options=shuffle([...new Set([item.nl,bad,sentenceCase(reversed.map((w,i)=>i===1?normalize(w):w).join(' '))].filter(Boolean))],seed);
  }else if(kind==='correction'){
   q.correction=correctionParts(item);q.prompt=q.correction.prompt;q.cue=item.englishPrompt||item.en;q.answer=q.correction.missing;q.alternatives=[];
  }
