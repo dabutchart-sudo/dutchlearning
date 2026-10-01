@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
 import {seedCompletedPractice} from './helpers/practice-evidence.js';
-import {freshState,prepareQuestion,startProof,submit} from '../src/engine/learner.js';
+import {dailyProofOffer,freshState,prepareQuestion,startProof,submit} from '../src/engine/learner.js';
+import {masteryRecovery,recoveryTargets} from '../src/engine/mastery-recovery.js';
+import {selectPractice} from '../src/engine/scheduler.js';
 
 const base=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
 const content=registerPacks([base]);
@@ -89,6 +91,78 @@ test('a failed mastery has enough unseen proof for a next-day retry and retentio
  assert.doesNotThrow(()=>startProof(state,content,'A1.7','retention',retentionDay));
  answerProof(state,retentionDay);
  assert.equal(state.progress['A1.7'].status,'mastered');
+});
+
+test('failed meaning proof shows full-sentence patterns and routes into finite practice',()=>{
+ const {state,now}=readyState();
+ startProof(state,content,'A1.7','mastery',now);
+ answerProof(state,now,[0,2]);
+ const recovery=masteryRecovery(state,content);
+ assert.equal(recovery.failures,1);
+ assert.equal(recovery.misses,2);
+ assert.equal(recovery.groups.length,1);
+ assert.equal(recovery.groups[0].direction,'nl-en');
+ assert.equal(recovery.groups[0].count,2);
+ assert.ok(recovery.groups[0].sentence);
+ assert.ok(recovery.groups[0].meaning);
+ assert.ok(recovery.groups[0].tip);
+ const queued=state.retries.filter(retry=>retry.reason==='mastery-recovery');
+ assert.equal(queued.length,1);
+ assert.equal(queued[0].direction,'nl-en');
+ assert.equal(state.daily.count,20,'feedback must not add daily questions');
+ const nextDay=new Date('2026-09-24T12:00:00Z');
+ state.daily={date:'2026-09-24',count:0};
+ assert.equal(dailyProofOffer(state,content,nextDay).canStartToday,true);
+ const selected=selectPractice(state,content,'A1.7','2026-09-24',false);
+ assert.equal(selected.kind,'choice');
+ assert.equal(selected.item.concept,'A1.7');
+ assert.equal(selected.retryId,queued[0].id);
+ assert.equal(state.daily.count,0,'selecting a practice target does not consume a question');
+});
+
+test('repeated production failure offers guided practice, then full retake and strict retention',()=>{
+ const {state,now}=readyState();
+ startProof(state,content,'A1.7','mastery',now);
+ answerProof(state,now,[1,3]);
+ assert.equal(masteryRecovery(state,content).groups[0].direction,'en-nl');
+ const secondDay=new Date('2026-09-24T12:00:00Z');
+ state.daily={date:'2026-09-24',count:0};
+ startProof(state,content,'A1.7','mastery',secondDay);
+ answerProof(state,secondDay,[1,3]);
+ assert.equal(masteryRecovery(state,content).failures,2);
+ assert.equal(state.retries.filter(retry=>retry.reason==='mastery-recovery').length,1,'old recovery targets are replaced');
+ const thirdDay=new Date('2026-09-25T12:00:00Z');
+ state.daily={date:'2026-09-25',count:0};
+ assert.equal(dailyProofOffer(state,content,thirdDay).canStartToday,true);
+ const guided=prepareQuestion(state,content,thirdDay,false);
+ assert.equal(guided.kind,'wordbank');
+ assert.equal(guided.phase,'practice');
+ submit(state,content,guided.id,guided.answer,thirdDay);
+ assert.equal(state.daily.count,1);
+ assert.match(dailyProofOffer(state,content,thirdDay).reason,/next study day/);
+ const fourthDay=new Date('2026-09-26T12:00:00Z');
+ state.daily={date:'2026-09-26',count:0};
+ startProof(state,content,'A1.7','mastery',fourthDay);
+ answerProof(state,fourthDay);
+ assert.equal(state.lastProof.passed,true);
+ assert.equal(state.retries.some(retry=>retry.reason==='mastery-recovery'),false);
+ const retentionDay=new Date('2026-09-29T12:00:00Z');
+ state.daily={date:'2026-09-29',count:0};
+ startProof(state,content,'A1.7','retention',retentionDay);
+ answerProof(state,retentionDay);
+ assert.equal(state.lastProof.correct,10);
+ assert.equal(state.progress['A1.7'].status,'mastered');
+});
+
+test('recovery stays finite and older proof history never invents sentence feedback',()=>{
+ const misses=['translation','word_order','verb_form','article','negation'].map((errorType,index)=>({direction:index%2?'en-nl':'nl-en',errorType}));
+ assert.equal(recoveryTargets(misses).length,3);
+ const {state}=readyState();
+ const report={id:'old-proof',type:'mastery',concept:'A1.7',studyDate:'2026-09-23',completedAt:'2026-09-23T12:00:00Z',passed:false};
+ state.progress['A1.7'].proofHistory=[report];state.lastProof=report;
+ assert.deepEqual(masteryRecovery(state,content),{failures:1,misses:0,groups:[]});
+ const worker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
+ assert.match(worker,/\.\/src\/engine\/mastery-recovery\.js/);
 });
 
 test('A1.7 through A1.12 each retain at least 52 unique proof sentences',()=>{
