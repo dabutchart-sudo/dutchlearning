@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.156**.
+- Current documented release: **Zin V5.1.157**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -59,9 +59,9 @@ The owner approved release after reviewing Stage 3 and confirming its Learning q
 
 V5.1.156 builds on the verified V5.1.155 release checkpoint. The lesson presents concise pattern notes for A1.7–A1.22 and two additional examples drawn only from that topic's practice pool. Normal practice offers an optional pattern reminder: prominent during the first eight practice answers and less prominent thereafter. Opening it records the existing assisted-answer flag, so it cannot award independent Dutch writing evidence; proof questions have no reminder. Grammar misses show a topic-specific pattern tip beside the complete model sentence and meaning. After the daily 20, Course shows a read-only recap of those 20 answers and up to three sentences worth revisiting. A teaching-coverage test maps all current A1.7–A1.21 proof sentences to a taught pattern with representative practice. Twenty-nine additive contexts fill the remaining under-20 practice pools in A1.14–A1.16, A1.18 and A1.20 and cover a missing A1.7 negation contrast. Content tests check meanings, word metadata, proof separation and format scoring. The recap adds no questions or saved fields. The daily limit, scheduling, proof rules, learner data, sync, Supabase schema, authentication, services, and costs are unchanged. The owner authorised release on 1 October. The 438 local tests and PR #124 GitHub Actions test workflow passed; PR #124 merged as `28eb4e275ef55e5ef3d06de621036152f8734c24`. GitHub Pages serves V5.1.156, and the published shell, service worker, UI modules and new content module match the tested source byte for byte. The offline cache is `dutch-v5.1.156-20260930-teaching-recap`. A separate iPhone/installed-PWA check and human Dutch-language review of the new teaching notes and contexts were not recorded. Rollback is the V5.1.155 production source at `17427f3e6b816b0007947791e9de528a1e7e6ec6`; the standalone Flashcards fallback remains available. See `docs/dab-181-teaching-review.md`.
 
-## DAB-88 format-choice fairness — local candidate, 2026-10-01
+## DAB-88 format-choice fairness — production release, 2026-10-01
 
-The next format-specific audit slice corrects a wrong `form` choice from Meaning to Verb form feedback. It also removes five valid `jij kunt` alternatives from `correct-sentence` distractors when `jij kan` is the model, while accepting those alternatives in older saved questions. Wrong sentence-choice options now give verb-form or word-order feedback. The daily limit, progression, proof rules and stored-field shape remain unchanged. Focused checks and a content-wide question audit pass. Human Dutch review and phone/PWA acceptance remain open. No merge or deployment has occurred. See `docs/question-quality-audit.md`.
+V5.1.157 corrects a wrong `form` choice from Meaning to Verb form feedback. It also removes five valid `jij kunt` alternatives from `correct-sentence` distractors when `jij kan` is the model, while accepting those alternatives in older saved questions. Wrong sentence-choice options now give verb-form or word-order feedback. The daily limit, progression, proof rules and stored-field shape remain unchanged. The owner authorised deployment on 1 October. All 440 local tests and the PR #126 and post-merge GitHub Tests workflows passed. PR #126 merged as `19b38047c72a98b024030220918fbe2d45bb2ae9`; GitHub Pages deployment succeeded. Live `index.html`, `sw.js`, `exercises.js` and `scoring.js` match the release source byte for byte. The offline cache is `dutch-v5.1.157-20261001-choice-fairness`. Human Dutch and installed iPhone/PWA checks were not recorded. Rollback is the V5.1.156 source at `653284a10ea326c9f815b2f686127081eb97abcf`; the standalone Flashcards fallback remains available. See `docs/question-quality-audit.md`.
 
 ## Agreed development direction — 2026-09-23
 
