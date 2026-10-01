@@ -75,6 +75,10 @@ The Course journey now derives Not started, Learning, Practising, Proven, Retain
 
 An initial mastery offer now checks the documented practice minimum as well as the saved test-ready state. This guards older or inconsistent progress without changing recorded history. A saved failed mastery still permits the next-study-day full retake. Course presents an eligible test as a choice alongside continued practice. A follow-up to the owner's phone report makes test-start failures visible on the test screen and checks unseen compatible test capacity before an offer or start. The actual phone error remains unobserved. The owner approved production release on 1 October. All 450 local tests, PR #134's test job, the post-merge main test job and GitHub Pages deployment passed. PR #134 merged as `9fe0dce7f18b092ed9d76261d28397483f08318e`. Live `index.html`, `sw.js`, app UI, learner, scheduler and Course CSS match the tested release source byte for byte. The offline cache is `dutch-v5.1.160-20261001-mastery-start`. The daily limit, proof standards, saved learner data, sync, schema, authentication, services and costs are unchanged. Rollback is V5.1.159 source at `c8e65069c7bca1ac9033cc5d984e68f01fed406d`; retain learner history and the standalone Flashcards fallback. Installed-phone validation of the V5.1.160 start path remains pending. See `docs/mastery-offer-readiness-review.md`.
 
+## F1 proof-capacity incident — investigation, 2026-10-01
+
+The owner confirmed V5.1.160 on the phone and saw the insufficient-unseen-test-sentences warning in normal F1 Learning. F1 has 110 distinct compatible proof sentences; five fully failed 20-question tests would leave ten, reproducing the warning. Actual saved exposure and proof-history counts remain uninspected, so the cause in this learner's state is not yet confirmed. Practice cannot refill the proof pool; the current warning copy is misleading. See `docs/f1-proof-capacity-investigation.md`. Production data and runtime are unchanged by this investigation.
+
 ## Agreed development direction — 2026-09-23
 
 The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.
