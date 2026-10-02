@@ -1,6 +1,6 @@
 # DAB-180 — useful study during the retention wait
 
-Status: approved development candidate; no production behaviour changed.
+Status: phone-accepted V5.1.164 release candidate. Production verification is recorded after deployment.
 
 ## Current behaviour
 
