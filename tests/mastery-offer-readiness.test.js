@@ -51,7 +51,7 @@ test('a ready label cannot offer or start a test without enough unseen sentences
  state.exposures=proof.slice(0,-19).map(item=>({nl:normalize(item.nl)}));
  const offer=dailyProofOffer(state,content,now);
  assert.equal(offer.canStartToday,false);
- assert.match(offer.reason,/Not enough unseen test sentences/);
- assert.match(proofEligibility(state,content,'F1','mastery',now),/Not enough unseen test sentences/);
- assert.throws(()=>startProof(state,content,'F1','mastery',now),/Not enough unseen test sentences/);
+ assert.match(offer.reason,/More fresh test sentences/);
+ assert.match(proofEligibility(state,content,'F1','mastery',now),/More fresh test sentences/);
+ assert.throws(()=>startProof(state,content,'F1','mastery',now),/More fresh test sentences/);
 });
