@@ -1,6 +1,6 @@
 # DAB-178 — independent writing before first mastery
 
-**Decision status:** approved by the owner on 2 October 2026. The implementation is a review candidate in PR #139; it has not been released.
+**Decision status:** approved by the owner on 2 October 2026. The owner accepted the phone development sandbox and authorised the V5.1.162 production release of PR #139.
 
 ## Intended outcome
 
@@ -35,4 +35,4 @@ The lookback prevents old success from masking current difficulty. The latest-12
 - Check a phone-sized Course and Learning flow, and cross-device resume using existing sync data. Do not use the live learner account to fabricate attempts.
 - Preserve existing sentence IDs, scoring, proof thresholds, progress, offline cache, and the standalone Flashcards fallback. Rollback removes the new first-test gate without touching learner history.
 
-**Release level:** learning-policy and UI change. The owner approved this rule for implementation. Production release requires separate approval after review and phone validation.
+**Release level:** learning-policy and UI change. The owner approved the rule, accepted the development build, and authorised production deployment. The V5.1.161 source at `62327e7` is the rollback point; preserve learner history.

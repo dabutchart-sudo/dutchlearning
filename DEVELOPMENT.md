@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.161**.
+- Current documented release: **Zin V5.1.162**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -85,7 +85,9 @@ The owner approved a DAB-184 recovery path that keeps the existing proof thresho
 
 The owner approved release of PR #137 after confirming a new **nu** practice sentence on the phone test build. It adds eight practice introductions and 152 distinct written-proof sentences; the new proof wording requires completed practice, while prior F1 proof eligibility and saved exposure history remain intact. The 20/day limit, 20-question mastery, 10-question delayed retention, 19/20 mastery threshold with 9/10 each direction, and strict 10/10 retention are unchanged. The misleading exhausted-capacity message now says practice cannot restore already-used test questions. A synthetic end-to-end regression uses 90 distinct test sentences through repeated failure, pass, and retention; a read-only check of the owner's export found an eligible recovery introduction. No learner-data rewrite, schema, auth, sync, service, or running-cost change was made. All 452 local tests, both PR checks, the post-merge main test run, and GitHub Pages deployment passed. PR #137 merged as `d3f722933b9062c27d13bf3f846335d5d52f9911`. Live `index.html`, `sw.js`, recovery content, registry, learner, and vocabulary gate match the merged source byte for byte. The offline cache is `dutch-v5.1.161-20261002-f1-proof-recovery`. The installed-phone V5.1.161 version, sync, and later-day mastery offer still need owner confirmation. Rollback is V5.1.160 source at `847ca2fc30df53ef2795a64a74fdf542731c38b5`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-184-f1-proof-recovery-review.md`.
 
-DAB-178's first-mastery readiness rule was approved by the owner on 2 October. PR #139 implements a 14-day, latest-12 unaided typed evidence window, ten-answer minimum, two study days with at least two answers each, and 80% grammar threshold after the existing 40-answer practice floor. Older incomplete evidence does not open a first mastery test; prior mastery history preserves the existing retake path. Course and Learning explain unmet evidence, and sync mapping preserves unknown help metadata. No learner-data rewrite, schema, service, or production change has been made. Review and phone validation remain before a separately approved release. See `docs/dab-178-typed-readiness-proposal.md`.
+## DAB-178 first-mastery writing readiness — V5.1.162 release, 2026-10-02
+
+The owner approved the first-mastery readiness rule and accepted the phone development sandbox before authorising production deployment on 2 October. PR #139 applies a 14-day, latest-12 unaided typed evidence window, ten-answer minimum, two study days with at least two answers each, and 80% grammar threshold after the existing 40-answer practice floor. Older incomplete evidence does not open a first mastery test; prior mastery history preserves the existing retake path. Course and Learning explain unmet evidence, and sync mapping preserves unknown help metadata. The 20/day limit, proof and retention thresholds, saved learner history, schema, authentication and services are unchanged. All 460 implementation tests passed before release preparation. The offline cache is `dutch-v5.1.162-20261002-typed-readiness`. Rollback is the V5.1.161 main source at `62327e7`; preserve learner history and the standalone Flashcards fallback. Final CI, Pages and installed-phone checks are recorded separately after release. See `docs/dab-178-typed-readiness-proposal.md`.
 
 ## Agreed development direction — 2026-09-23
 
