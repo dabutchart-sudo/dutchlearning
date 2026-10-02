@@ -21,8 +21,17 @@ export function phase(p,date){
  }
  return p.status;
 }
-export function unlocked(c,s){return c.prerequisites.every(id=>!!s.progress[id]?.masteredAt);}
-export function activeConcept(s,c){return c.concepts.find(x=>unlocked(x,s)&&!s.progress[x.id].masteredAt)?.id||c.concepts.at(-1).id;}
+export function unlocked(c,s){return c.prerequisites.every(id=>!!(s.progress[id]?.masteredAt||s.progress[id]?.retentionDue));}
+export function masteryPrerequisiteNeed(s,c,id){
+ const waiting=c.conceptById[id]?.prerequisites.find(previous=>!s.progress[previous]?.masteredAt);
+ return waiting?`Pass ${waiting}'s delayed retention test before taking this mastery test.`:null;
+}
+export function activeConcept(s,c,date=s.daily?.date||dayKey()){
+ const available=c.concepts.filter(x=>unlocked(x,s)&&!s.progress[x.id]?.masteredAt);
+ return available.find(x=>phase(s.progress[x.id]||blankProgress(),date)==='retention-ready')?.id
+  ||available.find(x=>phase(s.progress[x.id]||blankProgress(),date)!=='retention-wait')?.id
+  ||available[0]?.id||c.concepts.at(-1).id;
+}
 export function teachConcept(s,id,content,{acknowledge=true}={}){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;if(acknowledge)s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
 export function expose(s,item,reason){if(s.exposures.some(x=>x.nl===normalize(item.nl)))return;s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason});}
 export function markWordsTaught(s,item,date){for(const w of item.vocabulary){s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};s.words[w.id].taughtAt=date;}}
@@ -63,7 +72,7 @@ export function prepareQuestion(s,c,now=new Date(),canListen=false,canSpeak=fals
  return q;
 }
 export function dailyProofOffer(s,c,now=new Date()){
- const id=activeConcept(s,c);
+ const id=activeConcept(s,c,dayKey(now));
  const date=dayKey(now);
  const status=phase(s.progress[id],date);
  if(status!=='proof-ready'&&status!=='retention-ready')return null;
@@ -72,6 +81,8 @@ export function dailyProofOffer(s,c,now=new Date()){
  const count=date>s.daily.date?0:s.daily.count;
  const remaining=Math.max(0,DAY_SIZE-count);
  if(s.proof)return {id,type,needed,remaining,canStartToday:false,reason:'Finish the test already in progress.'};
+ const prerequisite=type==='mastery'?masteryPrerequisiteNeed(s,c,id):null;
+ if(prerequisite)return {id,type,needed,remaining,canStartToday:false,reason:prerequisite};
  const practice=type==='mastery'?masteryPracticeNeed(s,c,id):null;
  if(practice)return {id,type,needed,remaining,canStartToday:false,reason:practice};
  const writing=type==='mastery'?firstMasteryReadinessNeed(s,id,now):null;
@@ -135,6 +146,8 @@ export function proofEligibility(s,c,id,type,now=new Date()){
  if(s.pending)return 'Finish the current question first.';
  if(type==='mastery'&&status!=='proof-ready'||type==='retention'&&status!=='retention-ready')return 'This test is not ready yet.';
  if(type==='mastery'){
+  const prerequisite=masteryPrerequisiteNeed(s,c,id);
+  if(prerequisite)return prerequisite;
   const practice=masteryPracticeNeed(s,c,id);
   if(practice)return practice;
   const writing=firstMasteryReadinessNeed(s,id,now);

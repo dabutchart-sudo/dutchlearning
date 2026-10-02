@@ -1,14 +1,14 @@
 # DAB-180 — useful study during the retention wait
 
-Status: design proposal; no production behaviour changed.
+Status: approved development candidate; no production behaviour changed.
 
 ## Current behaviour
 
 A passed 20-question mastery test sets `retentionDue` three calendar days later. The topic remains the active topic until its 10-question retention test passes. Its successor requires `masteredAt`, so the learner can only repeat the waiting topic's practice within normal Learning. Retained earlier topics may enter the normal maintenance queue when due. A retention failure returns the topic to practice, without marking it retained. The normal Learning limit is 20 questions per study day.
 
-## Product decision needed
+## Owner decision, 2026-10-02
 
-Should a mastery pass unlock the next topic's lesson and practice during the wait? Recommended: yes, for one successor only. A mastery pass demonstrates enough independent command to begin learning the next topic, while the previous topic remains visibly unretained. The due retention proof must be offered before ordinary practice when ten daily questions are available. The next topic's mastery proof should wait until its prerequisite's retention passes, so the learner does not accumulate uncertified topics. A failed retention proof pauses new-topic progression and returns the previous topic to remedial practice and its existing retake route; any next-topic practice already recorded is preserved.
+The owner approved a mastery pass unlocking the next topic's lesson and practice during the wait, while the previous topic remains visibly unretained and its due retention test takes priority. The candidate limits this to one successor: the next topic's mastery proof waits for its prerequisite's retention pass, so uncertified topics do not accumulate. A failed retention proof pauses new-topic progression and returns the previous topic to remedial practice and its existing retake route; any next-topic practice already recorded is preserved.
 
 Conservative alternative: keep the successor locked until retention passes. Waiting days should explicitly offer current-topic practice and due maintenance of older retained topics. This preserves the existing certification gate but cannot provide new-topic study during a first topic's wait.
 
@@ -24,3 +24,5 @@ Conservative alternative: keep the successor locked until retention passes. Wait
 ## Verification before release
 
 Cover the pass day, both waiting days, due day, consumed daily allowance, failed retention, one-topic progression limit, pending question and proof resume, and local/remote state restoration. Run the full test suite, review the phone development build, and obtain separate production release approval.
+
+The development candidate has automated coverage for those paths, including a real failed 10-question retention proof, unchanged 20/day limit, older retained-topic maintenance, and offline and remote resume. The production source remains V5.1.163. Phone review and release approval remain open.
