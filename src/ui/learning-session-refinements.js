@@ -95,7 +95,7 @@ function interceptClicks(){
   const start=event.target.closest?.('#start,#start-course,[data-course-start]');
   if(start&&!bypassStart){
    const state=currentState();if(!state)return;
-   const conceptId=activeConcept(state,content),date=dayKey(new Date());
+   const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    if(state.daily.count===0&&state.progress[conceptId]?.lessonAcknowledged&&!briefingDone(localStorage,date,conceptId)){
     event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId);
    }
@@ -104,7 +104,7 @@ function interceptClicks(){
   const learned=event.target.closest?.('#learned');
   if(learned&&/let.?s practise/i.test(learned.textContent)){
    const state=currentState();if(!state)return;
-   const conceptId=activeConcept(state,content),date=dayKey(new Date());
+   const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    if(briefingDone(localStorage,date,conceptId))return;
    event.preventDefault();event.stopImmediatePropagation();
    teachConcept(state,conceptId,content,{acknowledge:true});repo.save(state);showBriefing(conceptId);

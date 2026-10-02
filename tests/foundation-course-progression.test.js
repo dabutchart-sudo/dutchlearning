@@ -54,7 +54,8 @@ test('real Foundation course can progress from F1 practice through mastery, rete
   assert.equal(state.progress.F1.status,'retention-wait');
   assert.equal(state.progress.F1.retentionDue,'2026-09-17');
   assert.equal(state.progress.F1.masteredAt,null);
-  assert.equal(activeConcept(state,content),'F1','F2 must stay locked until retention is proven');
+  assert.equal(activeConcept(state,content),'F2','F2 lesson and practice can open after mastery');
+  assert.deepEqual(prepareQuestion(state,content,new Date('2026-09-15T12:00:00Z'),false),{teachingConcept:'F2'});
 
   const retentionDay=new Date('2026-09-17T12:00:00Z');
   state.daily={date:'2026-09-17',count:0};

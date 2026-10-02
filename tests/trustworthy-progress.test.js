@@ -47,7 +47,7 @@ test('journey state explains saved learning, failed mastery, passed mastery and 
  state.progress.F1.proofHistory=[{type:'mastery',passed:false,studyDate:'2026-09-30'}];
  topic=courseOutline(state,content,{today}).current;assert.equal(topic.journey.label,'Needs attention');
  state.progress.F1.proofHistory.push({type:'mastery',passed:true,studyDate:today});state.progress.F1.retentionDue='2026-10-04';
- topic=courseOutline(state,content,{today}).current;assert.equal(topic.journey.label,'Proven');
+ topic=courseOutline(state,content,{today}).topics[0];assert.equal(topic.journey.label,'Proven');assert.equal(courseOutline(state,content,{today}).current.id,'F2');
  state.progress.F1.retentionDue=null;state.progress.F1.masteredAt=today;state.progress.F1.status='mastered';
  topic=courseOutline(state,content,{today}).topics[0];assert.equal(topic.journey.label,'Retaining');
  state.progress.F1.status='reinforcement';topic=courseOutline(state,content,{today}).topics[0];assert.equal(topic.journey.label,'Needs attention');assert.equal(topic.retained,true);

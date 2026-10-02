@@ -20,11 +20,11 @@ test('outline uses the full registered curriculum, not just the base content pac
  assert.equal(outline.topics.find(c=>c.id==='A1.20').status,'upcoming');assert.equal(outline.planned.length,4);
  assert.equal(outline.planned[0].id,'A1.23');assert.equal(outline.planned.at(-1).id,'A1.26');assert.equal(JSON.stringify(s),before);
 });
-test('syllabus mirrors retention, readiness, daily budget, and remedial rules without unlocking topics',()=>{
+test('syllabus mirrors early lesson access, delayed retention, daily budget, and remedial rules',()=>{
  const s=fresh();studied(s,'F1');s.progress.F1.status='proof-ready';s.daily.count=3;seedTypedReadiness(s,'F1',today);
  let o=courseOutline(s,content,{today});assert.match(o.current.nextStep,/next study day/);assert.equal(o.topics[1].available,false);
  s.progress.F1.status='retention-wait';s.progress.F1.retentionDue='2026-09-20';
- o=courseOutline(s,content,{today});assert.equal(o.current.status,'retention-wait');assert.match(o.current.nextStep,/2026-09-20/);
+ o=courseOutline(s,content,{today});assert.equal(o.current.id,'F2');assert.equal(o.current.status,'lesson');assert.equal(o.topics[0].status,'retention-wait');assert.match(o.topics[0].nextStep,/2026-09-20/);assert.equal(o.topics[1].available,true);assert.equal(o.retained,0);
  o=courseOutline(s,content,{today:'2026-09-20'});assert.equal(o.current.status,'retention-ready');assert.match(o.current.nextStep,/10-question/);
  s.progress.F1.masteredAt=today;s.progress.F1.status='mastered';s.progress.F1.retentionDue=null;
  o=courseOutline(s,content,{today});assert.equal(o.current.id,'F2');assert.equal(o.retained,1);
@@ -69,7 +69,7 @@ test('chart has an accessible numerical alternative and separates evidence group
 });
 test('locked topics are browsable but cannot launch lessons; only later topics remain planned',()=>{
  const s=fresh();const html=coursePage(s,content,{today,pane:'path'});assert.match(html,/A1.26/);assert.match(html,/A2 · Beyond the basics/);assert.match(html,/Coming later/);assert.match(html,/data-course-concept="A1.22"/);assert.doesNotMatch(html,/data-course-concept="A1.23"/);
- const locked=topicPage(s,content,'A1.20',{today});assert.match(locked,/What you’ll learn/);assert.match(locked,/Retain A1.19/);assert.doesNotMatch(locked,/id="read-course"/);
+ const locked=topicPage(s,content,'A1.20',{today});assert.match(locked,/What you’ll learn/);assert.match(locked,/Pass A1.19 mastery/);assert.doesNotMatch(locked,/id="read-course"/);
 });
 test('topic display escapes content and never uses proof material as an example',()=>{
  const s=fresh(),c={...content,concepts:content.concepts.map(c=>c.id==='F1'?{...c,title:'<img onerror=alert(1)>',example:'secret proof'}:c),sentences:[{concept:'F1',pool:'proof',nl:'secret proof',en:'secret'},...content.sentences]};

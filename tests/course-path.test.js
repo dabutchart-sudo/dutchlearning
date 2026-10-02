@@ -32,7 +32,7 @@ test('Course opens on the path, not the evidence charts',()=>{
  assert.doesNotMatch(html,/course-path-here|You’re here —/);
  assert.match(html,/data-course-start="F1"/);
  assert.equal((html.match(/data-course-start=/g)||[]).length,1);
- assert.match(html,/Retain F1 first/);
+ assert.match(html,/Pass F1 mastery first/);
  assert.doesNotMatch(html,/required practice answers|course-method/);
  assert.match(html,/Coming later|Place and movement|A1\.21/);
  assert.doesNotMatch(html,/course-trend-chart/);

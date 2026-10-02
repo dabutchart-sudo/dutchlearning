@@ -4,9 +4,9 @@ function milestoneCopy(status,attempts=0){
   const remaining=Math.max(0,40-attempts);
   if(status==='Proof Ready')return 'Practice complete · mastery proof ready';
   if(status==='Retention pending')return 'Mastery proved · waiting for retention';
-  if(status==='Retention Ready')return 'Retention check ready · pass to unlock next lesson';
+  if(status==='Retention Ready')return 'Retention check ready · pass to retain this topic';
   if(status==='Mastered')return 'Retained · concept complete';
-  if(status==='Locked')return 'Locked until the previous concept is retained';
+  if(status==='Locked')return 'Locked until the previous concept passes mastery';
   if(status==='Learning'&&attempts===0)return 'New concept ready · start with the lesson';
   return remaining?`${remaining} practice ${remaining===1?'answer':'answers'} until mastery-proof eligibility`:'Practice requirement complete';
 }
@@ -31,8 +31,8 @@ function decorateToday(){
   const note=concept.querySelector('.course-progress-note p');
   if(note){
     if(status==='Proof Ready')note.textContent='Your next milestone is a 20-question mastery proof using unseen sentences and no word help.';
-    if(status==='Retention pending')note.textContent='The next checkpoint is the retention test shown below. The next concept stays locked until retention is proved.';
-    if(status==='Retention Ready')note.textContent='Pass the retention test to complete this concept and unlock the next lesson.';
+    if(status==='Retention pending')note.textContent='The next checkpoint is the retention test shown below. You can start the next lesson and practice while this topic waits, but it is not retained yet.';
+    if(status==='Retention Ready')note.textContent='Pass the retention test to retain this concept. It takes priority over new-topic practice when ten daily questions remain.';
     if(status==='Mastered')note.textContent='This concept is complete. Zin will move you into the next unlocked lesson and revisit this material later for maintenance.';
     if(status==='Learning'&&attempts===0)note.textContent='This concept has just opened. Read the lesson first; Zin will then begin scored practice and build toward mastery proof.';
     else if(status==='Learning'){const remaining=Math.max(0,40-attempts);note.textContent=remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} before mastery proof can open. Zin will keep mixing recognition, construction and independent Dutch production.`:'The practice requirement is complete. Mastery proof will become available when the session state allows it.';}
@@ -41,7 +41,7 @@ function decorateToday(){
   const done=[...root.querySelectorAll('.card.summary p')].find(p=>/Today’s work is complete/.test(p.textContent||''));
   if(done&&!root.querySelector('.course-next-step')){
     const next=document.createElement('p');next.className='course-next-step small';
-    next.textContent=status==='Proof Ready'?'Today is complete. Your mastery proof is the next milestone; Zin will not add extra normal questions today.':status==='Retention pending'?'Today is complete. Your saved progress is waiting for the retention date; the next concept remains locked until you pass it.':'Today is complete. Your evidence is saved and tomorrow continues from this point — no extra normal questions will be added today.';
+    next.textContent=status==='Proof Ready'?'Today is complete. Your mastery proof is the next milestone; Zin will not add extra normal questions today.':status==='Retention pending'?'Today is complete. Your saved progress is waiting for the retention date; the next topic’s lesson and practice can begin on your next study day.':'Today is complete. Your evidence is saved and tomorrow continues from this point — no extra normal questions will be added today.';
     done.insertAdjacentElement('afterend',next);
   }
 }
@@ -54,7 +54,7 @@ function decorateCourse(){
     const intro=grid.previousElementSibling;
     if(intro){
       const journey=document.createElement('div');journey.className='course-journey-note';
-      journey.innerHTML='<strong>How a concept becomes retained</strong><p class="small muted">Learn → practise across study days → mastery proof → wait 3 days → retention proof → unlock the next lesson.</p>';
+      journey.innerHTML='<strong>How a concept becomes retained</strong><p class="small muted">Learn → practise across study days → mastery proof → begin the next lesson while waiting 3 days → retention proof → retain the earlier topic.</p>';
       intro.append(journey);
     }
     grid.querySelectorAll('.course-item').forEach(item=>{

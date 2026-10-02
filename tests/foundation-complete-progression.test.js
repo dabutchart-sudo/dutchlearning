@@ -57,8 +57,9 @@ test('every Foundation concept can progress through real mastery and retention m
     assert.equal(new Set(masterySources).size,masterySources.length,`${concept.id} mastery proof should not repeat a source sentence`);
 
     assert.equal(state.progress[concept.id].status,'retention-wait',`${concept.id} should wait for retention after mastery`);
-    assert.equal(state.progress[concept.id].masteredAt,null,`${concept.id} must not unlock the next concept before retention`);
-    assert.equal(activeConcept(state,content),concept.id,`${concept.id} should remain active during retention wait`);
+    assert.equal(state.progress[concept.id].masteredAt,null,`${concept.id} is not retained by mastery alone`);
+    const next=content.concepts[index+1];
+    assert.equal(activeConcept(state,content),next?.id||concept.id,`${next?.id||concept.id} is the study focus during the retention wait`);
 
     const retentionDate=state.progress[concept.id].retentionDue;
     now=noon(retentionDate);
@@ -73,7 +74,6 @@ test('every Foundation concept can progress through real mastery and retention m
     assert.equal(state.progress[concept.id].status,'mastered',`${concept.id} should be retained after a perfect retention proof`);
     assert.ok(state.progress[concept.id].masteredAt,`${concept.id} should record a mastery date`);
 
-    const next=content.concepts[index+1];
     if(next){
       assert.equal(activeConcept(state,content),next.id,`${next.id} should unlock after ${concept.id} retention`);
       assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:next.id},`${next.id} should return to teaching before scored work`);

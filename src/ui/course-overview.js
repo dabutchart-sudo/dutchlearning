@@ -1,6 +1,6 @@
 import {courseOutline,learningProgress} from '../engine/course-progress.js';
 import {capabilityProfile} from '../engine/capability-progress.js';
-import {dailyProofOffer,masteryPracticeNeed,phase} from '../engine/learner.js';
+import {dailyProofOffer,masteryPracticeNeed,masteryPrerequisiteNeed,phase} from '../engine/learner.js';
 import {firstMasteryReadinessNeed} from '../engine/mastery-readiness.js';
 import {proofVocabularyNeed} from '../engine/proof-vocabulary.js';
 import {availableProofCount} from '../engine/scheduler.js';
@@ -28,7 +28,8 @@ export function testTiming(state,content,id,today,offer=dailyProofOffer(state,co
   const fresh=availableProofCount(state,content,id);
   const failedToday=latest?.type==='mastery'&&latest.passed===false&&(latest.studyDate||latest.completedAt?.slice(0,10))===today;
   let detail;
-  if(progress.remedial&&latest?.type==='retention'&&latest.passed===false)detail=`Complete ${progress.remedial} successful practice ${progress.remedial===1?'answer':'answers'} after the missed retention check.`;
+  if(status==='proof-ready'&&masteryPrerequisiteNeed(state,content,id))detail=masteryPrerequisiteNeed(state,content,id);
+  else if(progress.remedial&&latest?.type==='retention'&&latest.passed===false)detail=`Complete ${progress.remedial} successful practice ${progress.remedial===1?'answer':'answers'} after the missed retention check.`;
   else if(practice)detail=practice;
   else if(writing)detail=writing;
   else if(vocabulary?.missing)detail=vocabulary.potential<vocabulary.required?'More fresh test sentences are needed; practice cannot restore already-used questions.':`${vocabulary.available} of ${vocabulary.required} fresh test sentences currently use words you have completed in practice. Continue this topic’s practice to introduce the missing words.`;
@@ -107,7 +108,7 @@ function courseFocus(outline,daily,offer){
 }
 function pathNode(c){
  const locked=!c.available&&!c.retained;
- const reason=locked?`<small class="course-locked-reason">Retain ${esc((c.prerequisites||[]).join(' and '))} first</small>`:'';
+ const reason=locked?`<small class="course-locked-reason">${c.journey.label==='Paused'?'Pass earlier retention to continue':'Pass '+esc((c.prerequisites||[]).join(' and '))+' mastery first'}</small>`:'';
  return `<li class="course-path-node ${c.current?'is-current':''} ${c.retained?'is-retained':''} ${locked?'is-locked':''}" ${c.current?'data-course-current="true"':''}>
   <div class="course-node-wrap"><span class="course-node" aria-hidden="true">${c.retained?'✓':c.current?'●':''}</span></div>
   <div class="course-path-card">
@@ -125,8 +126,10 @@ function recapCard(recap){
  return `<article class="card course-daily-recap"><div class="eyebrow">TODAY'S LEARNING</div><h3>Your daily recap</h3><p>You finished all ${recap.answered} questions. ${recap.independent} answers showed independent Dutch writing${recap.supported?`; ${recap.supported} used help`:''}.</p>${recap.revisit.length?`<h4>Useful patterns to revisit</h4><ul>${recap.revisit.map(item=>`<li><strong>${esc(item.concept)} · ${esc(item.title)}</strong><span lang="nl">${esc(item.sentence)}</span><small>${esc(item.meaning)}</small></li>`).join('')}</ul>`:'<p>Your last 20 answers had no grammar or spelling misses to revisit.</p>'}<p class="course-caption">This recap reflects recorded answers. It does not change your course evidence or add questions.</p></article>`;
 }
 function pathView(outline,daily,offer,recap){
+ const waiting=outline.topics.find(c=>c.status==='retention-wait'&&!c.current);
  return `<section class="course-path" data-course-path>
   ${courseFocus(outline,daily,offer)}
+  ${waiting?`<article class="card course-panel course-waiting-path"><strong>${esc(waiting.id)} retention is still due</strong><p>You can study ${esc(outline.current?.id||'the next topic')} while you wait. The delayed test can open from ${esc(waiting.retentionDue)} when ten fresh sentences and ten daily questions are available. This topic is not retained yet.</p><button type="button" data-course-concept="${esc(waiting.id)}">See retention timing</button></article>`:''}
   ${recapCard(recap)}
   ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(pathNode).join('')}</ol></section>`;}).join('')}
   ${outline.planned.length?`<section class="course-unit"><header class="course-unit-banner is-planned"><span>Still to come</span><h3>Completing A1</h3><small>${outline.planned.length} planned</small></header><ol class="course-path-list">${outline.planned.map(plannedNode).join('')}</ol></section>`:''}
@@ -150,5 +153,5 @@ export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCou
  const extraStart=c.retained?`${button('extra-course','Practise this area')}<p class="course-caption">Five extra questions. This is not a second daily session and does not use today’s 20.</p>`:'';
  const testVisible=['proof-ready','retention-ready'].includes(c.status);
  const evidence=c.available?`<details class="course-topic-evidence"><summary>Practice and proof details</summary><label class="course-practice-label" for="topic-practice">${Math.min(c.attempts,c.required)} of ${c.required} required practice answers</label><progress id="topic-practice" max="${c.required}" value="${Math.min(c.attempts,c.required)}"></progress>${testVisible?'':proofHTML}<p class="course-caption">Today’s 20 includes one listening question from this topic. Speaking can be skipped and typed. Mastery and delayed retention tests stay written.</p><p class="course-caption">A topic is retained only after a mastery test and a successful delayed retention check.</p></details>`:'';
- return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.current&&c.available&&!c.retained?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
+ return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
 }
