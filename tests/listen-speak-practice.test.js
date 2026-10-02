@@ -7,6 +7,7 @@ import {assess} from '../src/engine/scoring.js';
 import {freshState,prepareQuestion,prepareExtraQuestion,skipSpeaking,startExtraPractice,startProof,submit,teachConcept} from '../src/engine/learner.js';
 import {practiceKind} from '../src/engine/scheduler.js';
 import {validateState} from '../src/engine/persistence.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-09-20T12:00:00');
@@ -84,6 +85,7 @@ test('speaking stays one skippable beat inside the same daily 20',()=>{
 test('mastery proofs stay written when listening and speaking are on',()=>{
  const state=freshState(content,now);
  Object.assign(state.progress.F1,ready,{practiceAttempts:40,status:'proof-ready'});
+ seedTypedReadiness(state,'F1');
  startProof(state,content,'F1','mastery',now);
  assert.ok(state.proof.questions.every(q=>q.kind==='choice'||q.kind==='typed'));
  assert.equal(state.proof.questions.filter(q=>q.kind==='choice').length,10);

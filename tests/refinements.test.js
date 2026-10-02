@@ -8,6 +8,7 @@ import {freshState,submit,prepareQuestion,useHelp,ensureDay,startProof,phase,dai
 import {selectPractice} from '../src/engine/scheduler.js';
 import {spellingBlocked,wordBlocked} from '../src/engine/word-recall.js';
 import {createRepository} from '../src/engine/persistence.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-09-08T12:00:00');
 const item=content.sentences.find(s=>s.nl==='Wij schrijven.'&&s.pool==='practice');
@@ -91,7 +92,7 @@ test('pending V5.1.4 questions upgrade in the engine without losing assistance o
  const q=prepareQuestion(s,content,now);assert.equal(q.id,id);assert.equal(q.assisted,true);assert.equal(q.prompt,'Wij schr_____.');
 });
 test('proof remains unassisted, twenty questions, with independent unseen material',()=>{
- const s=state();Object.assign(s.progress.F1,{status:'proof-ready',practiceAttempts:40});startProof(s,content,'F1','mastery',now);
+ const s=state();Object.assign(s.progress.F1,{status:'proof-ready',practiceAttempts:40});seedTypedReadiness(s,'F1');startProof(s,content,'F1','mastery',now);
  assert.equal(s.proof.questions.length,20);assert.equal(new Set(s.proof.questions.map(q=>q.sourceId)).size,20);
  prepareQuestion(s,content,now);assert.throws(()=>useHelp(s),/unavailable/);
  for(let i=0;i<20;i++){const q=prepareQuestion(s,content,now);submit(s,content,q.id,q.answer,now);}
@@ -99,6 +100,7 @@ test('proof remains unassisted, twenty questions, with independent unseen materi
 });
 test('failed mastery opens for a retake the next study day without remedial successes',()=>{
  const s=state();s.progress.F1.status='proof-ready';s.progress.F1.practiceAttempts=40;
+ seedTypedReadiness(s,'F1');
  startProof(s,content,'F1','mastery',now);
  for(let i=0;i<20;i++){
   const q=prepareQuestion(s,content,now);

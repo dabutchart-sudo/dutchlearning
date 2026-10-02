@@ -11,6 +11,7 @@ ASSETS.push('./src/content/a1-teaching-practice.js');
 ASSETS.push('./src/engine/mastery-recovery.js');
 ASSETS.push('./src/engine/capability-progress.js');
 ASSETS.push('./src/content/f1-proof-recovery.js');
+ASSETS.push('./src/engine/mastery-readiness.js');
 const LISTEN_FUNCTION='https://dntitlrtvkgisxwqjxch.supabase.co/functions/v1/listen-tts';
 const FLASHCARD_CONSTANTS='https://dabutchart-sudo.github.io/flashcards/constants.js';
 let listenAnonKey='';

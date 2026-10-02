@@ -7,6 +7,7 @@ import {makeExercise,correctiveFeedback} from '../src/engine/exercises.js';
 import {assess} from '../src/engine/scoring.js';
 import {courseOutline,learningProgress} from '../src/engine/course-progress.js';
 import {coursePage,topicPage} from '../src/ui/course-overview.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-09-18T12:00:00'),today='2026-09-18';
 const fresh=()=>freshState(content,now);
@@ -20,7 +21,7 @@ test('outline uses the full registered curriculum, not just the base content pac
  assert.equal(outline.planned[0].id,'A1.23');assert.equal(outline.planned.at(-1).id,'A1.26');assert.equal(JSON.stringify(s),before);
 });
 test('syllabus mirrors retention, readiness, daily budget, and remedial rules without unlocking topics',()=>{
- const s=fresh();studied(s,'F1');s.progress.F1.status='proof-ready';s.daily.count=3;
+ const s=fresh();studied(s,'F1');s.progress.F1.status='proof-ready';s.daily.count=3;seedTypedReadiness(s,'F1',today);
  let o=courseOutline(s,content,{today});assert.match(o.current.nextStep,/next study day/);assert.equal(o.topics[1].available,false);
  s.progress.F1.status='retention-wait';s.progress.F1.retentionDue='2026-09-20';
  o=courseOutline(s,content,{today});assert.equal(o.current.status,'retention-wait');assert.match(o.current.nextStep,/2026-09-20/);

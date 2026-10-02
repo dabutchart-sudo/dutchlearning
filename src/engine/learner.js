@@ -4,6 +4,7 @@ import {makeExercise} from './exercises.js';
 import {recallEvidence,recordRecall} from './word-recall.js';
 import {assess} from './scoring.js';
 import {proofVocabularyNeed} from './proof-vocabulary.js';
+import {firstMasteryReadinessNeed} from './mastery-readiness.js';
 import {recoveryTargets} from './mastery-recovery.js';
 export const DAY_SIZE=20;
 export const EXTRA_PRACTICE_SIZE=5;
@@ -73,6 +74,8 @@ export function dailyProofOffer(s,c,now=new Date()){
  if(s.proof)return {id,type,needed,remaining,canStartToday:false,reason:'Finish the test already in progress.'};
  const practice=type==='mastery'?masteryPracticeNeed(s,c,id):null;
  if(practice)return {id,type,needed,remaining,canStartToday:false,reason:practice};
+ const writing=type==='mastery'?firstMasteryReadinessNeed(s,id,now):null;
+ if(writing)return {id,type,needed,remaining,canStartToday:false,reason:writing};
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
  const vocabulary=proofVocabularyNeed(s,c,id,type);
  if(vocabulary?.missing)return {id,type,needed,remaining,canStartToday:false,reason:vocabulary.potential<vocabulary.required
@@ -134,6 +137,8 @@ export function proofEligibility(s,c,id,type,now=new Date()){
  if(type==='mastery'){
   const practice=masteryPracticeNeed(s,c,id);
   if(practice)return practice;
+  const writing=firstMasteryReadinessNeed(s,id,now);
+  if(writing)return writing;
  }
  if(DAY_SIZE-count<n)return `This test needs ${n} of your daily 20 questions. Start it on your next study day.`;
  const vocabulary=proofVocabularyNeed(s,c,id,type);

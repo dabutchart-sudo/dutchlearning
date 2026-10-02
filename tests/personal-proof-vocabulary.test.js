@@ -6,6 +6,7 @@ import {dailyProofOffer,freshState,prepareQuestion,proofEligibility,startProof,s
 import {eligibleProof,practiceVocabularyGain,proofVocabularyNeed} from '../src/engine/proof-vocabulary.js';
 import {selectProof} from '../src/engine/scheduler.js';
 import {normalize,tokens} from '../src/engine/util.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 
 const pack=JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url),'utf8'));
 const content=registerPacks([pack]);
@@ -17,6 +18,7 @@ const stateFor=concept=>{
   Object.assign(state.progress[row.id],{masteredAt:'2026-09-27',status:'mastered'});
  }
  Object.assign(state.progress[concept],{status:'proof-ready',practiceAttempts:40,taught:true,lessonAcknowledged:true});
+ seedTypedReadiness(state,concept);
  return state;
 };
 const completePractice=(state,concept)=>{
