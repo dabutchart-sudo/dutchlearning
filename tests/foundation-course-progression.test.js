@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 import {
   activeConcept,
   freshState,
@@ -43,6 +44,7 @@ test('real Foundation course can progress from F1 practice through mastery, rete
   progress.status='proof-ready';
   state.pending=null;
   state.daily={date:'2026-09-14',count:0};
+  seedTypedReadiness(state,'F1');
 
   assert.equal(proofEligibility(state,content,'F1','mastery',day1),null);
   startProof(state,content,'F1','mastery',day1);

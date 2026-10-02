@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {dailyProofOffer,freshState,releaseUnscoredPractice} from '../src/engine/learner.js';
 import {registerPacks} from '../src/content/registry.js';
+import {seedTypedReadiness} from './helpers/practice-evidence.js';
 
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-09-21T12:00:00');
@@ -11,6 +12,7 @@ const ready=(status='proof-ready',count=0,pending=false)=>{
  s.progress.F1.status=status;
  s.progress.F1.practiceAttempts=40;
  s.daily={date:'2026-09-21',count};
+ seedTypedReadiness(s,'F1');
  if(pending)s.pending={id:'q1',phase:'practice',kind:'typed',sourceId:content.sentences.find(item=>item.concept==='F1'&&item.pool==='practice').id};
  return s;
 };

@@ -6,6 +6,7 @@ import {dailyProofOffer,freshState,proofEligibility,startProof} from '../src/eng
 import {courseOutline} from '../src/engine/course-progress.js';
 import {coursePage} from '../src/ui/course-overview.js';
 import {normalize} from '../src/engine/util.js';
+import {seedCompletedPractice} from './helpers/practice-evidence.js';
 
 const content=registerPacks([JSON.parse(readFileSync(new URL('../src/content/foundation-a1.json',import.meta.url)))]);
 const now=new Date('2026-10-02T12:00:00Z');
@@ -29,7 +30,7 @@ test('an old test-ready status cannot offer or start first mastery before forty 
 });
 
 test('the initial offer appears after forty recorded answers and remains a choice',()=>{
- const state=readyStatus();state.progress.F1.practiceAttempts=40;
+ const state=readyStatus();state.progress.F1.practiceAttempts=40;seedCompletedPractice(state,content,'F1');
  const offer=dailyProofOffer(state,content,now);
  assert.equal(offer.canStartToday,true);
  assert.equal(proofEligibility(state,content,'F1','mastery',now),null);
@@ -46,7 +47,7 @@ test('saved failed mastery still permits the next-day full retake with an older 
 });
 
 test('a ready label cannot offer or start a test without enough unseen sentences',()=>{
- const state=readyStatus();state.progress.F1.practiceAttempts=40;
+ const state=readyStatus();state.progress.F1.practiceAttempts=40;seedCompletedPractice(state,content,'F1');
  const proof=content.sentences.filter(item=>item.concept==='F1'&&item.pool==='proof');
  state.exposures=proof.slice(0,-19).map(item=>({nl:normalize(item.nl)}));
  const offer=dailyProofOffer(state,content,now);

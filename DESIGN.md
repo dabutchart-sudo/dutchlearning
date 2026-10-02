@@ -29,6 +29,8 @@ The app generates one normal Learning session per study day. The normal session 
 
 Mastery uses a finite 20-question proof and retention uses a later 10-question proof. A ready proof must be offered before ordinary practice when enough of the daily allowance remains.
 
+Before a concept's first mastery proof, the learner must also have at least ten recent, scored, unaided typed English-to-Dutch practice answers from the latest twelve qualifying attempts within fourteen calendar days. At least two answers must occur on each of two study days, and at least 80% of the selected answers must have correct grammar. Spelling-only slips do not block readiness. Missing help, score, or date metadata cannot establish readiness. Recorded mastery history preserves the existing retake route. This rule supplements the 40-answer practice minimum and does not change the daily allowance or proof thresholds.
+
 After a failed mastery proof, a retake becomes eligible on the next study day without a quota of successful remedial questions. It still needs all 20 of that day's questions. Practice remains available in the meantime.
 
 Optional Free Practice, Review Ahead, experimental Practice activities, and future open conversation remain clearly separate. They must not refill daily capacity, silently alter mastery/retention, or leak extra retries into the next normal queue.

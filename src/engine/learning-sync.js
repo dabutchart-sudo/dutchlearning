@@ -62,6 +62,7 @@ export function mapTrainerAttempt(row){
  if(!date)return null;
  const grammar=flag(row,'grammar_correct','grammar');
  const spelling=flag(row,'spelling_correct','spelling');
+ const help=flag(row,'used_help','assisted');
  return {
   id:row.id,
   date,
@@ -75,7 +76,7 @@ export function mapTrainerAttempt(row){
   expected:row.correct_answer??row.expected??'',
   grammar:grammar==null?null:!!grammar,
   spelling:spelling==null?null:!!spelling,
-  assisted:!!(Object.prototype.hasOwnProperty.call(row,'used_help')?row.used_help:row.assisted)
+  assisted:typeof help==='boolean'?help:null
  };
 }
 
