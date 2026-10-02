@@ -1,6 +1,8 @@
 import {dayKey,addDays} from './util.js';
 import {blankProgress,phase,unlocked,proofEligibility,masteryPracticeNeed} from './learner.js';
 import {firstMasteryReadinessNeed} from './mastery-readiness.js';
+import {proofVocabularyNeed} from './proof-vocabulary.js';
+import {availableProofCount} from './scheduler.js';
 
 // Display-only roadmap, sourced from docs/a1-completion-target.md. These entries
 // never enter the exercise registry, scheduler, or completion denominator.
@@ -41,16 +43,20 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   else if(status==='lesson')nextStep='Read the lesson, then begin guided practice.';
   else if(status==='proof-ready'||status==='retention-ready'){
    const type=status==='proof-ready'?'mastery':'retention';
-   nextStep=proofEligibility(state,content,c.id,type,new Date(today+'T12:00:00'))||`Take the ${type==='mastery'?'20-question mastery':'10-question retention'} test. Pass grammar in both directions${type==='retention'?' to unlock the next topic':''}.`;
-  }else if(status==='retention-wait')nextStep=`Your retention check opens on ${p.retentionDue}. Passing it unlocks the next topic.`;
+   const eligibility=proofEligibility(state,content,c.id,type,new Date(today+'T12:00:00'));
+   nextStep=eligibility==='Finish the current question first.'?'An unfinished practice question is open. Review this topic’s mastery and retention timing before you answer it.':eligibility||`Take the ${type==='mastery'?'20-question mastery':'10-question retention'} test. Pass grammar in both directions${type==='retention'?' to unlock the next topic':''}.`;
+  }else if(status==='retention-wait')nextStep=`Your retention check can open from ${p.retentionDue}, once ten fresh test sentences and ten daily questions are available. Passing it unlocks the next topic.`;
   else if(status==='mastered')nextStep='Retained after a delayed check. Future practice will revisit this skill.';
   else if(status==='reinforcement')nextStep='Revisit this retained skill in maintenance practice. Earlier retention evidence is kept.';
-  else if(p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false)nextStep='Your mastery retake opens on your next study day. You can practise today.';
+  else if(p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false)nextStep='Your mastery retake can start from your next study day once fresh test sentences and all 20 daily questions are available. You can practise today.';
   else nextStep=[remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} to reach the ${required}-answer test requirement.`:'Practice requirement reached.',p.remedial?`${p.remedial} successful practice ${p.remedial===1?'answer':'answers'} still needed after your last test.`:''].filter(Boolean).join(' ');
   const writingNeed=status==='proof-ready'?firstMasteryReadinessNeed(state,c.id,new Date(today+'T12:00:00')):null;
-  const needsMorePractice=status==='proof-ready'&&(writingNeed||/vocabulary|fresh test sentences/i.test(nextStep));
-  const journey=journeyOf(p,status,available,status==='proof-ready'?masteryPracticeNeed(state,content,c.id)||writingNeed:null);
-  return {...c,status,label:needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,nextStep};
+  const vocabulary=status==='proof-ready'?proofVocabularyNeed(state,content,c.id,'mastery'):null;
+  const needsMaterial=status==='proof-ready'&&(vocabulary?.potential<vocabulary?.required||(!vocabulary?.missing&&availableProofCount(state,content,c.id)<20));
+  const needsMorePractice=status==='proof-ready'&&(writingNeed||masteryPracticeNeed(state,content,c.id)||vocabulary?.missing);
+  const readinessNeed=status==='proof-ready'?masteryPracticeNeed(state,content,c.id)||writingNeed||(vocabulary?.missing?'More completed topic practice is needed before enough fresh test sentences use familiar words.':null):null;
+  const journey=journeyOf(p,status,available,readinessNeed);
+  return {...c,status,label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,nextStep};
  });
  return {topics,current:topics.find(c=>c.current)||null,retained:topics.filter(c=>c.retained).length,total:topics.length,
   planned:plannedTopics.filter(p=>!content.conceptById[p.id]),levels:[...new Set(topics.map(c=>c.level))]};
