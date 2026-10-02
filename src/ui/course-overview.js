@@ -1,9 +1,67 @@
 import {courseOutline,learningProgress} from '../engine/course-progress.js';
 import {capabilityProfile} from '../engine/capability-progress.js';
+import {dailyProofOffer,masteryPracticeNeed,phase} from '../engine/learner.js';
+import {firstMasteryReadinessNeed} from '../engine/mastery-readiness.js';
+import {proofVocabularyNeed} from '../engine/proof-vocabulary.js';
+import {availableProofCount} from '../engine/scheduler.js';
+import {addDays,dayKey} from '../engine/util.js';
 import {dailyRecap} from './teaching-support.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const percent=n=>n===null?'—':`${Math.round(n*100)}%`;
 const dateLabel=day=>new Date(day+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const nextStudyDay=day=>`From ${dateLabel(addDays(day,1))}, on a study day`;
+const remainingToday=(state,today)=>state.daily?.date===today?Math.max(0,20-(state.daily.count||0)):20;
+
+export function testTiming(state,content,id,today,offer=dailyProofOffer(state,content,new Date(today+'T12:00:00'))){
+ const progress=state.progress[id],latest=progress.proofHistory?.at(-1),status=phase(progress,today);
+ const activeOffer=offer?.id===id?offer:null;
+ const masteryPassed=!!(progress.retentionDue||progress.masteredAt||progress.proofHistory?.some(report=>report.type==='mastery'&&report.passed));
+ const needsMasteryRetake=latest?.passed===false&&['mastery','retention'].includes(latest.type);
+ const masteryName=progress.proofHistory?.some(report=>report.type==='mastery')?'Mastery retake':'Mastery test';
+ let mastery;
+ if(state.proof?.concept===id&&state.proof.type==='mastery')mastery={name:masteryName,when:'In progress',detail:'Finish the test already under way.'};
+ else if(masteryPassed&&!needsMasteryRetake)mastery={name:'Mastery test',when:'Passed',detail:'The next check is retention.'};
+ else{
+  const practice=masteryPracticeNeed(state,content,id);
+  const writing=firstMasteryReadinessNeed(state,id,new Date(today+'T12:00:00'));
+  const vocabulary=proofVocabularyNeed(state,content,id,'mastery');
+  const fresh=availableProofCount(state,content,id);
+  const failedToday=latest?.type==='mastery'&&latest.passed===false&&(latest.studyDate||latest.completedAt?.slice(0,10))===today;
+  let detail;
+  if(progress.remedial&&latest?.type==='retention'&&latest.passed===false)detail=`Complete ${progress.remedial} successful practice ${progress.remedial===1?'answer':'answers'} after the missed retention check.`;
+  else if(practice)detail=practice;
+  else if(writing)detail=writing;
+  else if(vocabulary?.missing)detail=vocabulary.potential<vocabulary.required?'More fresh test sentences are needed; practice cannot restore already-used questions.':`${vocabulary.available} of ${vocabulary.required} fresh test sentences currently use words you have completed in practice. Continue this topic’s practice to introduce the missing words.`;
+  else if(fresh<20)detail='More fresh test sentences are needed; practice cannot restore already-used questions.';
+  else detail=null;
+  if(detail)mastery={name:masteryName,when:'No date yet',detail:`${detail} Once ready, take the full test on a study day with all 20 questions unused.`};
+  else if(failedToday||remainingToday(state,today)<20)mastery={name:masteryName,when:nextStudyDay(today),detail:'A full mastery test needs all 20 questions unused on that day.'};
+  else if(status==='proof-ready'&&activeOffer?.canStartToday)mastery={name:masteryName,when:'Available today',detail:'Start before answering an ordinary practice question; an unanswered question can be set aside.'};
+  else mastery={name:masteryName,when:'No date yet',detail:'Continue this topic’s practice until the mastery test is ready.'};
+ }
+ let retention;
+ if(state.proof?.concept===id&&state.proof.type==='retention')retention={name:'Retention test',when:'In progress',detail:'Finish the test already under way.'};
+ else if(progress.masteredAt)retention={name:'Retention test',when:'Passed',detail:'This topic is retained.'};
+ else if(progress.retentionDue){
+  const vocabulary=proofVocabularyNeed(state,content,id,'retention');
+  const fresh=availableProofCount(state,content,id);
+  const missing=vocabulary?.missing||fresh<10;
+  const exhausted=vocabulary?.potential<vocabulary?.required||!vocabulary&&fresh<10;
+  const freshDetail=vocabulary?.missing?`${vocabulary.available} of 10 fresh test sentences currently use practised words.`:fresh<10?'Fewer than ten compatible fresh test sentences remain.':'Ten fresh test sentences are available.';
+  if(today<progress.retentionDue&&exhausted)retention={name:'Retention test',when:'No date yet',detail:`The three-day wait ends ${dateLabel(progress.retentionDue)}, but more fresh test sentences are needed. Practice cannot restore used questions.`};
+  else if(today<progress.retentionDue)retention={name:'Retention test',when:`Earliest ${dateLabel(progress.retentionDue)}`,detail:`It needs ten unused daily questions. ${freshDetail}`};
+  else if(missing)retention={name:'Retention test',when:'No date yet',detail:vocabulary?.potential<vocabulary?.required||fresh<10?'More fresh test sentences are needed; practice cannot restore already-used questions.':`${vocabulary.available} of 10 fresh test sentences currently use words you have completed in practice.`};
+  else if(remainingToday(state,today)<10)retention={name:'Retention test',when:nextStudyDay(today),detail:'It needs ten unused daily questions and ten fresh sentences.'};
+  else if(status==='retention-ready'&&activeOffer?.canStartToday)retention={name:'Retention test',when:'Available today',detail:'It uses ten of today’s 20 questions.'};
+  else retention={name:'Retention test',when:'No date yet',detail:'Complete the current test before another one can start.'};
+ }else retention={name:'Retention test',when:needsMasteryRetake?'After the next mastery pass':'After mastery passes',detail:'It opens three calendar days after a passed mastery test, provided ten fresh sentences and ten daily questions are available.'};
+ return {mastery,retention};
+}
+
+function testTimingCard(state,content,id,today,offer){
+ const timing=testTiming(state,content,id,today,offer);
+ return `<section class="course-test-timing" aria-label="Mastery and retention test timing"><h3>When can I take a test?</h3>${[timing.mastery,timing.retention].map(row=>`<div class="course-test-timing-row"><span>${esc(row.name)}</span><strong>${esc(row.when)}</strong><p>${esc(row.detail)}</p></div>`).join('')}</section>`;
+}
 const button=(id,label,extra='')=>`<button type="button" id="${id}" class="secondary" ${extra}>${label}</button>`;
 function paneName(pane){if(pane==='syllabus'||pane==='path')return 'path';if(pane==='progress'||pane==='evidence')return 'evidence';return 'path';}
 function ring(retained,total){const portion=total?retained/total*100:0;return `<div class="course-ring"><svg viewBox="0 0 120 120" role="img" aria-label="${retained} of ${total} available topics retained"><circle cx="60" cy="60" r="50" pathLength="100" class="ring-track"/><circle cx="60" cy="60" r="50" pathLength="100" class="ring-value" stroke-dasharray="${portion} 100" transform="rotate(-90 60 60)"/></svg><div aria-hidden="true"><strong>${retained}<small> / ${total}</small></strong><span>topics retained</span></div></div>`;}
@@ -83,14 +141,14 @@ export function coursePage(state,content,{today,pane='path',days=30,cohort='inde
  const daily={done:dailyCount>=20};
  return `<section class="course-dashboard" data-course-overview ${view==='path'?'data-course-home':'data-course-evidence'}><header class="course-heading">${view==='path'?'<div class="eyebrow">Your course</div><h2 class="sr-only" tabindex="-1">Course</h2>':'<div><div class="eyebrow">Your evidence</div><h2 tabindex="-1">How your answers are changing</h2><p>The numbers behind your Learning answers, when you want them.</p></div>'}</header>${view==='path'?pathView(outline,daily,offer,dailyRecap(state,content,today)):progressView(outline,progress,days,content,state,today)}</section>`;
 }
-export function topicPage(state,content,id,{today,proofHTML='',dailyCount=0,dailyDone=false}={}){
+export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCount=0,dailyDone=false,offer}={}){
  const c=courseOutline(state,content,{today}).topics.find(c=>c.id===id);if(!c)return '';
  // Only display lesson/practice examples, never an unseen proof question.
  const example=content.sentences.find(s=>s.concept===id&&s.pool==='practice'&&s.nl===c.example)||content.sentences.find(s=>s.concept===id&&s.pool==='practice');
- const startLabel=dailyCount?'Continue today’s practice':'Start today’s practice';
+ const startLabel=state.pending&&['practice','maintenance'].includes(state.pending.phase)?'Continue current question':dailyCount?'Continue today’s practice':'Start today’s practice';
  const currentStart=c.current&&c.available&&!c.retained?(dailyDone?'<p class="course-caption">Today’s 20 questions are complete. Come back tomorrow, or practise a finished topic.</p>':`<button type="button" id="start-course" class="primary">${esc(startLabel)}</button>`):'';
  const extraStart=c.retained?`${button('extra-course','Practise this area')}<p class="course-caption">Five extra questions. This is not a second daily session and does not use today’s 20.</p>`:'';
  const testVisible=['proof-ready','retention-ready'].includes(c.status);
  const evidence=c.available?`<details class="course-topic-evidence"><summary>Practice and proof details</summary><label class="course-practice-label" for="topic-practice">${Math.min(c.attempts,c.required)} of ${c.required} required practice answers</label><progress id="topic-practice" max="${c.required}" value="${Math.min(c.attempts,c.required)}"></progress>${testVisible?'':proofHTML}<p class="course-caption">Today’s 20 includes one listening question from this topic. Speaking can be skipped and typed. Mastery and delayed retention tests stay written.</p><p class="course-caption">A topic is retained only after a mastery test and a successful delayed retention check.</p></details>`:'';
- return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
+ return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.current&&c.available&&!c.retained?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
 }
