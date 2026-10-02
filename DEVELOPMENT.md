@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.162**.
+- Current documented release: **Zin V5.1.163**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -89,7 +89,9 @@ The owner approved release of PR #137 after confirming a new **nu** practice sen
 
 The owner approved the first-mastery readiness rule and accepted the phone development sandbox before authorising production deployment on 2 October. PR #139 applies a 14-day, latest-12 unaided typed evidence window, ten-answer minimum, two study days with at least two answers each, and 80% grammar threshold after the existing 40-answer practice floor. Older incomplete evidence does not open a first mastery test; prior mastery history preserves the existing retake path. Course and Learning explain unmet evidence, and sync mapping preserves unknown help metadata. The 20/day limit, proof and retention thresholds, saved learner history, schema, authentication and services are unchanged. All 460 implementation tests passed before release preparation. The offline cache is `dutch-v5.1.162-20261002-typed-readiness`. Rollback is the V5.1.161 main source at `62327e7`; preserve learner history and the standalone Flashcards fallback. Final CI, Pages and installed-phone checks are recorded separately after release. See `docs/dab-178-typed-readiness-proposal.md`.
 
-After confirming V5.1.162 and synced progress on the phone, the owner reported that the topic screen still obscures when mastery or retention can next be taken. A UI follow-up makes both test timelines explicit above the practice action, distinguishes an earliest date from a conditional or unavailable date, and removes an inert disabled test button. It does not change eligibility, daily limits, scoring, proof content, saved data, sync or services. This follow-up is a review candidate until phone acceptance and separate release approval.
+## DAB-178 test timing clarity — V5.1.163 release candidate, 2026-10-02
+
+After confirming V5.1.162 and synced progress on the phone, the owner reported that the topic screen still obscured when mastery or retention could next be taken. This UI follow-up makes both test timelines explicit above the practice action, distinguishes an earliest date from a conditional or unavailable date, and removes an inert disabled test button. The owner accepted the revised phone development view on 2 October. It does not change eligibility, daily limits, scoring, proof content, saved data, sync or services. The offline cache is `dutch-v5.1.163-20261002-test-timing`. Rollback is V5.1.162 main source at `28b8268ee6bf2380aadd6c04944a048b263dc358`; preserve learner history and the standalone Flashcards fallback. Production merge and deployment still require separate owner approval.
 
 ## Agreed development direction — 2026-09-23
 
