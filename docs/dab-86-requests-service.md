@@ -25,4 +25,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-A1.24 and A1.25, then the unseen A1.26 written check. A native-speaker pass of the A1.23 sentences is still outstanding. The installed phone has not yet confirmed the A1.23 lesson.
+A1.24 connecting ideas is a separate source slice and is not on the live app. A1.25, then the unseen A1.26 written check, are still ahead. A native-speaker pass of the A1.23 sentences is still outstanding. The installed phone has not yet confirmed the A1.23 lesson.
