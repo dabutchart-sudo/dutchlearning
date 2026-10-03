@@ -1,6 +1,6 @@
 # DAB-170 — sentence discrimination
 
-Status: optional Practice, released in V5.1.165. On the installed phone, Play produced a faint hiss and no words. V5.1.166 plays the prepared Dutch sentence in that tap. Confirmation that the words are audible is still outstanding.
+Status: optional Practice. V5.1.165 reached the live app, where Play produced a faint hiss and no words. V5.1.166 corrected playback. On 3 October the owner finished a round on the installed phone: 5 of 5 heard answers matched, from audio, with the sentence left hidden.
 
 This is the first new listening step after hidden-text meaning selection. It is optional Practice only.
 
