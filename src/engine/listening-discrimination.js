@@ -43,7 +43,7 @@ function meaningChoices(item,pool,seed){
  const unique=[...new Map(others.map(candidate=>[normalize(candidate.en),candidate])).values()];
  const near=unique.filter(candidate=>candidate.subject===item.subject||candidate.verb===item.verb);
  const far=unique.filter(candidate=>candidate.subject!==item.subject&&candidate.verb!==item.verb);
- const picked=[...shuffle(near,`${seed}:mnear`),...shuffle(far,`${seed}:mfar`)].slice(0,3);
+ const picked=[...shuffle(near,`${seed}:mnear`),...shuffle(far,`${seed}:mfar`)].slice(0,2);
  if(!picked.length)return null;
  return shuffle([item.en,...picked.map(candidate=>candidate.en)],`${seed}:meaning`);
 }

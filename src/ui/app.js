@@ -189,13 +189,13 @@ function renderDiscrimination(){
   if(locked)return;if(!raw){notify('Choose an answer first.');return;}locked=true;
   const next=answerSentenceDiscrimination(discriminationSession,raw,{usedTextFallback,audioIssue});
   const result=next.answers.at(-1);discriminationSession=next;const upcoming=currentDiscriminationQuestion(discriminationSession);if(upcoming)prepareSpeech(upcoming.audio);
-  el.querySelectorAll('button').forEach(button=>button.disabled=true);
+  el.querySelectorAll('button').forEach(button=>{if(button.id!=='leave-discrimination')button.disabled=true});
   const chosenMeaning=!result.correct&&!usedTextFallback?question.optionMeanings[normalize(raw)]:'';
   const contrast=chosenMeaning?`<span class="meaning">You chose: <span lang="nl">${esc(raw)}</span> — ${esc(chosenMeaning)}</span>`:'';
   document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?(usedTextFallback?'Meaning understood':'You heard this sentence'):'Not this time'}</strong><span class="correct" lang="nl">${esc(audioText)}</span><span class="meaning">${esc(correctMeaning)}</span>${contrast}<div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span>${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;
   document.querySelector('.actions').innerHTML=`${button('replay-discrimination','Hear it again',false)}${button('next-discrimination',upcoming?'Continue':'View listening summary')}`;
   on('replay-discrimination',()=>speak(audioText,notify));
-  on('next-discrimination',renderDiscrimination);document.getElementById('next-discrimination').focus();
+  on('next-discrimination',renderDiscrimination);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-discrimination').focus();
  });
  on('leave-discrimination',()=>{const conceptId=discriminationSession?.conceptId;discriminationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
 }

@@ -67,6 +67,7 @@ test('questions use only taught practice sentences and prefer a near distractor'
   assert.equal(question.options.length,3);
   assert.ok(question.options.includes(item.nl));
   assert.ok(question.meaningOptions.includes(item.en));
+  assert.equal(question.meaningOptions.length,3);
   assert.ok(question.meaningOptions.every(meaning=>pool.some(candidate=>normalize(candidate.en)===normalize(meaning))));
   const nearExists=pool.some(candidate=>normalize(candidate.nl)!==normalize(item.nl)&&(candidate.subject===item.subject||candidate.verb===item.verb));
   if(nearExists){
