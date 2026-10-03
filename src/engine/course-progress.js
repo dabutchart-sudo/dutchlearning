@@ -3,6 +3,7 @@ import {activeConcept,blankProgress,phase,unlocked,proofEligibility,masteryPract
 import {firstMasteryReadinessNeed} from './mastery-readiness.js';
 import {proofVocabularyNeed} from './proof-vocabulary.js';
 import {availableProofCount} from './scheduler.js';
+import {a1CheckpointReadiness} from './a1-checkpoint.js';
 
 // Display-only roadmap, sourced from docs/a1-completion-target.md. These entries
 // never enter the exercise registry, scheduler, or completion denominator.
@@ -58,8 +59,9 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   const journey=journeyOf(p,status,available,readinessNeed);
   return {...c,status,label:!available?journey.label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,retentionDue:p.retentionDue||null,nextStep};
  });
+ const checkpoint=a1CheckpointReadiness(state,content);
  return {topics,current:topics.find(c=>c.current)||null,retained:topics.filter(c=>c.retained).length,total:topics.length,
-  planned:plannedTopics.filter(p=>!content.conceptById[p.id]),levels:[...new Set(topics.map(c=>c.level))]};
+  planned:plannedTopics.filter(p=>!content.conceptById[p.id]).map(topic=>topic.id===checkpoint.id?{...topic,note:checkpoint.summary}:topic),levels:[...new Set(topics.map(c=>c.level))]};
 }
 export function accuracy(attempts,field){
  const assessed=attempts.filter(a=>typeof a[field]==='boolean'),correct=assessed.filter(a=>a[field]).length;
