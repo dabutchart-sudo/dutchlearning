@@ -1,6 +1,6 @@
 # DAB-86 — requests and service Dutch
 
-Status: first source slice, 3 October 2026. Not on the live app.
+Status: first source slice, 3 October 2026. Not on the live app. All 494 local tests passed.
 
 ## This slice
 

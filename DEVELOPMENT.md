@@ -111,7 +111,7 @@ The owner asked for this slice on the live app. The integrated checkpoint is not
 
 ## DAB-86 requests and service Dutch — source slice, not released
 
-A1.23 is now a course topic in source: polite requests, ordering, prices, help and repetition, with a lesson, guided practice and an unseen written proof pool. A1.24, A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and, in this source, names only the topics that are still missing. Typed sentence work does not award speaking or interaction evidence. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. A native-speaker pass of the new Dutch is still outstanding. See `docs/dab-86-requests-service.md`.
+A1.23 is now a course topic in source: polite requests, ordering, prices, help and repetition, with a lesson, guided practice and an unseen written proof pool. A1.24, A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and, in this source, names only the topics that are still missing. Typed sentence work does not award speaking or interaction evidence. All 494 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. A native-speaker pass of the new Dutch is still outstanding. See `docs/dab-86-requests-service.md`.
 
 ## Agreed development direction — 2026-09-23
 
