@@ -8,4 +8,4 @@ All 452 local tests, both PR #137 checks, and the post-merge main test run passe
 
 The daily 20, 20-question mastery, later 10-question retention, mastery 19/20 with at least 9/10 in each direction, and retention 10/10 are unchanged. There is no data migration, schema, authentication, sync, service, or cost change. Roll back to V5.1.160 source at `847ca2fc30df53ef2795a64a74fdf542731c38b5` if needed; keep saved learner history and the standalone Flashcards fallback.
 
-The remaining acceptance check is on the installed phone: confirm V5.1.161 and Learning synced, then verify the full mastery offer on a study day with all 20 questions available. Do not clear browser data or reset progress.
+On 3 October the owner confirmed that an F1 mastery test was offered and completed on the installed phone. That closes the remaining acceptance check. Retention follows the normal later proof and was not part of this confirmation.
