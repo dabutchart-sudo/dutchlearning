@@ -1,6 +1,6 @@
 # DAB-170 — sentence discrimination
 
-Status: owner-authorised production release, V5.1.165, 3 October 2026. Optional Practice only. Installed-phone audio confirmation is still outstanding.
+Status: optional Practice, released in V5.1.165. On the installed phone, Play produced a faint hiss and no words. V5.1.166 plays the prepared Dutch sentence in that tap. Confirmation that the words are audible is still outstanding.
 
 This is the first new listening step after hidden-text meaning selection. It is optional Practice only.
 

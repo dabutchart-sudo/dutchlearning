@@ -23,6 +23,72 @@ test('production Listen stops earlier audio before the replacement clip download
 
 test('production preloading is reused by Listen and reports playback state',async()=>{let requests=0,started=0,ended=0;const instances=[];class FakeAudio{constructor(){this.src='';instances.push(this);}setAttribute(){}pause(){}play(){return Promise.resolve();}}globalThis.Audio=FakeAudio;globalThis.URL={createObjectURL:()=>'blob:prepared',revokeObjectURL(){}};globalThis.location={hostname:'dabutchart-sudo.github.io'};globalThis.fetch=async url=>{if(String(url).includes('constants.js'))return {ok:true,text:async()=>`export const SUPABASE_ANON_KEY='anon';`};requests++;return {ok:true,blob:async()=>new Blob(['mp3'],{type:'audio/mpeg'})};};mockSynth([]);const speech=await import(`${speechUrl.href}?prepared=${Date.now()}`);const prepared=speech.prepareSpeech('Jullie praten.');speech.speak('Jullie praten.',()=>assert.fail('audio should play'),{onStart:()=>started++,onEnd:()=>ended++});assert.equal(await prepared,true);await nextTurn();await nextTurn();assert.equal(requests,1);assert.equal(started,1);instances[0].onended();assert.equal(ended,1);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.fetch;delete globalThis.location;});
 
+test('a prepared sentence starts in the tap instead of playing the silent hiss',async()=>{
+ const played=[];const sources=[];
+ class FakeAudio{constructor(){this.src='';this.volume=1;}setAttribute(){}pause(){}play(){played.push({src:this.src,volume:this.volume});return Promise.resolve();}}
+ class FakeSource{constructor(){this.buffer=null;this.onended=null;this.stopped=false;}connect(){}start(){sources.push(this);}stop(){this.stopped=true;}}
+ class FakeCtx{constructor(){this.state='suspended';this.destination={};this.sampleRate=22050;}resume(){this.state='running';return Promise.resolve();}createBuffer(){return {prime:true};}createBufferSource(){return new FakeSource();}decodeAudioData(bytes,ok){const buffer={speech:true,bytes:bytes.byteLength};if(typeof ok==='function')ok(buffer);return Promise.resolve(buffer);}}
+ globalThis.Audio=FakeAudio;globalThis.AudioContext=FakeCtx;globalThis.URL={createObjectURL:()=>'blob:ready',revokeObjectURL(){}};globalThis.location={hostname:'dabutchart-sudo.github.io'};
+ globalThis.fetch=async url=>{if(String(url).includes('constants.js'))return {ok:true,text:async()=>`export const SUPABASE_ANON_KEY='anon';`};return {ok:true,blob:async()=>new Blob(['mp3'],{type:'audio/mpeg'})};};
+ mockSynth([]);
+ try{
+  const speech=await import(`${speechUrl.href}?decoded=${Date.now()}`);
+  assert.equal(await speech.prepareSpeech('Ik wacht.'),true);
+  let started=0,ended=0;
+  assert.equal(speech.speak('Ik wacht.',()=>assert.fail('words should play'),{onStart:()=>started++,onEnd:()=>ended++}),true);
+  assert.equal(started,1);
+  assert.equal(sources.length,1);
+  assert.equal(sources[0].buffer.speech,true);
+  assert.equal(played.some(item=>String(item.src).startsWith('data:audio/wav')),false);
+  sources[0].onended();
+  assert.equal(ended,1);
+  speech.speak('Ik wacht.');
+  assert.equal(sources.at(-1).buffer.speech,true);
+  assert.equal(sources.length,2);
+ }finally{
+  delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.AudioContext;delete globalThis.fetch;delete globalThis.location;delete globalThis.URL;
+ }
+});
+
+test('a prepared file that cannot be decoded still plays at full volume during the tap',async()=>{
+ const played=[];
+ class FakeAudio{constructor(){this.src='';this.volume=1;}setAttribute(){}pause(){}play(){played.push({src:this.src,volume:this.volume});return Promise.resolve();}}
+ class FakeCtx{constructor(){this.destination={};}resume(){return Promise.resolve();}decodeAudioData(){return Promise.reject(Error('decode-failed'));}createBufferSource(){return {connect(){},start(){},stop(){}};} }
+ globalThis.Audio=FakeAudio;globalThis.AudioContext=FakeCtx;globalThis.URL={createObjectURL:()=>'blob:file',revokeObjectURL(){}};globalThis.location={hostname:'dabutchart-sudo.github.io'};
+ globalThis.fetch=async url=>{if(String(url).includes('constants.js'))return {ok:true,text:async()=>`export const SUPABASE_ANON_KEY='anon';`};return {ok:true,blob:async()=>new Blob(['mp3'],{type:'audio/mpeg'})};};
+ mockSynth([]);
+ try{
+  const speech=await import(`${speechUrl.href}?file=${Date.now()}`);
+  assert.equal(await speech.prepareSpeech('Zij belt.'),true);
+  assert.equal(speech.speak('Zij belt.',()=>assert.fail('file should play')),true);
+  assert.equal(played.length,1);
+  assert.equal(played[0].src,'blob:file');
+  assert.equal(played[0].volume,1);
+  assert.equal(String(played[0].src).startsWith('data:audio/wav'),false);
+ }finally{
+  delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.AudioContext;delete globalThis.fetch;delete globalThis.location;delete globalThis.URL;
+ }
+});
+
+test('a downloaded sentence that cannot start tells the learner instead of staying silent',async()=>{
+ const played=[];const errors=[];
+ class FakeAudio{constructor(){this.src='';this.volume=1;}setAttribute(){}pause(){}play(){played.push(this.src);return Promise.reject(Error('NotAllowedError'));}}
+ globalThis.Audio=FakeAudio;globalThis.URL={createObjectURL:()=>'blob:blocked',revokeObjectURL(){}};globalThis.location={hostname:'dabutchart-sudo.github.io'};
+ globalThis.fetch=async url=>{if(String(url).includes('constants.js'))return {ok:true,text:async()=>`export const SUPABASE_ANON_KEY='anon';`};return {ok:true,blob:async()=>new Blob(['mp3'],{type:'audio/mpeg'})};};
+ mockSynth([]);
+ try{
+  const speech=await import(`${speechUrl.href}?blocked=${Date.now()}`);
+  assert.equal(await speech.prepareSpeech('Ik betaal.'),true);
+  assert.equal(speech.speak('Ik betaal.',message=>errors.push(message)),true);
+  await nextTurn();await nextTurn();
+  assert.equal(played.includes('blob:blocked'),true);
+  assert.equal(played.some(src=>String(src).startsWith('data:audio/wav')),false);
+  assert.match(errors[0]||'',/could not play/);
+ }finally{
+  delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.fetch;delete globalThis.location;delete globalThis.URL;
+ }
+});
+
 test('a marked audio issue discards the prepared clip so retry fetches a fresh copy',async()=>{let requests=0;class FakeAudio{constructor(){this.src='';}setAttribute(){}pause(){}play(){return Promise.resolve();}}globalThis.Audio=FakeAudio;globalThis.URL={createObjectURL:()=>'blob:fresh',revokeObjectURL(){}};globalThis.location={hostname:'dabutchart-sudo.github.io'};globalThis.fetch=async url=>{if(String(url).includes('constants.js'))return {ok:true,text:async()=>`export const SUPABASE_ANON_KEY='anon';`};requests++;return {ok:true,blob:async()=>new Blob(['mp3'],{type:'audio/mpeg'})};};mockSynth([]);const speech=await import(`${speechUrl.href}?discard=${Date.now()}`);assert.equal(await speech.prepareSpeech('Zij belt.'),true);assert.equal(requests,1);assert.equal(speech.discardPreparedSpeech('Zij belt.'),true);speech.speak('Zij belt.');await nextTurn();await nextTurn();assert.equal(requests,2);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;delete globalThis.Audio;delete globalThis.fetch;delete globalThis.location;});
 
 test('device Listen ignores canceled speech events so iPhone does not show a false error',async()=>{const errors=[];const spoken=[];mockSynth(spoken);const speech=await import(`${speechUrl.href}?canceled=${Date.now()}`);speech.speak('Hallo',message=>errors.push(message));await nextTurn();spoken[0].onerror({error:'canceled'});assert.deepEqual(errors,[]);spoken[0].onerror({error:'synthesis-failed'});assert.match(errors[0]||'',/speech is enabled/);delete globalThis.speechSynthesis;delete globalThis.SpeechSynthesisUtterance;});
