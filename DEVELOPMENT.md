@@ -115,7 +115,7 @@ The owner asked for this slice on the live app. A1.23 is a course topic: polite 
 
 ## DAB-86 connecting ideas — source slice, not released
 
-A1.24 is a course topic in source. It joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. Each idea keeps its own subject and finite verb. A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and names only daily-life consolidation. Typed sentence work does not award speaking or interaction evidence. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-connecting-ideas.md`.
+A1.24 is a course topic in source. It joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. Each idea keeps its own subject and finite verb. A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and names only daily-life consolidation. Typed sentence work does not award speaking or interaction evidence. All 498 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-connecting-ideas.md`.
 
 ## Agreed development direction — 2026-09-23
 
