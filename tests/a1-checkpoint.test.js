@@ -17,26 +17,26 @@ function fixture(ids,retained=[]){
  return {state:{progress},content:{concepts,conceptById:Object.fromEntries(concepts.map(item=>[item.id,item]))}};
 }
 
-test('the live course keeps the A1 checkpoint closed because later topics are not in the course',()=>{
+test('the live course keeps the A1 checkpoint closed until retention and the unseen check exist',()=>{
  const state=freshState(content,new Date(today+'T12:00:00'));
  const before=JSON.stringify(state);
  const readiness=a1CheckpointReadiness(state,content);
  assert.equal(readiness.open,false);
  assert.equal(readiness.officialQualification,false);
  assert.equal(readiness.singleScore,false);
- assert.equal(readiness.stage,'waiting-for-topics');
- assert.deepEqual(readiness.missingTopics,['A1.25']);
- assert.match(readiness.summary,/daily-life consolidation is in the course/);
+ assert.equal(readiness.stage,'waiting-for-retention');
+ assert.deepEqual(readiness.missingTopics,[]);
+ assert.ok(readiness.notRetained.includes('A1.25'));
+ assert.match(readiness.summary,/delayed retention check/);
  assert.match(readiness.summary,/not an official certificate/);
  assert.equal(JSON.stringify(state),before);
  const outline=courseOutline(state,content,{today});
- assert.equal(outline.total,30);
+ assert.equal(outline.total,31);
  assert.equal(outline.planned.find(topic=>topic.id==='A1.26').note,readiness.summary);
  const html=coursePage(state,content,{today,pane:'path'});
  assert.match(html,/A1\.26/);
  assert.match(html,/Not open yet/);
  assert.match(html,/not an official certificate/);
- assert.match(html,/Coming later/);
  assert.doesNotMatch(html,/data-course-concept="A1\.26"/);
  assert.match(worker,/a1-checkpoint\.js/);
 });
