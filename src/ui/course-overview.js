@@ -121,7 +121,7 @@ function pathNode(c){
   </div>
  </li>`;
 }
-function plannedNode(c){return `<li class="course-path-node is-planned"><div class="course-node-wrap"><span class="course-node" aria-hidden="true"></span></div><div class="course-path-card"><div class="course-planned-label"><span class="course-topic-code">${esc(c.id)}</span><strong>${esc(c.title)}</strong><span class="course-topic-status">Coming later</span></div></div></li>`;}
+function plannedNode(c){const status=c.note?'Not open yet':'Coming later';const note=c.note?`<p class="course-planned-note">${esc(c.note)}</p>`:'';return `<li class="course-path-node is-planned"><div class="course-node-wrap"><span class="course-node" aria-hidden="true"></span></div><div class="course-path-card"><div class="course-planned-label"><span class="course-topic-code">${esc(c.id)}</span><strong>${esc(c.title)}</strong><span class="course-topic-status">${status}</span>${note}</div></div></li>`;}
 function recapCard(recap){
  if(!recap)return '';
  return `<article class="card course-daily-recap"><div class="eyebrow">TODAY'S LEARNING</div><h3>Your daily recap</h3><p>You finished all ${recap.answered} questions. ${recap.independent} answers showed independent Dutch writing${recap.supported?`; ${recap.supported} used help`:''}.</p>${recap.revisit.length?`<h4>Useful patterns to revisit</h4><ul>${recap.revisit.map(item=>`<li><strong>${esc(item.concept)} · ${esc(item.title)}</strong><span lang="nl">${esc(item.sentence)}</span><small>${esc(item.meaning)}</small></li>`).join('')}</ul>`:'<p>Your last 20 answers had no grammar or spelling misses to revisit.</p>'}<p class="course-caption">This recap reflects recorded answers. It does not change your course evidence or add questions.</p></article>`;

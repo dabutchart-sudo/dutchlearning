@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.166**.
+- Current documented release: **Zin V5.1.167**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -104,6 +104,10 @@ The owner authorised production release on 3 October. On a taught topic, optiona
 ## Listen playback — V5.1.166 correction, 2026-10-03
 
 The installed phone could hear a faint hiss and no Dutch words. That hiss was a near-silent unlock clip; the downloaded sentence started too late for the phone to treat it as part of the tap. V5.1.166 plays the prepared sentence itself when Listen is tapped, in the optional listening round and in the normal daily listening question. If the clip still cannot start, the screen says so instead of staying quiet. The speech service, daily 20, learner history, schema, authentication, and running cost are unchanged. On 3 October the owner finished the optional round on the installed phone at V5.1.166: 5 of 5 heard answers matched, every answer completed from audio, and the sentence stayed hidden. The offline cache is `dutch-v5.1.166-20261003-listen-words`. Rollback is the V5.1.165 main source at `a3f4efb32285cb2357061e0ac63af2580fcad895`; preserve learner history and the standalone Flashcards fallback.
+
+## DAB-87 A1 checkpoint — V5.1.167 release, 2026-10-03
+
+The owner asked for this slice on the live app. The integrated checkpoint is not a study topic. Course explains that it stays closed until requests, connecting ideas, and daily-life consolidation are in the course and every earlier topic is retained. Passing it will be Zin’s record of retained A1 capability, not an official certificate. There is no single score, no new proof, and no change to the daily 20, scheduler, or saved progress. All 489 local tests passed before release preparation. The offline cache is `dutch-v5.1.167-20261003-a1-checkpoint`. Rollback is the V5.1.166 main source at `6d6fbc1ce42b6afbf259164c83ce18d2ed23f3d2`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-87-a1-checkpoint.md`.
 
 ## Agreed development direction — 2026-09-23
 
