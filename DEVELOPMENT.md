@@ -119,7 +119,7 @@ A1.24 is a course topic in source. It joins short ideas with en, maar, of and wa
 
 ## DAB-86 daily-life consolidation — source slice, not released
 
-A1.25 is a course topic in source. It mixes home, family, work, food, transport, appointments and free time with patterns already learned. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-daily-life.md`.
+A1.25 is a course topic in source. It mixes home, family, work, food, transport, appointments and free time with patterns already learned. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. All 502 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-daily-life.md`.
 
 ## Agreed development direction — 2026-09-23
 
