@@ -115,7 +115,11 @@ The owner asked for this slice on the live app. A1.23 is a course topic: polite 
 
 ## DAB-86 connecting ideas — source slice, not released
 
-A1.24 is a course topic in source. It joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. Each idea keeps its own subject and finite verb. A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and names only daily-life consolidation. Typed sentence work does not award speaking or interaction evidence. All 498 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-connecting-ideas.md`.
+A1.24 is a course topic in source. It joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. Each idea keeps its own subject and finite verb. The A1.26 checkpoint is still not a study topic. Typed sentence work does not award speaking or interaction evidence. All 498 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-connecting-ideas.md`.
+
+## DAB-86 daily-life consolidation — source slice, not released
+
+A1.25 is a course topic in source. It mixes home, family, work, food, transport, appointments and free time with patterns already learned. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-daily-life.md`.
 
 ## Agreed development direction — 2026-09-23
 
@@ -138,7 +142,7 @@ The delivery order is:
 7. controlled dialogues;
 8. broader, less predictable listening and conversation.
 
-A1.22 and A1.23 are in the live course. A1.24 connecting ideas is in source and is not released. A1.25 and A1.26 remain required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+A1.22 and A1.23 are in the live course. A1.24 and A1.25 are in source and are not released. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
 ## Active milestone
 

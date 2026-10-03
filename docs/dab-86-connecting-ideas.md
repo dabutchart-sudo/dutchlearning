@@ -23,4 +23,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-A1.25, then the unseen A1.26 written check. A native-speaker pass of the A1.24 sentences is still outstanding. Phone confirmation waits until the owner asks for this slice on the live app.
+A1.25 daily-life consolidation is a separate source slice and is not on the live app. The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.24 sentences is still outstanding. Phone confirmation waits until the owner asks for this slice on the live app.
