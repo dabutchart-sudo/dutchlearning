@@ -25,12 +25,12 @@ test('the live course keeps the A1 checkpoint closed because later topics are no
  assert.equal(readiness.officialQualification,false);
  assert.equal(readiness.singleScore,false);
  assert.equal(readiness.stage,'waiting-for-topics');
- assert.deepEqual(readiness.missingTopics,['A1.24','A1.25']);
- assert.match(readiness.summary,/connecting ideas and daily-life consolidation/);
+ assert.deepEqual(readiness.missingTopics,['A1.25']);
+ assert.match(readiness.summary,/daily-life consolidation is in the course/);
  assert.match(readiness.summary,/not an official certificate/);
  assert.equal(JSON.stringify(state),before);
  const outline=courseOutline(state,content,{today});
- assert.equal(outline.total,29);
+ assert.equal(outline.total,30);
  assert.equal(outline.planned.find(topic=>topic.id==='A1.26').note,readiness.summary);
  const html=coursePage(state,content,{today,pane:'path'});
  assert.match(html,/A1\.26/);
@@ -52,6 +52,11 @@ test('the checkpoint names only the topics that are still missing',()=>{
  assert.deepEqual(partial.missingTopics,['A1.24','A1.25']);
  assert.match(partial.summary,/connecting ideas and daily-life consolidation/);
  assert.equal(partial.open,false);
+ const one=fixture(['F1','A1.23','A1.24'],['F1','A1.23','A1.24']);
+ const left=a1CheckpointReadiness(one.state,one.content);
+ assert.deepEqual(left.missingTopics,['A1.25']);
+ assert.match(left.summary,/daily-life consolidation is in the course/);
+ assert.equal(left.open,false);
 });
 
 test('the checkpoint stays closed until every earlier topic is retained',()=>{
