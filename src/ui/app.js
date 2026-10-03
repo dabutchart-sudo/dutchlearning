@@ -12,10 +12,11 @@ import {questionHeader,answerFeedback} from './learning-session-ui.js';
 import {lessonMaterial,guidanceFor,patternTipFor} from './teaching-support.js';
 import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen} from './speech.js';
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
+import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
-let listeningSession=null,listeningRun=0;
+let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0;
 let disposePeek=()=>{};
 let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
@@ -154,6 +155,50 @@ function renderListeningPractice(){
  on('check-listening-practice',()=>{if(locked)return;if(!raw){notify('Choose an answer first.');return;}locked=true;const next=answerListeningPractice(listeningSession,raw,{usedTextFallback,audioIssue});const result=next.answers.at(-1);listeningSession=next;const upcoming=currentListeningQuestion(listeningSession);if(upcoming)prepareSpeech(upcoming.audio);el.querySelectorAll('button').forEach(button=>button.disabled=true);document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?'Meaning understood':'Not this time'}</strong><span class="correct" lang="nl">${esc(audioText)}</span><span class="meaning">${esc(correctMeaning)}</span><div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span>${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;document.querySelector('.actions').innerHTML=button('next-listening-practice',upcoming?'Continue':'View listening summary');on('next-listening-practice',renderListeningPractice);document.getElementById('next-listening-practice').focus();});
  on('leave-listening-practice',()=>{listeningSession=null;goHome()});
 }
+function beginDiscrimination(conceptId){
+ try{discriminationRun++;listeningSession=null;discriminationSession=startSentenceDiscrimination(state,content,{conceptId,seed:`${dayKey(now())}:${state.learnerId}:${conceptId}:${discriminationRun}`});renderDiscrimination();}catch(e){notify(e.message)}
+}
+function renderDiscrimination(){
+ sessionChrome(true);notify('');
+ const question=currentDiscriminationQuestion(discriminationSession);
+ if(!question){
+  const summary=discriminationSummary(discriminationSession);
+  const heading=summary.heard?`${summary.heardCorrect} of ${summary.heard} heard answers matched`:'No answers were completed from audio';
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL LISTENING PRACTICE</div><h2>${heading}</h2><p>${summary.textFallbacks?`${summary.textFallbacks} ${summary.textFallbacks===1?'sentence used':'sentences used'} the visible-text fallback (${summary.audioUnclear} unclear · ${summary.audioUnavailable} unavailable). ${summary.textFallbacks===1?'That answer is':'Those answers are'} recognition practice, not listening evidence.`:'Every answer was completed from audio without revealing the sentence.'}</p>${summary.audioIssues.length?`<div class="rule"><strong>Audio to review</strong><ul>${summary.audioIssues.map(issue=>`<li><span class="pill">${esc(issue.issue)}</span> <span lang="nl">${esc(issue.audio)}</span> — ${esc(issue.meaning)}</li>`).join('')}</ul></div>`:''}<p class="muted">No Course, mastery, or retention progress changed. This session-only result is not added to your permanent learning record.</p><div class="actions">${button('repeat-discrimination','Practise this listening again')}${button('leave-discrimination','Back to the topic',false)}</div></article></section>`;
+  on('repeat-discrimination',()=>beginDiscrimination(discriminationSession.conceptId));on('leave-discrimination',()=>{const conceptId=discriminationSession?.conceptId;discriminationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});return;
+ }
+ const audioText=question.audio,correctMeaning=question.meaning;let raw='',usedTextFallback=false,audioIssue=null,locked=false;
+ const dutchChoices=`<div class="answers" role="group" aria-label="Dutch sentences you might have heard">${question.options.map((option,index)=>`<button type="button" class="choice" data-discrimination-choice="${index}" aria-pressed="false" lang="nl">${esc(option)}</button>`).join('')}</div>`;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Listening ${discriminationSession.index+1} of ${discriminationSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card listening-practice-card"><span class="direction">Dutch audio → Dutch sentence</span><div class="q-type">Listen and choose the sentence</div><h2 class="prompt">Listen, then choose the Dutch sentence you heard.</h2>${button('discrimination-play','Play Dutch audio',false)}<div class="row"><button id="discrimination-audio-unclear" class="text-link" type="button">Audio unclear</button><button id="discrimination-audio-unavailable" class="text-link" type="button">Audio unavailable</button></div><div id="discrimination-visible-text"></div><div id="answer-area">${dutchChoices}</div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-discrimination','Check answer')}</div></article><button id="leave-discrimination" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const bindChoices=()=>{
+  const area=document.getElementById('answer-area');
+  area.querySelectorAll('[data-discrimination-choice]').forEach(choice=>choice.onclick=()=>{const options=usedTextFallback?question.meaningOptions:question.options;raw=options[Number(choice.dataset.discriminationChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))});});
+ };
+ bindChoices();
+ const play=document.getElementById('discrimination-play');prepareSpeech(audioText);
+ on('discrimination-play',()=>{play.disabled=true;play.setAttribute('aria-busy','true');play.textContent='Loading Dutch audio…';const audioError=message=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Try Dutch audio again';notify(message)};speak(audioText,audioError,{onStart:()=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Playing… tap to replay'},onEnd:()=>{play.textContent='Play Dutch audio again'}})});
+ const revealForAudioIssue=issue=>{
+  usedTextFallback=true;audioIssue=issue;raw='';discardPreparedSpeech(audioText);play.textContent='Retry with fresh Dutch audio';
+  document.getElementById('discrimination-visible-text').innerHTML=`<p class="audio-issue-sentence" lang="nl">${esc(audioText)}</p><p class="small muted">Marked ${esc(issue)}. The Dutch sentence is shown above. Choose its English meaning, then Check answer. This counts only as recognition, not listening.</p>`;
+  document.getElementById('answer-area').innerHTML=`<div class="answers" role="group" aria-label="English meanings">${question.meaningOptions.map((option,index)=>`<button type="button" class="choice" data-discrimination-choice="${index}" aria-pressed="false">${esc(option)}</button>`).join('')}</div>`;
+  bindChoices();
+  document.getElementById('discrimination-audio-unclear').disabled=true;document.getElementById('discrimination-audio-unavailable').disabled=true;document.getElementById('answer-area').scrollIntoView({block:'nearest'});
+ };
+ on('discrimination-audio-unclear',()=>revealForAudioIssue('unclear'));on('discrimination-audio-unavailable',()=>revealForAudioIssue('unavailable'));
+ on('check-discrimination',()=>{
+  if(locked)return;if(!raw){notify('Choose an answer first.');return;}locked=true;
+  const next=answerSentenceDiscrimination(discriminationSession,raw,{usedTextFallback,audioIssue});
+  const result=next.answers.at(-1);discriminationSession=next;const upcoming=currentDiscriminationQuestion(discriminationSession);if(upcoming)prepareSpeech(upcoming.audio);
+  el.querySelectorAll('button').forEach(button=>{if(button.id!=='leave-discrimination')button.disabled=true});
+  const chosenMeaning=!result.correct&&!usedTextFallback?question.optionMeanings[normalize(raw)]:'';
+  const contrast=chosenMeaning?`<span class="meaning">You chose: <span lang="nl">${esc(raw)}</span> — ${esc(chosenMeaning)}</span>`:'';
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?(usedTextFallback?'Meaning understood':'You heard this sentence'):'Not this time'}</strong><span class="correct" lang="nl">${esc(audioText)}</span><span class="meaning">${esc(correctMeaning)}</span>${contrast}<div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span>${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;
+  document.querySelector('.actions').innerHTML=`${button('replay-discrimination','Hear it again',false)}${button('next-discrimination',upcoming?'Continue':'View listening summary')}`;
+  on('replay-discrimination',()=>speak(audioText,notify));
+  on('next-discrimination',renderDiscrimination);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-discrimination').focus();
+ });
+ on('leave-discrimination',()=>{const conceptId=discriminationSession?.conceptId;discriminationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
+}
 async function openExtraQuestion(){
  lastFeedback=null;
  const q=await transaction(s=>prepareExtraQuestion(s,content,now(),canListenNow(),!!s.settings.speaking));
@@ -242,6 +287,7 @@ function renderCourse(){
   on('back-course',()=>{selectedConcept=null;renderCourse();el.querySelector('h2')?.focus()});
   on('start-course',()=>beginDaily({skipGate:false}));
   on('extra-course',()=>beginExtra(selectedConcept));
+  on('start-listening-discrimination',()=>beginDiscrimination(selectedConcept));
   bindProof(selectedConcept);return;
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});

@@ -6,6 +6,7 @@ import {proofVocabularyNeed} from '../engine/proof-vocabulary.js';
 import {availableProofCount} from '../engine/scheduler.js';
 import {addDays,dayKey} from '../engine/util.js';
 import {dailyRecap} from './teaching-support.js';
+import {sentenceDiscriminationOffer} from '../engine/listening-discrimination.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const percent=n=>n===null?'—':`${Math.round(n*100)}%`;
 const dateLabel=day=>new Date(day+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
@@ -153,5 +154,14 @@ export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCou
  const extraStart=c.retained?`${button('extra-course','Practise this area')}<p class="course-caption">Five extra questions. This is not a second daily session and does not use today’s 20.</p>`:'';
  const testVisible=['proof-ready','retention-ready'].includes(c.status);
  const evidence=c.available?`<details class="course-topic-evidence"><summary>Practice and proof details</summary><label class="course-practice-label" for="topic-practice">${Math.min(c.attempts,c.required)} of ${c.required} required practice answers</label><progress id="topic-practice" max="${c.required}" value="${Math.min(c.attempts,c.required)}"></progress>${testVisible?'':proofHTML}<p class="course-caption">Today’s 20 includes one listening question from this topic. Speaking can be skipped and typed. Mastery and delayed retention tests stay written.</p><p class="course-caption">A topic is retained only after a mastery test and a successful delayed retention check.</p></details>`:'';
- return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
+ const listening=discriminationPracticeCard(state,content,c);
+ return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${listening}${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
+}
+
+function discriminationPracticeCard(state,content,topic){
+ if(!topic.available)return '';
+ const offer=sentenceDiscriminationOffer(state,content,topic.id);
+ if(!offer)return '';
+ const label=offer.count===1?'Practise 1 sentence':`Practise ${offer.count} sentences`;
+ return `<section class="course-listen-discrimination"><div class="eyebrow">OPTIONAL PRACTICE · LISTENING</div><h3>Which sentence did you hear?</h3><p>Play a hidden Dutch sentence, then choose the matching Dutch line. This short activity does not use today’s 20 or change Course, mastery, or retention progress.</p>${button('start-listening-discrimination',label)}</section>`;
 }
