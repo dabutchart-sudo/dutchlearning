@@ -1,6 +1,6 @@
 # DAB-87 — integrated A1 checkpoint
 
-Status: started. The checkpoint is not a study topic and is not on a study day.
+Status: on the live app as V5.1.167, 3 October 2026. The checkpoint is not a study topic and is not on a study day.
 
 ## This slice
 
