@@ -1,6 +1,6 @@
 # DAB-170 — sentence discrimination
 
-Status: local Practice candidate, V5.1.165. Not merged or deployed.
+Status: owner-authorised production release, V5.1.165, 3 October 2026. Optional Practice only. Installed-phone audio confirmation is still outstanding.
 
 This is the first new listening step after hidden-text meaning selection. It is optional Practice only.
 

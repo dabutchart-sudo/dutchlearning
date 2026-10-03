@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.164**.
+- Current documented release: **Zin V5.1.165**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -97,9 +97,9 @@ After confirming V5.1.162 and synced progress on the phone, the owner reported t
 
 The owner approved opening the next topic's lesson and normal practice after a mastery pass, before the previous topic's delayed retention proof. The owner then confirmed the phone development sandbox worked well and authorised production release on 2 October. The change keeps the three-calendar-day delay, 20-question daily session, 10-question due retention proof, and separate retained state. A due retention proof takes priority; the successor's own mastery proof waits for its prerequisite to pass retention. If retention fails, the predecessor returns to recovery and already recorded successor practice is preserved but paused. Older retained topics remain eligible for normal maintenance. The route is derived from existing progress fields, so it requires no schema or learner-history rewrite. All 473 implementation tests passed before release preparation. The offline cache is `dutch-v5.1.164-20261002-retention-wait`. Rollback is V5.1.163 main source at `e5777df72a3a67b58d08b685cc6939a82656e87a`; preserve learner history and the standalone Flashcards fallback. Final CI, Pages and installed-phone checks are recorded separately after release. See `docs/dab-180-retention-wait-proposal.md`.
 
-## DAB-170 sentence discrimination — local candidate, 2026-10-03
+## DAB-170 sentence discrimination — V5.1.165 release, 2026-10-03
 
-V5.1.165 starts listening depth with one optional Practice activity. On a taught topic, the learner hears a hidden Dutch sentence and chooses which of three written Dutch lines it was. The round has at most five questions, uses that topic’s practice sentences only, and keeps the result in memory for the session. A correct heard answer is listening diagnostic. If audio is unclear or unavailable, the same item shows the Dutch sentence and asks for its English meaning; that answer is recognition, not listening. The activity does not use the daily 20, write learner history, or change mastery, retention, Flashcards, sync, schema, authentication, or services. It reuses the existing Dutch audio path, so there is no new service or spend limit. It is not merged or deployed. The next listening step, a missing heard word, is not part of this slice. Rollback is the V5.1.164 source. See `docs/dab-170-sentence-discrimination.md`.
+The owner authorised production release on 3 October. On a taught topic, optional Practice plays a hidden Dutch sentence and asks which of three written practice lines it was. The round has at most five questions and keeps its result in memory. A heard answer is a listening diagnostic for that session only. If audio is unclear or unavailable, the sentence is shown and the learner chooses its English meaning; that answer is recognition, not listening. The daily 20, learner history, mastery, retention, Flashcards, sync, schema, authentication, services, and running cost are unchanged. All 483 local tests and the PR #142 test checks passed before release. Installed-phone audio confirmation is still outstanding. The offline cache is `dutch-v5.1.165-20261003-listen-discriminate`. Rollback is the V5.1.164 main source at `060e4442dbffa6fe53f63766e798a50d18668e65`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-170-sentence-discrimination.md`.
 
 ## Agreed development direction — 2026-09-23
 
