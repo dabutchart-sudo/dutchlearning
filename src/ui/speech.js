@@ -8,12 +8,14 @@ const SILENT_WAV='data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhY
 let player=null;
 let unlocker=null;
 let audioCtx=null;
+let speechSource=null;
 let listenAuth=null;
 let listenAuthPending=null;
 let listenGen=0;
 let lastBlobUrl='';
 const ttsCache=new Map();
 const ttsPending=new Map();
+const decodedCache=new Map();
 
 function voiceScore(v){
  const name=String(v?.name||'');
@@ -111,6 +113,38 @@ async function prefetchListenAuth(){
  return listenAuthPending;
 }
 
+function stopUnlocker(){
+ if(!unlocker)return;
+ try{unlocker.pause();}catch{}
+ try{unlocker.currentTime=0;}catch{}
+}
+
+function stopSpeechSource(){
+ const source=speechSource;
+ speechSource=null;
+ if(!source)return;
+ try{source.onended=null;source.stop();}catch{}
+}
+
+function ensureAudioContext(){
+ try{
+  const Ctx=globalThis.AudioContext||globalThis.webkitAudioContext;
+  if(!Ctx)return null;
+  audioCtx=audioCtx||new Ctx();
+  return audioCtx;
+ }catch{return null;}
+}
+
+function resumeAudioContext(){
+ const ctx=ensureAudioContext();
+ if(!ctx)return null;
+ try{
+  const pending=ctx.resume?.();
+  if(pending&&typeof pending.catch==='function')pending.catch(()=>{});
+ }catch{}
+ return ctx;
+}
+
 function unlockInGesture(){
  const silent=ensureUnlocker();
  if(silent){
@@ -120,10 +154,7 @@ function unlockInGesture(){
   try{silent.currentTime=0;}catch{}
   try{silent.play();}catch{}
  }
- try{
-  const Ctx=globalThis.AudioContext||globalThis.webkitAudioContext;
-  if(Ctx){audioCtx=audioCtx||new Ctx();audioCtx.resume();}
- }catch{}
+ resumeAudioContext();
 }
 
 async function explainPlayError(onError){
@@ -197,19 +228,110 @@ function rememberBlob(dutch,blob){
  if(ttsCache.size>24)ttsCache.delete(ttsCache.keys().next().value);
 }
 
-async function playBlob(audio,blob){
+function rememberDecoded(dutch,buffer){
+ if(decodedCache.has(dutch))decodedCache.delete(dutch);
+ decodedCache.set(dutch,buffer);
+ if(decodedCache.size>24)decodedCache.delete(decodedCache.keys().next().value);
+}
+
+async function rememberSpeech(dutch,blob){
+ rememberBlob(dutch,blob);
+ decodedCache.delete(dutch);
+ const ctx=ensureAudioContext();
+ if(!ctx||typeof ctx.decodeAudioData!=='function')return;
+ try{
+  const buffer=await decodeSpeech(ctx,await blob.arrayBuffer());
+  if(buffer)rememberDecoded(dutch,buffer);
+ }catch{}
+}
+
+function startHtmlClip(audio,blob){
  if(lastBlobUrl)try{URL.revokeObjectURL(lastBlobUrl);}catch{}
  lastBlobUrl=(globalThis.URL||{}).createObjectURL?URL.createObjectURL(blob):'';
  audio.pause();
  audio.muted=false;
  audio.volume=1;
  audio.src=lastBlobUrl||listenAudioUrl('');
+ try{audio.currentTime=0;}catch{}
+ try{return audio.play();}catch(error){return Promise.reject(error);}
+}
+
+async function playBlob(audio,blob){
  try{
-  await audio.play();
+  await startHtmlClip(audio,blob);
  }catch{
   await new Promise(resolve=>setTimeout(resolve,60));
-  await audio.play();
+  await startHtmlClip(audio,blob);
  }
+}
+
+function canPlayDecodedSpeech(){
+ return Boolean(audioCtx&&typeof audioCtx.decodeAudioData==='function'&&typeof audioCtx.createBufferSource==='function');
+}
+
+function decodeSpeech(ctx,bytes){
+ const copy=bytes.slice(0);
+ return new Promise((resolve,reject)=>{
+  let settled=false;
+  const ok=value=>{if(!settled){settled=true;resolve(value);}};
+  const bad=error=>{if(!settled){settled=true;reject(error instanceof Error?error:Error('Dutch audio could not be decoded.'));}};
+  try{
+   const result=ctx.decodeAudioData(copy,ok,bad);
+   if(result&&typeof result.then==='function')result.then(ok,bad);
+  }catch(error){bad(error);}
+ });
+}
+
+function startDecodedBuffer(buffer,gen,events){
+ if(gen!==listenGen||!buffer||!canPlayDecodedSpeech())return false;
+ try{
+  stopSpeechSource();
+  if(gen!==listenGen)return false;
+  const source=audioCtx.createBufferSource();
+  source.buffer=buffer;
+  source.connect(audioCtx.destination);
+  source.onended=()=>{if(gen===listenGen&&speechSource===source){speechSource=null;events.onEnd();}};
+  source.start(0);
+  speechSource=source;
+  events.onStart();
+  return true;
+ }catch{return false;}
+}
+
+async function playDecoded(blob,gen,events){
+ const ctx=audioCtx;
+ if(!canPlayDecodedSpeech())throw Error('no-web-audio');
+ if(ctx.state==='suspended'&&typeof ctx.resume==='function')await ctx.resume();
+ const bytes=await blob.arrayBuffer();
+ if(gen!==listenGen)return false;
+ const buffer=await decodeSpeech(ctx,bytes);
+ if(!buffer)return false;
+ return startDecodedBuffer(buffer,gen,events);
+}
+
+function spokenError(error){
+ const detail=`${error?.name||''} ${error?.message||''}`;
+ if(/NotAllowed|NotSupported|AbortError|no-web-audio/i.test(detail))return playErrorMessage();
+ return String(error?.message||playErrorMessage());
+}
+
+function playReadyClip(audio,blob,onError,gen,events){
+ stopUnlocker();
+ let started;
+ try{started=startHtmlClip(audio,blob);}catch(error){started=Promise.reject(error);}
+ const failed=error=>{
+  if(gen!==listenGen)return;
+  const report=()=>{if(gen===listenGen)onError(spokenError(error));};
+  playDecoded(blob,gen,events).then(ok=>{if(!ok)report();}).catch(report);
+ };
+ if(started&&typeof started.then==='function'){
+  started.then(()=>{
+   if(gen!==listenGen)return;
+   audio.onerror=()=>{if(gen===listenGen)explainPlayError(onError);};
+   audio.onended=()=>{if(gen===listenGen)events.onEnd();};
+   events.onStart();
+  }).catch(failed);
+ }else if(gen===listenGen)events.onStart();
 }
 
 async function productionBlob(dutch){
@@ -224,7 +346,7 @@ async function productionBlob(dutch){
    try{message=String((await res.json())?.error||message);}catch{}
    throw Error(message);
   }
-  const blob=await res.blob();rememberBlob(dutch,blob);return blob;
+  const blob=await res.blob();await rememberSpeech(dutch,blob);return blob;
  })().finally(()=>ttsPending.delete(dutch));
  ttsPending.set(dutch,pending);return pending;
 }
@@ -238,32 +360,45 @@ export function prepareSpeech(text){
 export function discardPreparedSpeech(text){
  const dutch=String(text??'').trim();
  if(!dutch)return false;
+ decodedCache.delete(dutch);
  return ttsCache.delete(dutch);
 }
 
-async function playProductionAudio(audio,dutch,onError,gen,{onStart=()=>{},onEnd=()=>{}}={}){
+async function playProductionAudio(audio,dutch,onError,gen,events){
  try{
   const blob=await productionBlob(dutch);
   if(gen!==listenGen)return;
+  stopUnlocker();
   audio.onerror=()=>{if(gen===listenGen)explainPlayError(onError);};
-  audio.onended=()=>{if(gen===listenGen)onEnd();};
+  audio.onended=()=>{if(gen===listenGen)events.onEnd();};
   await playBlob(audio,blob);
-  if(gen===listenGen)onStart();
+  if(gen===listenGen)events.onStart();
  }catch(error){
-  if(gen===listenGen)onError(String(error?.message||playErrorMessage()));
+  if(gen===listenGen)onError(spokenError(error));
  }
 }
 
-function speakProduction(dutch,onError,events){
+function speakProduction(dutch,onError,events={}){
  const audio=ensurePlayer();
  if(!audio)return speakDevice(dutch,onError);
  audio.pause();
  try{audio.currentTime=0;}catch{}
  const status=globalThis.document?.getElementById?.('system-message');
  if(status)status.innerHTML='';
- unlockInGesture();
+ const hooks={onStart:events.onStart||(()=>{}),onEnd:events.onEnd||(()=>{})};
  const gen=++listenGen;
- playProductionAudio(audio,dutch,onError,gen,events);
+ stopSpeechSource();
+ resumeAudioContext();
+ const decoded=decodedCache.get(dutch);
+ if(decoded&&startDecodedBuffer(decoded,gen,hooks))return true;
+ const ready=ttsCache.get(dutch);
+ if(ready){
+  // Play the downloaded sentence in this tap. A separate near-silent clip was the faint hiss.
+  playReadyClip(audio,ready,onError,gen,hooks);
+  return true;
+ }
+ unlockInGesture();
+ playProductionAudio(audio,dutch,onError,gen,hooks);
  return true;
 }
 

@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.165**.
+- Current documented release: **Zin V5.1.166**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -99,7 +99,11 @@ The owner approved opening the next topic's lesson and normal practice after a m
 
 ## DAB-170 sentence discrimination — V5.1.165 release, 2026-10-03
 
-The owner authorised production release on 3 October. On a taught topic, optional Practice plays a hidden Dutch sentence and asks which of three written practice lines it was. The round has at most five questions and keeps its result in memory. A heard answer is a listening diagnostic for that session only. If audio is unclear or unavailable, the sentence is shown and the learner chooses its English meaning; that answer is recognition, not listening. The daily 20, learner history, mastery, retention, Flashcards, sync, schema, authentication, services, and running cost are unchanged. All 483 local tests and the PR #142 test checks passed before release. Installed-phone audio confirmation is still outstanding. The offline cache is `dutch-v5.1.165-20261003-listen-discriminate`. Rollback is the V5.1.164 main source at `060e4442dbffa6fe53f63766e798a50d18668e65`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-170-sentence-discrimination.md`.
+The owner authorised production release on 3 October. On a taught topic, optional Practice plays a hidden Dutch sentence and asks which of three written practice lines it was. The round has at most five questions and keeps its result in memory. A heard answer is a listening diagnostic for that session only. If audio is unclear or unavailable, the sentence is shown and the learner chooses its English meaning; that answer is recognition, not listening. The daily 20, learner history, mastery, retention, Flashcards, sync, schema, authentication, services, and running cost are unchanged. All 483 local tests and the PR #142 test checks passed before release. On the installed phone, Play produced a faint hiss and no words. The offline cache is `dutch-v5.1.165-20261003-listen-discriminate`. Rollback is the V5.1.164 main source at `060e4442dbffa6fe53f63766e798a50d18668e65`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-170-sentence-discrimination.md`.
+
+## Listen playback — V5.1.166 correction, 2026-10-03
+
+The installed phone could hear a faint hiss and no Dutch words. That hiss was a near-silent unlock clip; the downloaded sentence started too late for the phone to treat it as part of the tap. V5.1.166 plays the prepared sentence itself when Listen is tapped, in the optional listening round and in the normal daily listening question. If the clip still cannot start, the screen says so instead of staying quiet. The speech service, daily 20, learner history, schema, authentication, and running cost are unchanged. Installed-phone confirmation that the words are audible is still outstanding. The offline cache is `dutch-v5.1.166-20261003-listen-words`. Rollback is the V5.1.165 main source at `a3f4efb32285cb2357061e0ac63af2580fcad895`; preserve learner history and the standalone Flashcards fallback.
 
 ## Agreed development direction — 2026-09-23
 
