@@ -1,6 +1,6 @@
 # DAB-87 — integrated A1 checkpoint
 
-Status: on the live app as V5.1.167, 3 October 2026. The checkpoint is not a study topic and is not on a study day.
+Status: on the live app. V5.1.168 adds A1.23, so the closed note names connecting ideas and daily-life consolidation as the topics still missing. The checkpoint is not a study topic and is not on a study day.
 
 ## This slice
 
@@ -10,7 +10,7 @@ Passing it will be Zin’s record of retained A1 capability. It is not an offici
 
 ## What this does not change
 
-The daily 20, mastery, retention, scheduler, saved progress, and the current topics through A1.22 stay as they are. Listening and speaking are not part of this checkpoint.
+The daily 20, mastery, retention, scheduler and saved progress stay as they are. Listening and speaking are not part of this checkpoint.
 
 ## Still to come
 

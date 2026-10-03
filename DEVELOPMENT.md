@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.167**.
+- Current documented release: **Zin V5.1.168**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -109,6 +109,10 @@ The installed phone could hear a faint hiss and no Dutch words. That hiss was a 
 
 The owner asked for this slice on the live app. The integrated checkpoint is not a study topic. Course explains that it stays closed until requests, connecting ideas, and daily-life consolidation are in the course and every earlier topic is retained. Passing it will be Zin’s record of retained A1 capability, not an official certificate. There is no single score, no new proof, and no change to the daily 20, scheduler, or saved progress. All 489 local tests passed before release preparation. The offline cache is `dutch-v5.1.167-20261003-a1-checkpoint`. Rollback is the V5.1.166 main source at `6d6fbc1ce42b6afbf259164c83ce18d2ed23f3d2`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-87-a1-checkpoint.md`.
 
+## DAB-86 requests and service Dutch — V5.1.168 release, 2026-10-03
+
+The owner asked for this slice on the live app. A1.23 is a course topic: polite requests, ordering, prices, help and repetition, with a lesson, guided practice and an unseen written proof pool. A1.24, A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and names only the topics that are still missing. Typed sentence work does not award speaking or interaction evidence. All 494 local tests passed before release preparation. The offline cache is `dutch-v5.1.168-20261003-a1-requests`. Rollback is the V5.1.167 main source at `e451892640dedd3b5254057bcb612d8ed24f4c37`; preserve learner history and the standalone Flashcards fallback. A native-speaker pass of the new Dutch, and an installed-phone check of A1.23, are still outstanding. See `docs/dab-86-requests-service.md`.
+
 ## Agreed development direction — 2026-09-23
 
 The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.
@@ -130,7 +134,7 @@ The delivery order is:
 7. controlled dialogues;
 8. broader, less predictable listening and conversation.
 
-A1.22 is included; A1.23–A1.26 remain required course work, but curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+A1.22 and A1.23 are in the live course. A1.24–A1.26 remain required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
 ## Active milestone
 

@@ -15,7 +15,8 @@ const focus={
  'A1.19':['A singular quantity can take a singular verb; a plural quantity takes a plural verb.','Read the number with its unit or price as one useful phrase.'],
  'A1.20':['Use om for a clock time, op for a day or date, and in for a month.','Half negen is 8:30: Dutch half hours point to the coming hour.'],
  'A1.21':['Use naar for movement towards a place; use in, op or bij for location.','Use uit for coming from a place and van for a source or owner.','Keep the finite verb in second position even when a place phrase comes first.'],
- 'A1.22':['Give a route in steps: rechtdoor, then links or rechts at a landmark.','For a fixed location, use links van, rechts van, naast or tegenover.']
+ 'A1.22':['Give a route in steps: rechtdoor, then links or rechts at a landmark.','For a fixed location, use links van, rechts van, naast or tegenover.'],
+ 'A1.23':['Ask with mag ik or ik wil graag, and add alstublieft in a shop or café.','Ask the price with wat kost or hoeveel kost. For help or a repetition, use kunt u.']
 };
 const worked={
  'A1.7':[/\bniet\b/i,/\b(geen|niets)\b/i],
@@ -32,7 +33,8 @@ const worked={
  'A1.18':[/^Ons\b/i,/\b(nieuwe|rode|groene|oude|kleine)\b/i],
  'A1.19':[/\beuro\b/i,/\b(kilo|liter|fles)\b/i],
  'A1.20':[/\bom\b/i,/\bop\b/i],
- 'A1.21':[/\bnaar\b/i,/\b(in|op|bij)\b/i]
+ 'A1.21':[/\bnaar\b/i,/\b(in|op|bij)\b/i],
+ 'A1.23':[/\bmag ik\b/i,/\bkunt u\b/i]
 };
 
 export function lessonMaterial(content,id){
@@ -57,6 +59,7 @@ export function patternTipFor(id,nl,concept){
  if(id==='A1.15')return /\bniets\b/i.test(nl)?notes[2]:/\bgeen\b/i.test(nl)?notes[0]:notes[1];
  if(id==='A1.20'&&/\bhalf\b/i.test(nl))return notes[1];
  if(id==='A1.21'&&/\b(uit|van)\b/i.test(nl))return notes[1];
+ if(id==='A1.23'&&/\b(kost|kosten|euro|helpen|herhalen|keer)\b/i.test(nl))return notes[1];
  if(id==='A1.14'&&/^(waar|wat|wanneer|waarom|hoe|wie)\b/i.test(nl))return notes[1];
  return notes[0];
 }

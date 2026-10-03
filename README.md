@@ -4,7 +4,7 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.167 on GitHub Pages:
+Production is Zin V5.1.168 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus, current position, and an explanation of each topic’s learning state.
 - Progress shows separate recorded evidence for recall, construction, reading, listening, writing, speaking, and interaction.
