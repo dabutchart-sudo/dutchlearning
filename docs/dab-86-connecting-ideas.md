@@ -1,6 +1,6 @@
 # DAB-86 — connecting ideas
 
-Status: on the live app as V5.1.169, 4 October 2026, together with A1.25. All 502 local tests passed before release. An installed-phone check of A1.24 is still outstanding.
+Status: on the live app as V5.1.169, 4 October 2026, together with A1.25. All 502 local tests passed before release. On 4 October 2026 the owner confirmed the installed-phone check of A1.24 and a native-speaker pass of the new Dutch in this lesson.
 
 ## This slice
 
@@ -23,4 +23,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.24 sentences is still outstanding. The installed phone has not yet confirmed the A1.24 lesson.
+The unseen A1.26 written check is still ahead, after the earlier topics have their normal retention checks. On 4 October 2026 the owner confirmed the installed-phone check of this lesson and a native-speaker pass of its Dutch. That confirmation does not include a mastery or retention score.

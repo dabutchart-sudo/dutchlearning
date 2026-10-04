@@ -13,7 +13,7 @@ A1.23 Requests and service Dutch follows A1.22. The lesson teaches four reusable
 
 Practice introduces those chunks. The proof pool recombines them with familiar food, drink and price words. Mastery and retention stay the normal written checks. The daily 20 is unchanged.
 
-A1.24 connecting ideas, A1.25 daily-life consolidation, and the A1.26 checkpoint are not study topics. The checkpoint stays closed. Its course note names only the topics that are still missing.
+At this V5.1.168 release, A1.24, A1.25 and the A1.26 checkpoint were not study topics. A1.24 and A1.25 arrived together in V5.1.169. The checkpoint stays closed.
 
 ## Evidence
 
@@ -25,4 +25,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-A1.24 and A1.25 are in V5.1.169. The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.23 sentences is still outstanding. The installed phone has not yet confirmed the A1.23 lesson.
+A1.24 and A1.25 are in V5.1.169. On 4 October 2026 the owner confirmed the installed-phone checks of those two lessons, a native-speaker pass of their Dutch, and that V5.1.169 is live. The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.23 sentences is still outstanding. The installed phone has not yet confirmed the A1.23 lesson.
