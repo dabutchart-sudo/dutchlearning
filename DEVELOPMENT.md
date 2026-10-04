@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.172**.
+- Current documented release: **Zin V5.1.173**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -152,15 +152,19 @@ A1.22 through A1.25 are in the live course, and S1, S2 and S3 are conversational
 
 The owner asked for this slice on the live app. S3 Arrange a simple plan follows S2. It teaches reusable chunks for one situation: name an appointment with ik heb een afspraak, say the time with om, and say you are coming with ik kom om. A second idea can join with en. It has a lesson, guided practice and an unseen written proof pool. Typed sentence work does not award speaking or interaction evidence. The daily 20, scheduler, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 514 local tests passed before release. The offline cache is `dutch-v5.1.172-20261004-a1-plans`. Rollback is the V5.1.171 main source at `d1c0319ce8c662849942da2c6930fc22b0037bb5`; preserve learner history and the standalone Flashcards fallback. On 4 October 2026 the owner confirmed a native-speaker pass of the S3 Dutch and confirmed an installed-phone check of this lesson. This confirmation does not include a mastery or retention score. See `docs/dab-189-plans.md`.
 
+## DAB-190 course outcomes — V5.1.173 release, 2026-10-04
+
+The owner asked for this slice on the live app and accepted the wording on 4 October 2026. The course path and topic page state what A1.22 through A1.25, S1, S2 and S3 let the learner do. This is presentation only. No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 516 local tests passed before release. The offline cache is `dutch-v5.1.173-20261004-course-outcomes`. Rollback is the V5.1.172 main source at `2ff6d9491313b50c3fa4effc4a2c36db00e93005`; preserve learner history and the standalone Flashcards fallback. An installed-phone check of the course path is still outstanding. See `docs/dab-190-outcomes.md`.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
 
-The live app is Zin V5.1.172. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
+The live app is Zin V5.1.173. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
 
 Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word, short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
 
-Directions, requests, connecting ideas, daily life, a simple problem, introductions, and arranging a simple plan are live. On 4 October 2026 the owner confirmed the installed-phone checks of the S1, S2 and S3 lessons, and a native-speaker pass of the S3 Dutch. The S1 and S2 Dutch was already accepted. These confirmations do not include a mastery or retention score. DAB-190, the course outcome map, has not been built. DAB-171 stays open.
+Directions, requests, connecting ideas, daily life, a simple problem, introductions, and arranging a simple plan are live. On 4 October 2026 the owner confirmed the installed-phone checks of the S1, S2 and S3 lessons, and a native-speaker pass of the S3 Dutch. The S1 and S2 Dutch was already accepted. These confirmations do not include a mastery or retention score. DAB-190, the course outcome map, is on the live app as V5.1.173. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding. DAB-171 stays open.
 
 Assessed speaking, controlled dialogue, and broader conversation are not built. DAB-191 is the first speaking Practice story and stays in Backlog until the owner says to begin. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
 

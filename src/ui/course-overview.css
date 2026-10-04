@@ -43,6 +43,9 @@
 .course-path-card>button,.course-planned-label{display:grid;gap:2px;padding:9px 12px;border:0;border-radius:13px;background:#fff;text-align:left;min-height:54px;box-shadow:0 4px 12px #16324a10;color:inherit}
 .course-path-card>button:hover{background:#f7fafc}
 .course-path-main{display:flex;align-items:baseline;justify-content:space-between;gap:9px}.course-path-main strong{font-size:.9rem;line-height:1.25}.course-locked-reason,.course-planned-note{font-size:.72rem;color:var(--muted);line-height:1.35}.course-planned-note{margin:4px 0 0}
+.course-topic-outcome{display:block;margin-top:2px;color:var(--muted);font-size:.78rem;line-height:1.35}
+.course-focus .course-topic-outcome{margin:0 0 8px;color:#e4f1f5;font-size:.9rem}
+.course-can-do{margin-top:16px}.course-can-do h3{margin:0 0 6px;font-size:1.05rem}.course-can-do p{margin:0;line-height:1.5}
 .course-path-card .course-topic-status{white-space:normal;text-align:right;font-size:.68rem}
 .course-topic-detail .primary{margin-top:10px}
 .course-test-timing{padding:16px;border:1px solid #c9dce9;border-radius:16px;background:#f2f8fb;margin:20px 0}.course-test-timing h3{font-size:1.05rem;margin:0 0 6px;color:#174b76}.course-test-timing-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;padding:12px 0;border-top:1px solid #d8e5ed}.course-test-timing-row span{font-weight:700}.course-test-timing-row strong{color:#174b76;text-align:right}.course-test-timing-row p{grid-column:1/-1;margin:3px 0 0;line-height:1.5;color:#435d70;font-size:.88rem}.course-topic-detail .rule details{margin-top:10px}.course-topic-detail .rule summary{cursor:pointer;font-weight:700}@media(max-width:500px){.course-test-timing-row{grid-template-columns:1fr}.course-test-timing-row strong{text-align:left}.course-test-timing-row p{grid-column:1}}
