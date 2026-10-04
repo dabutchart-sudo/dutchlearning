@@ -1,6 +1,6 @@
 # DAB-87 — integrated A1 checkpoint
 
-Status: on the live app. V5.1.170 includes A1.23–A1.25 and S1, so the closed note says every earlier topic still needs its delayed retention check. The unseen written check is not in the course. The checkpoint is not a study topic and is not on a study day.
+Status: on the live app. V5.1.171 includes A1.23–A1.25, S1 and S2, so the closed note says every earlier topic still needs its delayed retention check. The unseen written check is not in the course. The checkpoint is not a study topic and is not on a study day.
 
 ## This slice
 
