@@ -1,6 +1,6 @@
 # DAB-189 — arrange a simple plan
 
-Status: on the live app as V5.1.172, 4 October 2026. All 514 local tests passed before release. A native-speaker pass of the new Dutch is still outstanding. An installed-phone check of this lesson is still outstanding.
+Status: on the live app as V5.1.172, 4 October 2026. All 514 local tests passed before release. On 4 October 2026 the owner confirmed a native-speaker pass of the S3 Dutch and confirmed an installed-phone check of this lesson. This confirmation does not include a mastery or retention score.
 
 ## This slice
 
@@ -26,4 +26,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-The course-outcome map in DAB-190, then the other conversational steps. A native-speaker pass of these sentences is still outstanding. An installed-phone check of this lesson is still outstanding.
+The course-outcome map in DAB-190, then the other conversational steps. On 4 October 2026 the owner confirmed a native-speaker pass of these sentences and confirmed an installed-phone check of this lesson. That confirmation does not include a mastery or retention score.

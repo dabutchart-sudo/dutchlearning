@@ -1,6 +1,6 @@
 # DAB-171 — explain a simple problem
 
-Status: on the live app as V5.1.170, 4 October 2026. All 506 local tests passed before release. On 4 October 2026 the owner confirmed the S1 Dutch is correct. An installed-phone check of the S1 lesson is still outstanding.
+Status: on the live app as V5.1.170, 4 October 2026. All 506 local tests passed before release. On 4 October 2026 the owner confirmed the S1 Dutch is correct and confirmed an installed-phone check of the S1 lesson. This confirmation does not include a mastery or retention score.
 
 ## This slice
 
@@ -27,4 +27,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. On 4 October 2026 the owner confirmed the S1 Dutch is correct. The installed phone has not yet confirmed the S1 lesson. That confirmation does not include a mastery or retention score.
+The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. On 4 October 2026 the owner confirmed the S1 Dutch is correct and confirmed an installed-phone check of the S1 lesson. That confirmation does not include a mastery or retention score.
