@@ -1,6 +1,6 @@
 # DAB-86 — requests and service Dutch
 
-Status: on the live app as V5.1.168, 3 October 2026. All 494 local tests passed before release. An installed-phone check of A1.23 is still outstanding.
+Status: on the live app as V5.1.168, 3 October 2026. All 494 local tests passed before release. On 4 October 2026 the owner confirmed the installed-phone check of A1.23 and a native-speaker pass of its Dutch.
 
 ## This slice
 
@@ -25,4 +25,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-A1.24 and A1.25 are in V5.1.169. On 4 October 2026 the owner confirmed the installed-phone checks of those two lessons, a native-speaker pass of their Dutch, and that V5.1.169 is live. The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.23 sentences is still outstanding. The installed phone has not yet confirmed the A1.23 lesson.
+A1.24 and A1.25 are in V5.1.169. On 4 October 2026 the owner confirmed the installed-phone checks of A1.23, A1.24, and A1.25, a native-speaker pass of the Dutch in each lesson, and that V5.1.169 is live. The unseen A1.26 written check is still ahead. That confirmation does not include a mastery or retention score.
