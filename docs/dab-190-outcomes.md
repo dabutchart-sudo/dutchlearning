@@ -1,6 +1,6 @@
 # DAB-190 — what each finished block lets you do
 
-Status: in source, 4 October 2026. Not on the live app. No version change. An installed-phone check of the course path is outstanding before release.
+Status: on the live app as V5.1.173, 4 October 2026. All 516 local tests passed before release. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding.
 
 ## This slice
 
@@ -18,4 +18,4 @@ A1.26 stays closed. Earlier topics keep their existing titles. The evidence view
 
 ## What this does not change
 
-No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication, and running cost stay as they are. The lesson screen is unchanged. The offline cache stays `dutch-v5.1.172-20261004-a1-plans`.
+No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication, and running cost stay as they are. The lesson screen is unchanged. The offline cache is `dutch-v5.1.173-20261004-course-outcomes`. Rollback is the V5.1.172 main source at `2ff6d9491313b50c3fa4effc4a2c36db00e93005`.
