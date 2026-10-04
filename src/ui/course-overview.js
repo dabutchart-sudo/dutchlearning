@@ -99,23 +99,36 @@ function capabilityCard(state,today){
 function journeyCard(outline){const c=outline.current;return `<article class="card course-panel"><div class="eyebrow">COURSE JOURNEY</div><h3>Where you are</h3>${c?`<p><strong>${esc(c.id)} · ${esc(c.title)} — ${esc(c.journey.label)}</strong></p><p class="course-caption">${esc(c.journey.reason)} ${esc(c.nextStep)}</p>`:'<p class="course-caption">All available topics have passed delayed retention. Future reviews keep them in use.</p>'}<p class="course-caption">Topic states describe the learning path. Capability evidence and Flashcard retention are shown separately.</p></article>`;}
 function progressView(outline,p,days,content,state,today){return `${currentCard(outline)}${journeyCard(outline)}${capabilityCard(state,today)}<div class="course-filter-row"><h3>Your practice history</h3><label>Period <select id="course-period"><option value="14" ${days===14?'selected':''}>Last 14 days</option><option value="30" ${days===30?'selected':''}>Last 30 days</option><option value="all" ${days===null?'selected':''}>All history</option></select></label><label>Topic <select id="course-topic-filter"><option value="">All topics</option>${content.concepts.map(c=>`<option value="${esc(c.id)}" ${p.concept===c.id?'selected':''}>${esc(c.id)} · ${esc(c.title)}</option>`).join('')}</select></label></div><div class="course-stat-strip"><div><strong>${p.todayTotal}</strong><span>answers today</span></div><div><strong>${p.studyDays}</strong><span>days studied</span></div><div><strong>${p.total}</strong><span>answers recorded</span></div><div><strong>${p.independent}</strong><span>independent attempts</span></div></div>${trendCard(p)}<div class="course-two-columns">${activityCard(p)}${retainedCard(outline)}</div><p class="course-caption">Learning-course history only. Your existing Flashcard Report remains separate.${p.undated?` ${p.undated} older undated answers cannot be placed on the timeline.`:''}</p>`;}
 function unitCopy(level){if(level==='Foundation')return {eyebrow:'Start here',title:'Foundation'};return {eyebrow:'Everyday Dutch',title:level};}
+const courseOutcomes={
+ 'A1.22':'Lets you give a simple direction and say where a place is.',
+ 'A1.23':'Lets you order politely, ask a price, and ask for help or a repetition.',
+ 'A1.24':'Lets you join two short ideas, give a reason, and say what comes first and next.',
+ 'A1.25':'Lets you talk about home, work, food, travel, an appointment, or free time.',
+ 'S1':'Lets you say what is wrong and ask for help.',
+ 'S2':'Lets you say your name, where you come from, and where you live, and ask a name politely.',
+ 'S3':'Lets you name an appointment, say the time, and say that you are coming.'
+};
+const courseOutcome=id=>courseOutcomes[id]||'';
 function courseFocus(outline,daily,offer){
  const c=outline.current;
  if(!c)return `<article class="course-focus"><span class="eyebrow">Course complete so far</span><h3>All available topics retained</h3><p>More A1 topics are planned. Retained topics remain available below.</p></article>`;
  const ready=!daily.done&&offer?.canStartToday&&(!offer.id||offer.id===c.id);
  const action=ready?'Choose test or practice':daily.done?'':c.status==='lesson'?'Start learning':'Continue learning';
  const note=daily.done?'Learning complete for today.':ready?offer.type==='mastery'?'A full mastery test is available today, or you can keep practising. Availability does not predict a pass.':'A delayed retention test is available today, or you can keep practising.':c.status==='lesson'?'Begins with the lesson.':'';
- return `<article class="course-focus" data-course-focus><span class="eyebrow">Current topic · ${esc(c.id)}</span><h3>${esc(c.title)}</h3>${note?`<p>${esc(note)}</p>`:''}<div class="course-focus-actions">${action?`<button type="button" class="primary" data-course-start="${esc(c.id)}">${esc(action)}</button>`:''}<button type="button" class="course-focus-details" data-course-concept="${esc(c.id)}">Topic details</button></div></article>`;
+ const outcome=courseOutcome(c.id);
+ return `<article class="course-focus" data-course-focus><span class="eyebrow">Current topic · ${esc(c.id)}</span><h3>${esc(c.title)}</h3>${outcome?`<p class="course-topic-outcome">${esc(outcome)}</p>`:''}${note?`<p>${esc(note)}</p>`:''}<div class="course-focus-actions">${action?`<button type="button" class="primary" data-course-start="${esc(c.id)}">${esc(action)}</button>`:''}<button type="button" class="course-focus-details" data-course-concept="${esc(c.id)}">Topic details</button></div></article>`;
 }
 function pathNode(c){
  const locked=!c.available&&!c.retained;
  const reason=locked?`<small class="course-locked-reason">${c.journey.label==='Paused'?'Pass earlier retention to continue':'Pass '+esc((c.prerequisites||[]).join(' and '))+' mastery first'}</small>`:'';
+ const outcome=courseOutcome(c.id);
  return `<li class="course-path-node ${c.current?'is-current':''} ${c.retained?'is-retained':''} ${locked?'is-locked':''}" ${c.current?'data-course-current="true"':''}>
   <div class="course-node-wrap"><span class="course-node" aria-hidden="true">${c.retained?'✓':c.current?'●':''}</span></div>
   <div class="course-path-card">
    <button type="button" data-course-concept="${esc(c.id)}" ${c.current?'aria-current="step"':''}>
     <span class="course-topic-code">${esc(c.id)}${c.current?' · You’re here':''}</span>
     <span class="course-path-main"><strong>${esc(c.title)}</strong><span class="course-topic-status status-${esc(c.status)}">${esc(c.journey.label)}</span></span>
+    ${outcome?`<span class="course-topic-outcome">${esc(outcome)}</span>`:''}
     ${reason}
    </button>
   </div>
@@ -147,6 +160,7 @@ export function coursePage(state,content,{today,pane='path',days=30,cohort='inde
 }
 export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCount=0,dailyDone=false,offer}={}){
  const c=courseOutline(state,content,{today}).topics.find(c=>c.id===id);if(!c)return '';
+ const outcome=courseOutcome(id);
  // Only display lesson/practice examples, never an unseen proof question.
  const example=content.sentences.find(s=>s.concept===id&&s.pool==='practice'&&s.nl===c.example)||content.sentences.find(s=>s.concept===id&&s.pool==='practice');
  const startLabel=state.pending&&['practice','maintenance'].includes(state.pending.phase)?'Continue current question':dailyCount?'Continue today’s practice':'Start today’s practice';
@@ -155,7 +169,7 @@ export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCou
  const testVisible=['proof-ready','retention-ready'].includes(c.status);
  const evidence=c.available?`<details class="course-topic-evidence"><summary>Practice and proof details</summary><label class="course-practice-label" for="topic-practice">${Math.min(c.attempts,c.required)} of ${c.required} required practice answers</label><progress id="topic-practice" max="${c.required}" value="${Math.min(c.attempts,c.required)}"></progress>${testVisible?'':proofHTML}<p class="course-caption">Today’s 20 includes one listening question from this topic. Speaking can be skipped and typed. Mastery and delayed retention tests stay written.</p><p class="course-caption">A topic is retained only after a mastery test and a successful delayed retention check.</p></details>`:'';
  const listening=discriminationPracticeCard(state,content,c);
- return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2><div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${listening}${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
+ return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2>${outcome?`<div class="course-can-do"><h3>What you can do</h3><p>${esc(outcome)}</p></div>`:''}<div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${listening}${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
 }
 
 function discriminationPracticeCard(state,content,topic){
