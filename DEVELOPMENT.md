@@ -148,6 +148,10 @@ The delivery order is:
 
 A1.22 through A1.25 are in the live course, and S1 and S2 are conversational chunks on the live course. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
+## DAB-189 plans — in source, not released
+
+The next conversational chunk is in source after S2. S3 Arrange a simple plan teaches reusable chunks for one situation: name an appointment with ik heb een afspraak, say the time with om, and say you are coming with ik kom om. A second idea can join with en. It has a lesson, guided practice and an unseen written proof pool. Typed sentence work does not award speaking or interaction evidence. The daily 20, scheduler, learner history, schema, authentication and services are unchanged. A1.26 stays closed. This slice is not on the live app. A native-speaker pass of the new Dutch is still outstanding. See `docs/dab-189-plans.md`.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
@@ -156,7 +160,7 @@ The live app is Zin V5.1.171. Trustworthy progress, the question-format contract
 
 Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word, short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
 
-Directions, requests, connecting ideas, daily life, a simple problem, and introductions are live. The S1 and S2 Dutch is accepted. Installed-phone checks that those two lessons appear and work are still outstanding. DAB-189 is the next plans chunk and DAB-190 is the course outcome map. Neither has been built. DAB-171 stays open.
+Directions, requests, connecting ideas, daily life, a simple problem, and introductions are live. The S1 and S2 Dutch is accepted. Installed-phone checks that those two lessons appear and work are still outstanding. S3 Arrange a simple plan is in source and not on the live app. DAB-190, the course outcome map, has not been built. DAB-171 stays open.
 
 Assessed speaking, controlled dialogue, and broader conversation are not built. DAB-191 is the first speaking Practice story and stays in Backlog until the owner says to begin. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
 
