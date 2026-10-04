@@ -7,6 +7,7 @@ ASSETS.push('./src/content/a1-vocabulary.js','./src/content/a1-fair-practice.js'
 ASSETS.push('./src/content/a1-proof-capacity.js','./src/content/a1-proof-capacity-audit.js');
 ASSETS.push('./src/ui/learning-session-ui.js');
 ASSETS.push('./src/ui/teaching-support.js');
+ASSETS.push('./src/ui/proof-result.js');
 ASSETS.push('./src/content/a1-teaching-practice.js');
 ASSETS.push('./src/engine/mastery-recovery.js');
 ASSETS.push('./src/engine/capability-progress.js');

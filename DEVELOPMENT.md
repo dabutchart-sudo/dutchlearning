@@ -156,6 +156,10 @@ The owner asked for this slice on the live app. S3 Arrange a simple plan follows
 
 The owner asked for this slice on the live app and accepted the wording on 4 October 2026. The course path and topic page state what A1.22 through A1.25, S1, S2 and S3 let the learner do. This is presentation only. No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 516 local tests passed before release. The offline cache is `dutch-v5.1.173-20261004-course-outcomes`. Rollback is the V5.1.172 main source at `2ff6d9491313b50c3fa4effc4a2c36db00e93005`; preserve learner history and the standalone Flashcards fallback. An installed-phone check of the course path is still outstanding. See `docs/dab-190-outcomes.md`.
 
+## Mastery result announcement — in source, 2026-10-04
+
+After a mastery or retention test, the course states whether it was passed and how many answers were correct in each direction. The result from the same study day is shown on the course home. An older result stays visible as Passed or Not passed with the score. Scoring, the daily 20, learner history, schema, authentication and services are unchanged. This is not on the live app. No version change.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
