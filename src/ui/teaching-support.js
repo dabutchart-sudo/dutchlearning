@@ -18,7 +18,8 @@ const focus={
  'A1.22':['Give a route in steps: rechtdoor, then links or rechts at a landmark.','For a fixed location, use links van, rechts van, naast or tegenover.'],
  'A1.23':['Ask with mag ik or ik wil graag, and add alstublieft in a shop or café.','Ask the price with wat kost or hoeveel kost. For help or a repetition, use kunt u.'],
  'A1.24':['Join two short ideas with en, maar, of or want. Each idea keeps its own subject and finite verb.','Eerst, daarna and dan can start a sentence. The finite verb still comes second: eerst drink ik koffie.'],
- 'A1.25':['Name the person, the action, and one daily detail: home, work, food, transport or free time.','An appointment is een afspraak. Say the time with om: ik heb om drie uur een afspraak.']
+ 'A1.25':['Name the person, the action, and one daily detail: home, work, food, transport or free time.','An appointment is een afspraak. Say the time with om: ik heb om drie uur een afspraak.'],
+ 'S1':['Say the problem in one reusable chunk: ik begrijp het niet, ik ben te laat, or mijn telefoon werkt niet.','Ask for help with ik heb hulp nodig. Add the reason with want.']
 };
 const worked={
  'A1.7':[/\bniet\b/i,/\b(geen|niets)\b/i],
@@ -38,7 +39,8 @@ const worked={
  'A1.21':[/\bnaar\b/i,/\b(in|op|bij)\b/i],
  'A1.23':[/\bmag ik\b/i,/\bkunt u\b/i],
  'A1.24':[/\bmaar\b/i,/\bwant\b/i],
- 'A1.25':[/\bafspraak\b/i,/\bthuis\b/i]
+ 'A1.25':[/\bafspraak\b/i,/\bthuis\b/i],
+ 'S1':[/\bhulp nodig\b/i,/\bte laat\b/i]
 };
 
 export function lessonMaterial(content,id){
@@ -66,6 +68,7 @@ export function patternTipFor(id,nl,concept){
  if(id==='A1.23'&&/\b(kost|kosten|euro|helpen|herhalen|keer)\b/i.test(nl))return notes[1];
  if(id==='A1.24'&&/\b(eerst|daarna|dan)\b/i.test(nl))return notes[1];
  if(id==='A1.25'&&/\bafspraak\b/i.test(nl))return notes[1];
+ if(id==='S1'&&/\bhulp nodig\b/i.test(nl))return notes[1];
  if(id==='A1.14'&&/^(waar|wat|wanneer|waarom|hoe|wie)\b/i.test(nl))return notes[1];
  return notes[0];
 }
