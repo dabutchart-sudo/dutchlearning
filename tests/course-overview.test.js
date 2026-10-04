@@ -16,9 +16,9 @@ const attempt=(overrides={})=>({date:today,kind:'typed',direction:'en-nl',assist
 
 test('outline uses the full registered curriculum, not just the base content pack',()=>{
  const s=fresh(),before=JSON.stringify(s),outline=courseOutline(s,content,{today});
- assert.equal(outline.total,29);assert.equal(outline.current.id,'F1');assert.equal(outline.current.status,'lesson');assert.equal(outline.retained,0);
- assert.equal(outline.topics.find(c=>c.id==='A1.20').status,'upcoming');assert.equal(outline.planned.length,3);
- assert.equal(outline.planned[0].id,'A1.24');assert.equal(outline.planned.at(-1).id,'A1.26');assert.equal(JSON.stringify(s),before);
+ assert.equal(outline.total,30);assert.equal(outline.current.id,'F1');assert.equal(outline.current.status,'lesson');assert.equal(outline.retained,0);
+ assert.equal(outline.topics.find(c=>c.id==='A1.20').status,'upcoming');assert.equal(outline.planned.length,2);
+ assert.equal(outline.planned[0].id,'A1.25');assert.equal(outline.planned.at(-1).id,'A1.26');assert.equal(JSON.stringify(s),before);
 });
 test('syllabus mirrors early lesson access, delayed retention, daily budget, and remedial rules',()=>{
  const s=fresh();studied(s,'F1');s.progress.F1.status='proof-ready';s.daily.count=3;seedTypedReadiness(s,'F1',today);
@@ -35,7 +35,7 @@ test('outline uses configured practice requirements and handles completed course
  const s=fresh(),c={...content,concepts:content.concepts.map(c=>({...c,minPractice:50}))};studied(s,'F1');
  assert.equal(courseOutline(s,c,{today}).current.remaining,10);
  for(const c of content.concepts)Object.assign(s.progress[c.id],{masteredAt:today,status:'mastered',lessonAcknowledged:true});
- const o=courseOutline(s,content,{today});assert.equal(o.current,null);assert.equal(o.retained,29);assert.equal(o.planned.length,3);
+ const o=courseOutline(s,content,{today});assert.equal(o.current,null);assert.equal(o.retained,30);assert.equal(o.planned.length,2);
 });
 test('independent denominator includes failed attempts and excludes word help and scaffolding',()=>{
  const s=fresh();s.attempts=[attempt({grammar:false,independent:false}),attempt({independent:true}),attempt({assisted:true}),attempt({kind:'gap'}),attempt({kind:'wordbank',spelling:null}),attempt({kind:'choice',direction:'nl-en',spelling:null})];
@@ -68,7 +68,7 @@ test('chart has an accessible numerical alternative and separates evidence group
  const supported=coursePage(s,content,{today,pane:'progress',cohort:'supported'});assert.match(supported,/kept separate from independent sentence writing/);
 });
 test('locked topics are browsable but cannot launch lessons; only later topics remain planned',()=>{
- const s=fresh();const html=coursePage(s,content,{today,pane:'path'});assert.match(html,/A1.26/);assert.match(html,/A2 · Beyond the basics/);assert.match(html,/Coming later/);assert.match(html,/data-course-concept="A1.22"/);assert.match(html,/data-course-concept="A1.23"/);assert.doesNotMatch(html,/data-course-concept="A1.24"/);
+ const s=fresh();const html=coursePage(s,content,{today,pane:'path'});assert.match(html,/A1.26/);assert.match(html,/A2 · Beyond the basics/);assert.match(html,/Coming later/);assert.match(html,/data-course-concept="A1.22"/);assert.match(html,/data-course-concept="A1.23"/);assert.match(html,/data-course-concept="A1.24"/);assert.doesNotMatch(html,/data-course-concept="A1.25"/);
  const locked=topicPage(s,content,'A1.20',{today});assert.match(locked,/What you’ll learn/);assert.match(locked,/Pass A1.19 mastery/);assert.doesNotMatch(locked,/id="read-course"/);
 });
 test('topic display escapes content and never uses proof material as an example',()=>{
