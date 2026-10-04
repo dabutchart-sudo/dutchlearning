@@ -121,6 +121,10 @@ The owner asked for A1.24 and A1.25 on the live app together. A1.24 joins short 
 
 The owner asked for this slice on the live app. S1 Explain a simple problem follows A1.25. It teaches reusable chunks for one situation: say you do not understand, that you or a train or bus are late, or that a phone or bicycle does not work, then ask for help with ik heb hulp nodig. A second idea can join with en, maar or want. It has a lesson, guided practice and an unseen written proof pool. Typed sentence work does not award speaking or interaction evidence. The daily 20, scheduler, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 506 local tests passed before release. The offline cache is `dutch-v5.1.170-20261004-a1-problem`. Rollback is the V5.1.169 main source at `ffdddde1b1e2993390acbf81857dd68f7a9a8e75`; preserve learner history and the standalone Flashcards fallback. On 4 October 2026 the owner confirmed the S1 Dutch is correct. An installed-phone check of the S1 lesson is still outstanding. See `docs/dab-171-simple-problem.md`.
 
+## DAB-171 introductions — in source, not released
+
+The next conversational chunk is in source after S1. S2 Introduce yourself teaches reusable chunks for one situation: say your name with ik heet, ask politely with hoe heet u, say where you come from with ik kom uit, and say where you live with ik woon in. A second idea can join with en. It has a lesson, guided practice and an unseen written proof pool. Typed sentence work does not award speaking or interaction evidence. The daily 20, scheduler, learner history, schema, authentication and services are unchanged. A1.26 stays closed. This slice is not on the live app. A native-speaker pass of the new Dutch is still outstanding. See `docs/dab-171-introductions.md`.
+
 ## Agreed development direction — 2026-09-23
 
 The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.
