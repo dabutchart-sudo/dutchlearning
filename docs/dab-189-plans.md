@@ -1,6 +1,6 @@
 # DAB-189 — arrange a simple plan
 
-Status: in source, not on the live app. The live course remains Zin V5.1.171. A native-speaker pass of the new Dutch is still outstanding.
+Status: on the live app as V5.1.172, 4 October 2026. All 514 local tests passed before release. A native-speaker pass of the new Dutch is still outstanding. An installed-phone check of this lesson is still outstanding.
 
 ## This slice
 
@@ -14,7 +14,7 @@ The lesson teaches reusable chunks:
 
 A second idea can join with `en`. Each idea keeps its own subject and finite verb. The language reuses time and `een afspraak` from earlier topics. Practice uses two, five, half past two, eleven, and Monday. Mastery and retention stay the normal written checks. The daily 20 is unchanged.
 
-A1.26 stays closed. This slice is not on the live app.
+A1.26 stays closed.
 
 ## Evidence
 
@@ -22,8 +22,8 @@ Typed and guided sentence work remains written production or recognition. This s
 
 ## What this does not change
 
-Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for S3. Earlier topics and saved answers stay in place. The offline cache stays `dutch-v5.1.171-20261004-a1-introductions` until a release changes it.
+Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for S3. Earlier topics and saved answers stay in place. The offline cache is `dutch-v5.1.172-20261004-a1-plans`. Rollback is the V5.1.171 main source at `d1c0319ce8c662849942da2c6930fc22b0037bb5`.
 
 ## Still to come
 
-The course-outcome map in DAB-190, then the other conversational steps. A native-speaker pass of these sentences is still outstanding. The installed phone has not yet confirmed this lesson, because it is not on the live app.
+The course-outcome map in DAB-190, then the other conversational steps. A native-speaker pass of these sentences is still outstanding. An installed-phone check of this lesson is still outstanding.
