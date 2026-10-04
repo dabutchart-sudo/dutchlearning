@@ -1,6 +1,6 @@
 # DAB-86 — connecting ideas
 
-Status: source slice, 3 October 2026. Not on the live app. All 498 local tests passed.
+Status: on the live app as V5.1.169, 4 October 2026, together with A1.25. All 502 local tests passed before release. An installed-phone check of A1.24 is still outstanding.
 
 ## This slice
 
@@ -11,7 +11,7 @@ A1.24 Connecting ideas follows A1.23. The lesson teaches two reusable patterns:
 
 Practice introduces the patterns. The proof pool recombines them with familiar daily words. Mastery and retention stay the normal written checks. The daily 20 is unchanged.
 
-A1.25 daily-life consolidation and the A1.26 checkpoint are not study topics. The checkpoint stays closed. Its course note names daily-life consolidation as the topic still missing.
+A1.25 is in the same release. The A1.26 checkpoint is not a study topic. The checkpoint stays closed, and its course note says every earlier topic still needs its delayed retention check.
 
 ## Evidence
 
@@ -19,8 +19,8 @@ Typed and guided sentence work remains written production or recognition. This s
 
 ## What this does not change
 
-Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for A1.24. Earlier topics and saved answers stay in place. The service-worker cache name stays at the V5.1.168 name until a release asks for a new cache.
+Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for A1.24. Earlier topics and saved answers stay in place. The offline cache is `dutch-v5.1.169-20261004-a1-daily`. Rollback is the V5.1.168 main source at `9eab0c9aab8308dd361fa02b7e61e55902a5e87b`.
 
 ## Still to come
 
-A1.25, then the unseen A1.26 written check. A native-speaker pass of the A1.24 sentences is still outstanding. Phone confirmation waits until the owner asks for this slice on the live app.
+The unseen A1.26 written check is still ahead. A native-speaker pass of the A1.24 sentences is still outstanding. The installed phone has not yet confirmed the A1.24 lesson.
