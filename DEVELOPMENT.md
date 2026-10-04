@@ -150,9 +150,19 @@ A1.22 through A1.25 are in the live course, and S1 and S2 are conversational chu
 
 ## Active milestone
 
-### Question quality and teaching audit
+### Conversational Dutch, remaining steps — 4 October 2026
 
-DAB-168 established the format catalogue, capability evidence vocabulary, reversible release controls, and first optional listening Practice slice. DAB-88 now audits whether the live course teaches and tests fairly before further conversational expansion.
+The live app is Zin V5.1.171. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course. This note does not change the study app.
+
+Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word, short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
+
+Directions, requests, connecting ideas, daily life, a simple problem, and introductions are live. The S1 and S2 Dutch is accepted. Installed-phone checks that those two lessons appear and work are still outstanding. DAB-189 is the next plans chunk and DAB-190 is the course outcome map. Neither has been built. DAB-171 stays open.
+
+Assessed speaking, controlled dialogue, and broader conversation are not built. DAB-191 is the first speaking Practice story and stays in Backlog until the owner says to begin. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
+
+### Question quality and teaching audit — completed
+
+DAB-168 established the format catalogue, capability evidence vocabulary, reversible release controls, and first optional listening Practice slice. DAB-88 audited whether the live course teaches and tests fairly before further conversational expansion.
 
 The source-backed findings are recorded in `docs/question-quality-audit.md`. The first implementation slice now combines proof-pool safety with the owner-approved 19/20 mastery rule: mastery requires at least 9/10 in each direction, a single missed item creates targeted follow-up, A1.7–A1.12 have sufficient unseen proof for one failure plus retry and retention, and retention remains strict at 10/10. The proof-safety and mastery-fairness slice is now in the production source; phone acceptance remains to be checked.
 
