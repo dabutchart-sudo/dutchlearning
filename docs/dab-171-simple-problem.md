@@ -1,6 +1,6 @@
 # DAB-171 — explain a simple problem
 
-Status: in source, not on the live app. The live course remains Zin V5.1.169. A native-speaker pass of the new Dutch is still outstanding.
+Status: on the live app as V5.1.170, 4 October 2026. All 506 local tests passed before release. A native-speaker pass of the new Dutch, and an installed-phone check of S1, are still outstanding.
 
 ## This slice
 
@@ -23,8 +23,8 @@ Typed and guided sentence work remains written production or recognition. This s
 
 ## What this does not change
 
-Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for S1. Earlier topics and saved answers stay in place. The offline cache is still `dutch-v5.1.169-20261004-a1-daily` until a release changes it.
+Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for S1. Earlier topics and saved answers stay in place. The offline cache is `dutch-v5.1.170-20261004-a1-problem`. Rollback is the V5.1.169 main source at `ffdddde1b1e2993390acbf81857dd68f7a9a8e75`.
 
 ## Still to come
 
-The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. A native-speaker pass of these sentences is still outstanding. The installed phone has not yet confirmed this lesson, because it is not on the live app.
+The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. A native-speaker pass of these sentences is still outstanding. The installed phone has not yet confirmed the S1 lesson.
