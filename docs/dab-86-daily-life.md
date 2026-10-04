@@ -1,6 +1,6 @@
 # DAB-86 — daily-life consolidation
 
-Status: source slice, 3 October 2026. Not on the live app. All 502 local tests passed.
+Status: on the live app as V5.1.169, 4 October 2026, together with A1.24. All 502 local tests passed before release. An installed-phone check of A1.25 is still outstanding.
 
 ## This slice
 
@@ -21,8 +21,8 @@ Typed and guided sentence work remains written production or recognition. This s
 
 ## What this does not change
 
-Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for A1.25. Earlier topics and saved answers stay in place. The service-worker cache name stays at the V5.1.168 name until a release asks for a new cache.
+Learner history, card identities, the scheduler, Supabase schema, authentication, provider calls and running cost stay as they are. Loading the course adds an empty progress record for A1.25. Earlier topics and saved answers stay in place. The offline cache is `dutch-v5.1.169-20261004-a1-daily`. Rollback is the V5.1.168 main source at `9eab0c9aab8308dd361fa02b7e61e55902a5e87b`.
 
 ## Still to come
 
-The unseen A1.26 written check, after the earlier topics have their normal retention checks. A native-speaker pass of the A1.25 sentences is still outstanding. Phone confirmation waits until the owner asks for this slice on the live app.
+The unseen A1.26 written check, after the earlier topics have their normal retention checks. A native-speaker pass of the A1.25 sentences is still outstanding. The installed phone has not yet confirmed the A1.25 lesson.

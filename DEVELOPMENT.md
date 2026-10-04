@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.168**.
+- Current documented release: **Zin V5.1.169**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -113,13 +113,9 @@ The owner asked for this slice on the live app. The integrated checkpoint is not
 
 The owner asked for this slice on the live app. A1.23 is a course topic: polite requests, ordering, prices, help and repetition, with a lesson, guided practice and an unseen written proof pool. A1.24, A1.25 and the A1.26 checkpoint are still not study topics. The checkpoint stays closed and names only the topics that are still missing. Typed sentence work does not award speaking or interaction evidence. All 494 local tests passed before release preparation. The offline cache is `dutch-v5.1.168-20261003-a1-requests`. Rollback is the V5.1.167 main source at `e451892640dedd3b5254057bcb612d8ed24f4c37`; preserve learner history and the standalone Flashcards fallback. A native-speaker pass of the new Dutch, and an installed-phone check of A1.23, are still outstanding. See `docs/dab-86-requests-service.md`.
 
-## DAB-86 connecting ideas — source slice, not released
+## DAB-86 connecting ideas and daily life — V5.1.169 release, 2026-10-04
 
-A1.24 is a course topic in source. It joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. Each idea keeps its own subject and finite verb. The A1.26 checkpoint is still not a study topic. Typed sentence work does not award speaking or interaction evidence. All 498 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-connecting-ideas.md`.
-
-## DAB-86 daily-life consolidation — source slice, not released
-
-A1.25 is a course topic in source. It mixes home, family, work, food, transport, appointments and free time with patterns already learned. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. All 502 local tests passed. This slice is not on the live app. The daily 20, scheduler, saved progress, schema, authentication and running cost are unchanged. See `docs/dab-86-daily-life.md`.
+The owner asked for A1.24 and A1.25 on the live app together. A1.24 joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. A1.25 mixes home, family, work, food, transport, appointments and free time. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. All 502 local tests passed before release preparation. The offline cache is `dutch-v5.1.169-20261004-a1-daily`. Rollback is the V5.1.168 main source at `9eab0c9aab8308dd361fa02b7e61e55902a5e87b`; preserve learner history and the standalone Flashcards fallback. A native-speaker pass of the new Dutch, and installed-phone checks of A1.24 and A1.25, are still outstanding. See `docs/dab-86-connecting-ideas.md` and `docs/dab-86-daily-life.md`.
 
 ## Agreed development direction — 2026-09-23
 
@@ -142,7 +138,7 @@ The delivery order is:
 7. controlled dialogues;
 8. broader, less predictable listening and conversation.
 
-A1.22 and A1.23 are in the live course. A1.24 and A1.25 are in source and are not released. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+A1.22 through A1.25 are in the live course. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
 ## Active milestone
 
