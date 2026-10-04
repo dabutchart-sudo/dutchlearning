@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.169**.
+- Current documented release: **Zin V5.1.170**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -117,6 +117,10 @@ The owner asked for this slice on the live app. A1.23 is a course topic: polite 
 
 The owner asked for A1.24 and A1.25 on the live app together. A1.24 joins short ideas with en, maar, of and want, and sequences them with eerst, daarna and dan. A1.25 mixes home, family, work, food, transport, appointments and free time. An appointment is een afspraak. The A1.26 checkpoint is still not a study topic. It stays closed because earlier topics still need their delayed retention check, and the unseen written check is not in the course. Typed sentence work does not award speaking or interaction evidence. All 502 local tests passed before release preparation. The offline cache is `dutch-v5.1.169-20261004-a1-daily`. Rollback is the V5.1.168 main source at `9eab0c9aab8308dd361fa02b7e61e55902a5e87b`; preserve learner history and the standalone Flashcards fallback. On 4 October 2026 the owner confirmed the installed-phone checks of A1.24 and A1.25, a native-speaker pass of the new Dutch in those lessons, and that V5.1.169 is the live app. This confirmation does not include a mastery or retention score. See `docs/dab-86-connecting-ideas.md` and `docs/dab-86-daily-life.md`.
 
+## DAB-171 simple problem — V5.1.170 release, 2026-10-04
+
+The owner asked for this slice on the live app. S1 Explain a simple problem follows A1.25. It teaches reusable chunks for one situation: say you do not understand, that you or a train or bus are late, or that a phone or bicycle does not work, then ask for help with ik heb hulp nodig. A second idea can join with en, maar or want. It has a lesson, guided practice and an unseen written proof pool. Typed sentence work does not award speaking or interaction evidence. The daily 20, scheduler, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 506 local tests passed before release. The offline cache is `dutch-v5.1.170-20261004-a1-problem`. Rollback is the V5.1.169 main source at `ffdddde1b1e2993390acbf81857dd68f7a9a8e75`; preserve learner history and the standalone Flashcards fallback. A native-speaker pass of the new Dutch, and an installed-phone check of S1, are still outstanding. See `docs/dab-171-simple-problem.md`.
+
 ## Agreed development direction — 2026-09-23
 
 The owner has approved evolving Zin incrementally into the primary method for learning conversational Dutch.
@@ -138,7 +142,7 @@ The delivery order is:
 7. controlled dialogues;
 8. broader, less predictable listening and conversation.
 
-A1.22 through A1.25 are in the live course. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
+A1.22 through A1.25 are in the live course, and S1 is the first conversational chunk on the live course. A1.26 remains required course work, and curriculum expansion should align with the new communicative/scenario model rather than continuing as grammar coverage alone.
 
 ## Active milestone
 

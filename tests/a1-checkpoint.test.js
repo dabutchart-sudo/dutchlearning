@@ -31,7 +31,7 @@ test('the live course keeps the A1 checkpoint closed until retention and the uns
  assert.match(readiness.summary,/not an official certificate/);
  assert.equal(JSON.stringify(state),before);
  const outline=courseOutline(state,content,{today});
- assert.equal(outline.total,31);
+ assert.equal(outline.total,32);
  assert.equal(outline.planned.find(topic=>topic.id==='A1.26').note,readiness.summary);
  const html=coursePage(state,content,{today,pane:'path'});
  assert.match(html,/A1\.26/);
