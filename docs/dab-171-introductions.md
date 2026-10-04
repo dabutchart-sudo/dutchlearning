@@ -1,6 +1,6 @@
 # DAB-171 — introduce yourself
 
-Status: on the live app as V5.1.171, 4 October 2026. All 510 local tests passed before release. A native-speaker pass of the new Dutch is still outstanding. An installed-phone check of this lesson is still outstanding.
+Status: on the live app as V5.1.171, 4 October 2026. All 510 local tests passed before release. On 4 October 2026 the owner confirmed a native-speaker pass of the S2 Dutch. An installed-phone check of this lesson is still outstanding. This confirmation does not include a mastery or retention score.
 
 ## This slice
 
@@ -27,4 +27,4 @@ Learner history, card identities, the scheduler, Supabase schema, authentication
 
 ## Still to come
 
-The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. A native-speaker pass of these sentences is still outstanding. An installed-phone check of this lesson is still outstanding.
+The other conversational objectives in DAB-171, then the unseen A1.26 written check after earlier topics have their normal retention checks. An installed-phone check of this lesson is still outstanding.
