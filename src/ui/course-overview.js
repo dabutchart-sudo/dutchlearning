@@ -9,6 +9,7 @@ import {dailyRecap} from './teaching-support.js';
 import {sentenceDiscriminationOffer} from '../engine/listening-discrimination.js';
 import {missingWordOffer} from '../engine/listening-missing-word.js';
 import {dictationOffer} from '../engine/listening-dictation.js';
+import {exchangeOffer} from '../engine/listening-exchange.js';
 import {speakingPracticeOffer} from '../engine/speaking-practice.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const percent=n=>n===null?'—':`${Math.round(n*100)}%`;
@@ -171,7 +172,7 @@ export function topicPage(state,content,id,{today=dayKey(),proofHTML='',dailyCou
  const extraStart=c.retained?`${button('extra-course','Practise this area')}<p class="course-caption">Five extra questions. This is not a second daily session and does not use today’s 20.</p>`:'';
  const testVisible=['proof-ready','retention-ready'].includes(c.status);
  const evidence=c.available?`<details class="course-topic-evidence"><summary>Practice and proof details</summary><label class="course-practice-label" for="topic-practice">${Math.min(c.attempts,c.required)} of ${c.required} required practice answers</label><progress id="topic-practice" max="${c.required}" value="${Math.min(c.attempts,c.required)}"></progress>${testVisible?'':proofHTML}<p class="course-caption">Today’s 20 includes one listening question from this topic. Speaking can be skipped and typed. Mastery and delayed retention tests stay written.</p><p class="course-caption">A topic is retained only after a mastery test and a successful delayed retention check.</p></details>`:'';
- const listening=discriminationPracticeCard(state,content,c)+missingWordPracticeCard(state,content,c)+dictationPracticeCard(state,content,c);
+ const listening=discriminationPracticeCard(state,content,c)+missingWordPracticeCard(state,content,c)+dictationPracticeCard(state,content,c)+exchangePracticeCard(state,c);
  const speaking=speakingPracticeCard(state,content,c);
  return `<section class="course-dashboard" data-course-overview>${button('back-course','← Back to your course')}<article class="card course-panel course-topic-detail"><div class="eyebrow">${esc(c.level)} · ${esc(c.label)}</div><h2 tabindex="-1">${esc(c.id)} · ${esc(c.title)}</h2>${outcome?`<div class="course-can-do"><h3>What you can do</h3><p>${esc(outcome)}</p></div>`:''}<div class="course-next"><h3>Your next step</h3><p><strong>${esc(c.journey.label)}.</strong> ${esc(c.journey.reason)}</p><p>${esc(c.nextStep)}</p></div>${c.available&&!c.retained&&(c.current||c.status==='retention-wait'||c.status==='retention-ready')?testTimingCard(state,content,id,today,offer):''}${currentStart}${testVisible?proofHTML:''}${extraStart}<div class="course-topic-lesson"><h3>What you’ll learn</h3><p>${esc(c.rule)}</p>${example?`<div class="course-example"><strong lang="nl">${esc(example.nl)}</strong><span>${esc(example.en)}</span></div>`:''}</div>${listening}${speaking}${evidence}${c.available?button('read-course','Read the lesson'):''}</article></section>`;
 }
@@ -198,6 +199,14 @@ function dictationPracticeCard(state,content,topic){
  if(!offer)return '';
  const label=offer.count===1?'Practise 1 sentence':`Practise ${offer.count} sentences`;
  return `<section class="course-listen-discrimination course-listen-dictation"><div class="eyebrow">OPTIONAL PRACTICE · LISTENING</div><h3>Type what you hear</h3><p>Play a short hidden Dutch sentence, then type it. This short activity does not use today’s 20 or change Course, mastery, or retention progress.</p>${button('start-listening-dictation',label)}</section>`;
+}
+
+function exchangePracticeCard(state,topic){
+ if(!topic.available)return '';
+ const offer=exchangeOffer(state,topic.id);
+ if(!offer)return '';
+ const label=offer.count===1?'Practise 1 exchange':`Practise ${offer.count} exchanges`;
+ return `<section class="course-listen-discrimination course-listen-exchange"><div class="eyebrow">OPTIONAL PRACTICE · LISTENING</div><h3>Follow a short exchange</h3><p>Hear a question and its reply, then choose what was said. This short activity does not use today’s 20 or change Course, mastery, or retention progress.</p>${button('start-listening-exchange',label)}</section>`;
 }
 
 function speakingPracticeCard(state,content,topic){
