@@ -13,10 +13,21 @@ import {lessonMaterial,guidanceFor,patternTipFor} from './teaching-support.js';
 import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen} from './speech.js';
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
+import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
+import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
 let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0;
+let speakingSession=null,speakingRun=0,speakingCapture=null;
+function abandonSpeakingCapture(){
+ const capture=speakingCapture;
+ speakingCapture=null;
+ if(!capture)return;
+ capture.abandoned=true;
+ try{capture.stream?.getTracks?.().forEach(track=>track.stop());}catch{}
+ try{if(capture.recorder?.state==='recording')capture.recorder.stop();}catch{}
+}
 let disposePeek=()=>{};
 let coursePane='path',courseDays=30,courseCohort='all',courseConcept=null,courseCohortTouched=false;
 const now=()=>dev&&state?.settings?.debugDate?new Date(state.settings.debugDate+'T12:00:00'):new Date();
@@ -72,7 +83,7 @@ function render(){
  refreshChrome();
  if(dev)el.insertAdjacentHTML('afterbegin',`<div class="debug-banner">Developer sandbox · ${dayKey(now())} · Real learning progress is separate.</div>`);
 }
-async function show(v){view=v;selectedConcept=null;lastFeedback=null;skipProofGate=false;if(v==='curriculum')coursePane='path';if(v==='evidence')coursePane='evidence';await transaction(s=>ensureDay(s,now()));render();}
+async function show(v){abandonSpeakingCapture();speakingSession=null;view=v;selectedConcept=null;lastFeedback=null;skipProofGate=false;if(v==='curriculum')coursePane='path';if(v==='evidence')coursePane='evidence';await transaction(s=>ensureDay(s,now()));render();}
 function proofAction(id,offer=dailyProofOffer(state,content,now())){const p=state.progress[id],ph=phase(p,dayKey(now()));
  if(ph==='proof-ready'||ph==='retention-ready'){
  const type=ph==='proof-ready'?'mastery':'retention',reason=offer&&offer.id===id?offer.reason:null,hideButton=offer?.canStartToday&&offer.id===id;
@@ -199,6 +210,111 @@ function renderDiscrimination(){
  });
  on('leave-discrimination',()=>{const conceptId=discriminationSession?.conceptId;discriminationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
 }
+function beginSpeakingPractice(conceptId=selectedConcept){
+ try{
+  abandonSpeakingCapture();
+  speakingRun++;
+  speakingSession=startSpeakingPractice(state,content,{conceptId,seed:`${dayKey(now())}:${state.learnerId}:${conceptId}:${speakingRun}`});
+  renderSpeakingPractice();
+ }catch(e){notify(e.message)}
+}
+function renderSpeakingPractice(){
+ if(!speakingSession){goHome();return;}
+ sessionChrome(true);notify('');
+ const question=currentSpeakingQuestion(speakingSession);
+ if(!question){
+  abandonSpeakingCapture();
+  const summary=speakingPracticeSummary(speakingSession);
+  const copy=speakingPracticeSummaryCopy(summary);
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL SPEAKING PRACTICE</div><h2>${esc(copy.heading)}</h2><p>${esc(copy.typed)}</p>${copy.speech?`<p>${esc(copy.speech)}</p>`:''}${summary.spoken?'<p>This checks the words that were transcribed. It is not a pronunciation score.</p>':''}<p class="muted">${esc(copy.note)}</p><div class="actions">${button('repeat-speaking-practice','Practise this speaking again')}${button('leave-speaking-practice','Back to the topic',false)}</div></article></section>`;
+  on('repeat-speaking-practice',()=>beginSpeakingPractice(speakingSession.conceptId));
+  on('leave-speaking-practice',()=>{const conceptId=speakingSession?.conceptId;abandonSpeakingCapture();speakingSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
+  return;
+ }
+ renderSpeakingTurn(question,{retried:false});
+}
+function renderSpeakingTurn(question,{retried=false}={}){
+ let raw='',typedFallback=false,speechIssue=null,locked=false;
+ const prompt=question.prompt;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Speaking ${speakingSession.index+1} of ${speakingSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card speaking-practice-card"><span class="direction">English → Dutch</span><div class="q-type">Say the Dutch sentence</div><h2 class="prompt">${esc(prompt)}</h2><p class="muted">Say the Dutch sentence. The recording is transcribed and the words are compared. This is not a pronunciation score.</p><div id="speaking-answer"><div class="record-row">${button('record-speaking-practice','Record answer',false)}</div><div class="row"><button id="type-speaking-practice" class="text-link" type="button">Type instead</button><button id="speech-unavailable-practice" class="text-link" type="button">Speech unavailable</button></div><p id="spoken-practice-transcript" class="transcript" lang="nl">Nothing recorded yet.</p></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-speaking-practice','Check answer')}</div></article><button id="leave-speaking-practice" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const convert=(issue=null)=>{
+  abandonSpeakingCapture();
+  typedFallback=true;
+  speechIssue=issue;
+  raw='';
+  const note=issue==='unclear'?'The recording was not clear enough. Type the Dutch sentence instead. Typing is not speaking evidence.':issue?'Speaking could not be transcribed. Type the Dutch sentence instead. Typing is not speaking evidence.':'Type the Dutch sentence. Typing is not speaking evidence.';
+  document.getElementById('speaking-answer').innerHTML=`<p class="small muted">${esc(note)}</p><label for="typed-speaking-answer" class="sr-only">Your Dutch answer</label><input id="typed-speaking-answer" class="input" lang="nl" placeholder="Type in Dutch" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`;
+  const input=document.getElementById('typed-speaking-answer');
+  input.oninput=()=>{raw=input.value};
+  input.focus();
+ };
+ const transcribeBlob=async blob=>{
+  const line=document.getElementById('spoken-practice-transcript');
+  if(line)line.textContent='Transcribing…';
+  const heard=await transcribeSpokenAnswer(blob);
+  if(!document.getElementById('check-speaking-practice')||typedFallback)return;
+  if(!heard.ok){convert(heard.speechIssue||'unavailable');return;}
+  raw=heard.text;
+  const transcript=document.getElementById('spoken-practice-transcript');
+  if(transcript)transcript.textContent=raw;
+  const record=document.getElementById('record-speaking-practice');
+  if(record){record.disabled=false;record.textContent='Record again';}
+ };
+ const startCapture=async()=>{
+  abandonSpeakingCapture();
+  notify('');
+  if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==='undefined'){convert('unavailable');return;}
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  catch{convert('unavailable');return;}
+  let recorder;
+  try{recorder=new MediaRecorder(stream);}
+  catch{stream.getTracks().forEach(track=>track.stop());convert('unavailable');return;}
+  const chunks=[];
+  const capture={recorder,stream,abandoned:false};
+  speakingCapture=capture;
+  recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
+  recorder.onstop=()=>{
+   stream.getTracks().forEach(track=>track.stop());
+   if(speakingCapture===capture)speakingCapture=null;
+   if(capture.abandoned)return;
+   const blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
+   transcribeBlob(blob).catch(()=>convert('unavailable'));
+  };
+  recorder.start();
+  const record=document.getElementById('record-speaking-practice');
+  if(record)record.textContent='Stop recording';
+ };
+ on('record-speaking-practice',()=>{
+  if(speakingCapture?.recorder?.state==='recording'){
+   const record=document.getElementById('record-speaking-practice');
+   if(record){record.disabled=true;record.textContent='Transcribing…';}
+   try{speakingCapture.recorder.stop();}catch{convert('unavailable');}
+   return;
+  }
+  startCapture();
+ });
+ on('type-speaking-practice',()=>convert(null));
+ on('speech-unavailable-practice',()=>convert('unavailable'));
+ on('check-speaking-practice',()=>{
+  if(locked)return;
+  if(!String(raw).trim()){notify(typedFallback?'Type the Dutch sentence.':'Record an answer first.');return;}
+  locked=true;
+  abandonSpeakingCapture();
+  const next=answerSpeakingPractice(speakingSession,raw,{typedFallback,speechIssue,retried});
+  const result=next.answers.at(-1);
+  const feedback=speakingPracticeFeedback(result,question,raw);
+  el.querySelectorAll('button').forEach(control=>{if(control.id!=='leave-speaking-practice')control.disabled=true});
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':result.near?'warn':'bad'}"><strong>${esc(feedback.headline)}</strong><span class="correct" lang="nl">${esc(feedback.dutch)}</span><span class="meaning">${esc(feedback.meaning)}</span>${feedback.heard?`<p>Heard: <span lang="nl">${esc(feedback.heard)}</span></p>`:''}<p>${esc(feedback.note)}</p><div class="badges"><span class="badge">${esc(feedback.badge)}</span><span class="badge">Does not change progress</span></div></div>`;
+  const upcoming=currentSpeakingQuestion(next);
+  document.querySelector('.actions').innerHTML=`${feedback.retry?button('retry-speaking-practice','Try speaking again',false):''}${button('next-speaking-practice',upcoming?'Continue':'View speaking summary')}`;
+  on('retry-speaking-practice',()=>renderSpeakingTurn(question,{retried:true}));
+  on('next-speaking-practice',()=>{speakingSession=next;renderSpeakingPractice();});
+  document.getElementById('feedback')?.scrollIntoView({block:'nearest'});
+  document.getElementById(feedback.retry?'retry-speaking-practice':'next-speaking-practice')?.focus();
+ });
+ on('leave-speaking-practice',()=>{const conceptId=speakingSession?.conceptId;abandonSpeakingCapture();speakingSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
+}
 async function openExtraQuestion(){
  lastFeedback=null;
  const q=await transaction(s=>prepareExtraQuestion(s,content,now(),canListenNow(),!!s.settings.speaking));
@@ -288,6 +404,7 @@ function renderCourse(){
   on('start-course',()=>beginDaily({skipGate:false}));
   on('extra-course',()=>beginExtra(selectedConcept));
   on('start-listening-discrimination',()=>beginDiscrimination(selectedConcept));
+  on('start-speaking-practice',()=>beginSpeakingPractice(selectedConcept));
   bindProof(selectedConcept);return;
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});

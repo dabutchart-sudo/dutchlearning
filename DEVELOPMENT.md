@@ -156,6 +156,10 @@ The owner asked for this slice on the live app. S3 Arrange a simple plan follows
 
 The owner asked for this slice on the live app and accepted the wording on 4 October 2026. The course path and topic page state what A1.22 through A1.25, S1, S2 and S3 let the learner do. This is presentation only. No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 516 local tests passed before release. The offline cache is `dutch-v5.1.173-20261004-course-outcomes`. Rollback is the V5.1.172 main source at `2ff6d9491313b50c3fa4effc4a2c36db00e93005`; preserve learner history and the standalone Flashcards fallback. An installed-phone check of the course path is still outstanding. See `docs/dab-190-outcomes.md`.
 
+## DAB-191 assessed speaking — in source, 2026-10-05
+
+The owner said to begin Assessed Speaking on 5 October 2026. A taught topic can offer an optional Practice activity: read an English sentence, say the Dutch, and hear whether the words matched. The recording is sent to the existing local preview transcription route. The browser does not receive a provider key. There is no new production service and no added spend. If recording or transcription fails, that item becomes typing. A typed answer is writing practice and is not speaking evidence. A spoken miss can be tried once more. The activity does not use today’s 20 and does not change Course, mastery, retention, or saved history. Mastery and retention stay written. This is not on the live app. No version change. iPhone and MacBook checks remain outstanding before any later Trial. See `docs/dab-191-speaking-practice.md`.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
@@ -166,7 +170,7 @@ Listening has hidden-text meaning selection and optional sentence discrimination
 
 Directions, requests, connecting ideas, daily life, a simple problem, introductions, and arranging a simple plan are live. On 4 October 2026 the owner confirmed the installed-phone checks of the S1, S2 and S3 lessons, and a native-speaker pass of the S3 Dutch. The S1 and S2 Dutch was already accepted. These confirmations do not include a mastery or retention score. DAB-190, the course outcome map, is on the live app as V5.1.173. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding. DAB-171 stays open.
 
-Assessed speaking, controlled dialogue, and broader conversation are not built. DAB-191 is the first speaking Practice story and stays in Backlog until the owner says to begin. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
+The owner said to begin Assessed Speaking on 5 October 2026. The first optional speaking Practice loop is in source and is not on the live app. It does not use today’s 20, and mastery and retention stay written. DAB-191 stays in progress until that loop is accepted. iPhone and MacBook checks remain outstanding before any later Trial. DAB-172 stays open because the wider spoken-answer loop is not finished. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
 
 ### Question quality and teaching audit — completed
 
