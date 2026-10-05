@@ -15,13 +15,14 @@ import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion
 import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
 import {answerMissingWord,currentMissingWordQuestion,missingWordSummary,startMissingWord} from '../engine/listening-missing-word.js';
 import {answerDictation,currentDictationQuestion,dictationMarking,dictationSummary,startDictation} from '../engine/listening-dictation.js';
+import {answerExchange,currentExchangeQuestion,exchangeSummary,startExchangePractice} from '../engine/listening-exchange.js';
 import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
 import {SPEAKING_MAX_RECORDING_MS} from '../engine/speaking-budget.js';
 import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
-let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0,dictationSession=null,dictationRun=0;
+let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0,dictationSession=null,dictationRun=0,exchangeSession=null,exchangeRun=0;
 let speakingSession=null,speakingRun=0,speakingCapture=null;
 function abandonSpeakingCapture(){
  const capture=speakingCapture;
@@ -331,6 +332,55 @@ function renderDictation(){
  input().addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();check();}});
  on('leave-dictation',leaveDictation);
 }
+function beginExchange(conceptId){
+ try{exchangeRun++;listeningSession=null;discriminationSession=null;missingWordSession=null;dictationSession=null;exchangeSession=startExchangePractice(state,{conceptId,seed:`${dayKey(now())}:${state.learnerId}:${conceptId}:exchange:${exchangeRun}`});renderExchange();}catch(e){notify(e.message)}
+}
+function leaveExchange(){const conceptId=exchangeSession?.conceptId;exchangeSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();}
+function renderExchange(){
+ sessionChrome(true);notify('');
+ const question=currentExchangeQuestion(exchangeSession);
+ if(!question){
+  const summary=exchangeSummary(exchangeSession);
+  const heading=summary.heard?`${summary.heardCorrect} of ${summary.heard} heard exchanges understood`:'No answers were completed from audio';
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL LISTENING PRACTICE</div><h2>${heading}</h2><p>${summary.textFallbacks?`${summary.textFallbacks} ${summary.textFallbacks===1?'exchange used':'exchanges used'} the visible-text fallback (${summary.audioUnclear} unclear · ${summary.audioUnavailable} unavailable). ${summary.textFallbacks===1?'That answer is':'Those answers are'} recognition practice, not listening evidence.`:'Every answer was completed from audio without reading the exchange.'} Listening to an exchange is not taking part in one, so this is not speaking or conversation evidence.</p>${summary.audioIssues.length?`<div class="rule"><strong>Audio to review</strong><ul>${summary.audioIssues.map(issue=>`<li><span class="pill">${esc(issue.issue)}</span> <span lang="nl">${esc(issue.audio)}</span></li>`).join('')}</ul></div>`:''}<p class="muted">No Course, mastery, or retention progress changed. This session-only result is not added to your permanent learning record.</p><div class="actions">${button('repeat-exchange','Practise this listening again')}${button('leave-exchange','Back to the topic',false)}</div></article></section>`;
+  on('repeat-exchange',()=>beginExchange(exchangeSession.conceptId));on('leave-exchange',leaveExchange);return;
+ }
+ const audioText=question.audio;let raw='',usedTextFallback=false,audioIssue=null,locked=false,revealed=false;
+ const turnsHTML=()=>`<div class="exchange-turns">${question.turns.map((turn,index)=>`<p><span class="pill">${index?'B':'A'}</span> <span lang="nl">${esc(turn.nl)}</span></p>`).join('')}</div>`;
+ const choicesHTML=()=>`<div class="answers" role="group" aria-label="What was said">${question.options.map((option,index)=>`<button type="button" class="choice" data-exchange-choice="${index}" aria-pressed="false">${esc(option)}</button>`).join('')}</div>`;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Listening ${exchangeSession.index+1} of ${exchangeSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card listening-practice-card"><span class="direction">Dutch exchange → meaning</span><div class="q-type">Listen to two people</div><h2 class="prompt">Listen to the short exchange, then choose what was said.</h2>${button('exchange-play','Play Dutch audio',false)}<div class="row"><button id="exchange-audio-unclear" class="text-link" type="button">Audio unclear</button><button id="exchange-audio-unavailable" class="text-link" type="button">Audio unavailable</button></div><div id="exchange-visible-text"><p class="small muted">Two short turns: a question, then a reply. The choices appear when the audio starts.</p></div><div id="answer-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-exchange','Check answer')}</div></article><button id="leave-exchange" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const visibleText=document.getElementById('exchange-visible-text'),area=document.getElementById('answer-area');
+ const bindChoices=()=>{
+  area.querySelectorAll('[data-exchange-choice]').forEach(choice=>choice.onclick=()=>{raw=question.options[Number(choice.dataset.exchangeChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))});});
+ };
+ // A late audio start from a screen already left must not change the new one.
+ const revealChoices=()=>{
+  if(revealed||locked||!area.isConnected)return;revealed=true;
+  visibleText.innerHTML='';area.innerHTML=choicesHTML();bindChoices();
+ };
+ const play=document.getElementById('exchange-play');prepareSpeech(audioText);
+ on('exchange-play',()=>{play.disabled=true;play.setAttribute('aria-busy','true');play.textContent='Loading Dutch audio…';const audioError=message=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Try Dutch audio again';notify(message)};speak(audioText,audioError,{onStart:()=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Playing… tap to replay';if(!usedTextFallback)revealChoices()},onEnd:()=>{play.textContent='Play Dutch audio again'}})});
+ const revealForAudioIssue=issue=>{
+  if(locked)return;
+  usedTextFallback=true;audioIssue=issue;revealed=true;raw='';discardPreparedSpeech(audioText);play.textContent='Retry with fresh Dutch audio';
+  visibleText.innerHTML=`${turnsHTML()}<p class="small muted">Marked ${esc(issue)}. The exchange is shown above. Choose what was said, then Check answer. This counts only as recognition, not listening.</p>`;
+  area.innerHTML=choicesHTML();bindChoices();
+  document.getElementById('exchange-audio-unclear').disabled=true;document.getElementById('exchange-audio-unavailable').disabled=true;area.scrollIntoView({block:'nearest'});
+ };
+ on('exchange-audio-unclear',()=>revealForAudioIssue('unclear'));on('exchange-audio-unavailable',()=>revealForAudioIssue('unavailable'));
+ on('check-exchange',()=>{
+  if(locked)return;if(!raw){notify(revealed?'Choose an answer first.':'Play the Dutch audio first.');return;}locked=true;
+  const next=answerExchange(exchangeSession,raw,{usedTextFallback,audioIssue});
+  const result=next.answers.at(-1);exchangeSession=next;const upcoming=currentExchangeQuestion(exchangeSession);if(upcoming)prepareSpeech(upcoming.audio);
+  el.querySelectorAll('button').forEach(button=>{if(button.id!=='leave-exchange')button.disabled=true});
+  const contrast=!result.correct?`<span class="meaning">You chose: ${esc(raw)}</span>`:'';
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?(usedTextFallback?'Meaning understood':'You followed the exchange'):'Not this time'}</strong>${question.turns.map((turn,index)=>`<span class="correct"><span class="pill">${index?'B':'A'}</span> <span lang="nl">${esc(turn.nl)}</span></span><span class="meaning">${esc(turn.en)}</span>`).join('')}${contrast}<div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span><span class="badge">Not conversation evidence</span>${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;
+  document.querySelector('.actions').innerHTML=`${button('replay-exchange','Hear it again',false)}${button('next-exchange',upcoming?'Continue':'View listening summary')}`;
+  on('replay-exchange',()=>speak(audioText,notify));
+  on('next-exchange',renderExchange);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-exchange').focus();
+ });
+ on('leave-exchange',leaveExchange);
+}
 function beginSpeakingPractice(conceptId=selectedConcept){
  try{
   abandonSpeakingCapture();
@@ -529,6 +579,7 @@ function renderCourse(){
   on('start-listening-discrimination',()=>beginDiscrimination(selectedConcept));
   on('start-listening-missing-word',()=>beginMissingWord(selectedConcept));
   on('start-listening-dictation',()=>beginDictation(selectedConcept));
+  on('start-listening-exchange',()=>beginExchange(selectedConcept));
   on('start-speaking-practice',()=>beginSpeakingPractice(selectedConcept));
   bindProof(selectedConcept);return;
  }
