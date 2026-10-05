@@ -1,6 +1,6 @@
 # DAB-188 — slower replay for accepted listening
 
-Status: on the live app as V5.1.178, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release.
+Status: on the live app as V5.1.178, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release. Later on 5 October the owner confirmed that the slower replay works on the installed iPhone app. A MacBook check has not been reported.
 
 This is the sixth listening step in DAB-170. The issue covers a second voice and a slower speed. This slice adds the slower speed only.
 
@@ -43,8 +43,9 @@ A headless browser run at phone width with simulated playback confirmed, in all 
 - the answer shows “Heard slower”;
 - Hear it slower appears after Check answer.
 
-Still needed:
-- a slower replay on the installed iPhone app and on the MacBook, to confirm it sounds slower and natural.
+Installed iPhone app: on 5 October, after V5.1.178 was deployed, the owner reported that the slower replay works. A MacBook check has not been reported.
+
+Still open in DAB-188: the second voice, which needs an approved `listen-tts` change, a spend limit and deploy access; and the slower replay for the two-line exchange once DAB-187 is accepted.
 
 ## Rollback
 
