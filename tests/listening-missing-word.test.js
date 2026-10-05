@@ -98,7 +98,36 @@ test('every distractor agrees with the subject, so grammar alone cannot give the
    }
   }
  }
- assert.ok(checked>=100);
+ assert.ok(checked>=40);
+});
+
+test('every distractor is a verb the topic uses in the same sentence context',()=>{
+ const state=ready(foundation,foundation.concepts.map(concept=>concept.id));
+ const contextOf=item=>{
+  const words=displayTokens(item.nl).map(normalize),subject=displayTokens(item.subject||'').map(normalize);
+  const rest=words.filter((_,index)=>index!==item.verbIndex);
+  if(subject.length===1&&['ik','jij','je','u','hij','zij','ze','wij','we','jullie'].includes(subject[0])){const at=rest.indexOf(subject[0]);if(at>=0)rest.splice(at,1);}
+  return rest.join(' ');
+ };
+ let checked=0;
+ for(const concept of foundation.concepts){
+  if(!missingWordOffer(state,foundation,concept.id))continue;
+  const pool=missingWordPool(state,foundation,concept.id);
+  for(const seed of ['a','b','c']){
+   for(const question of startMissingWord(state,foundation,{conceptId:concept.id,seed}).questions){
+    const item=foundation.byId[question.sourceId];
+    const sameContext=pool.filter(candidate=>contextOf(candidate)===contextOf(item));
+    for(const option of question.options.filter(option=>option!==question.answer)){
+     const verbs=pool.filter(candidate=>normalize(displayTokens(candidate.nl)[candidate.verbIndex])===normalize(option)).map(candidate=>candidate.forms.join('|'));
+     assert.ok(sameContext.some(candidate=>verbs.includes(candidate.forms.join('|'))),`${item.nl}: ${option}`);
+     checked++;
+    }
+   }
+  }
+ }
+ assert.ok(checked>=60);
+ const source=foundation.sentences.find(item=>item.nl==='Waar staat jouw auto?');
+ if(source)assert.equal(missingWordOffer(state,foundation,'A1.8'),null);
 });
 
 test('agreement keys separate person and number',()=>{
@@ -121,8 +150,7 @@ test('forms of the heard verb and proof sentences are never options',()=>{
  if(word)assert.equal(word.options.some(option=>normalize(option)==='wordt'),false);
  const work=session.questions.find(question=>question.sourceId==='p1');
  assert.ok(work);
- assert.ok(work.options.includes('werk'));
- assert.ok(work.options.every(option=>['werk','lees','slaap','word'].includes(option)));
+ assert.deepEqual([...work.options].sort(),['lees','slaap','werk']);
  assert.equal(session.questions.some(question=>question.sourceId==='p4'||question.sourceId==='p5'),false);
 });
 

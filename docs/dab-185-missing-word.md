@@ -1,6 +1,6 @@
 # DAB-185 — missing heard word
 
-Status: local candidate on a branch. Optional Practice only. Not merged, not released, and not checked on a phone.
+Status: on the live app as V5.1.175, 5 October 2026. Optional Practice only. On 5 October the owner asked for the distractor fix below and then for release. A heard round on the installed iPhone app and on the MacBook has not yet been done.
 
 This is the third listening step in DAB-170, after hidden-text meaning selection and sentence discrimination.
 
@@ -19,8 +19,8 @@ The round contains at most five questions. Leaving it saves nothing.
 | Prompt | Dutch audio only at first. The gapped sentence and the choices stay hidden until the audio starts. The missing word stays hidden until feedback. |
 | Missing word | The finite verb the topic already teaches, at the sentence's recorded verb position. |
 | Response | Choose one of three Dutch words. |
-| Acceptable answer | The heard word, ignoring capital letters. The other two words are finite verbs from other practice sentences in the same topic, with the same subject agreement (ik form, jij form, u form, third person singular, or plural). Every option therefore fits the sentence grammatically, so only the audio tells them apart. Other forms of the heard verb are never options, so near-homophones such as *word* and *wordt* never compete. Proof sentences are never used. |
-| Ambiguity | A different option can also make a sensible Dutch sentence. That is intended: the learner is choosing what they heard, not what is possible. |
+| Acceptable answer | The heard word, ignoring capital letters. The other two words are verbs that the topic's practice sentences already use in the same context. That context is the rest of the sentence; a personal-pronoun subject is left out, but a noun subject is kept. Each wrong word is given in the form that agrees with this sentence's subject (ik form, jij form, u form, third person singular, or plural). Every option therefore makes a sensible, grammatical sentence. For example, *Ik _____ de man* gives *zie / hoor / ken*. Only the audio tells them apart. Other forms of the heard verb are never options, so near-homophones such as *word* and *wordt* never compete. Proof sentences are never used. |
+| Ambiguity | Every option makes a sensible Dutch sentence. That is intended: the learner is choosing what they heard, not what is possible or what makes sense. |
 | Near miss | A wrong choice is simply not the heard word. Feedback shows the full sentence with the heard word marked, its English meaning, and the word that was chosen. |
 | Help | Replaying the audio is not help. There is no “show the answer” control before Check answer. |
 | Audio failure | **Audio unclear** or **Audio unavailable** shows the gapped sentence and its English meaning. The learner then chooses the missing word. That answer is recognition, not listening, and the round continues. If the audio never starts, the gap stays hidden and the screen explains the problem, so the learner uses this fallback. |
@@ -31,9 +31,11 @@ The round contains at most five questions. Leaving it saves nothing.
 
 ## Which topics offer it
 
-A topic offers the round when at least one practice sentence has two other same-topic sentences whose finite verb is a different verb with the same agreement. With the current course this is 28 topics.
+A sentence can be used only when the topic has at least two other verbs used in the same context, with a form that agrees with its subject. With the current course, six topics offer the round: F1, F2, F3, F6, A1.4 and A1.5. F2 has 23 usable sentences.
 
-It is not offered for F4, F5, A1.6, A1.9, A1.13 or A1.22. In those topics, either the finite word is the same auxiliary in almost every sentence, or too few sentences share agreement. Offering a choice there would test grammar or guessing, not listening. Making the round available there would need a different missing-word rule and a separate decision.
+The first version also used verbs from other contexts and reached 28 topics. Some options could then be ruled out by meaning, such as *Ik drink een winkel*. On 5 October the owner asked for that to be fixed. Matching only the last word of the sentence was tried and rejected, because it let in sentences such as *Ik ben hulp nodig*.
+
+The other topics do not use two different verbs in the same context. Their sentences vary the context instead. Offering this round there would need new practice sentences written for it, which is a separate content task.
 
 ## What this does not change
 
@@ -41,7 +43,7 @@ The normal daily listening question, the 20-question day, mastery, retention, Fl
 
 ## Checks
 
-Automated: `tests/listening-missing-word.test.js` and the full suite.
+Automated: `tests/listening-missing-word.test.js` and the full suite. The tests check that every wrong option is a verb the topic uses in the same context, and that it agrees with the subject.
 
 A headless browser run at phone width confirmed:
 - the gap and the choices stay hidden before audio;
@@ -53,10 +55,9 @@ A headless browser run at phone width confirmed:
 
 The heard path could not be played in the headless browser. The live sentence-discrimination round behaves the same way there.
 
-Still needed before acceptance:
-- a heard round on the installed iPhone app and on the MacBook, with the sentence staying hidden until the audio starts;
-- an owner review of the wording and the choice of missing word.
+Still needed:
+- a heard round on the installed iPhone app and on the MacBook, with the sentence staying hidden until the audio starts.
 
 ## Rollback
 
-Set `MISSING_WORD_RELEASE.listening.enabled` to `false` in `src/engine/listening-missing-word.js` to hide the offer, or revert the branch. No learner data is involved.
+Revert to the V5.1.174 main source at `79280f2`, or set `MISSING_WORD_RELEASE.listening.enabled` to `false` in `src/engine/listening-missing-word.js` to hide the offer, or revert the branch. No learner data is involved.

@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.174**.
+- Current documented release: **Zin V5.1.175**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -162,17 +162,17 @@ The owner asked for this slice on the live app on 5 October 2026, after acceptin
 
 The `speaking-transcription` function and its budget table stay in source. This environment has no Supabase access token, so the migration was not applied and the function was not deployed or enabled. On the live app, Record asks the learner to type. No provider key reaches the browser, and no new spend is added. `listen-tts` is unchanged. iPhone and MacBook checks of a real recording remain outstanding before any later Trial. DAB-191 stays in progress. DAB-172 stays open. See `docs/dab-191-speaking-practice.md`.
 
-## DAB-185 missing heard word — local candidate, 2026-10-05
+## DAB-185 missing heard word — V5.1.175 release, 2026-10-05
 
-On a taught topic, optional Practice plays a hidden Dutch sentence. Once the audio starts, the sentence appears with its finite verb replaced by a gap. The learner chooses the heard word from three options. The two wrong options are finite verbs from other sentences in the same topic that agree with the same subject, so grammar alone cannot give the answer. Forms of the heard verb are never options. The round has at most five questions and keeps its result in memory. If audio is unclear or unavailable, the gapped sentence and its English meaning are shown; that answer is recognition, not listening. 28 topics offer the round. F4, F5, A1.6, A1.9, A1.13 and A1.22 do not, because their sentences cannot supply fair same-agreement choices. The daily 20, learner history, mastery, retention, Flashcards, sync, schema, authentication, services and running cost are unchanged. All 540 local tests pass. A headless phone-width browser run covered the hidden start, both audio-failure paths, the summary and leaving the round, with no change to saved learner state. The heard path still needs iPhone and MacBook checks, because headless audio cannot play. No version or cache bump, merge or deployment has been made. See `docs/dab-185-missing-word.md`.
+On 5 October the owner asked for the distractor fix and then for release, merge and deployment. On a taught topic, optional Practice plays a hidden Dutch sentence. Once the audio starts, the sentence appears with its finite verb replaced by a gap, and the learner chooses the heard word from three options. The two wrong options are verbs the topic already uses in the same sentence context, in the form that agrees with this subject. Every option is therefore a sensible, grammatical sentence, and only the audio decides. Forms of the heard verb are never options. The round has at most five questions and keeps its result in memory. If audio is unclear or unavailable, the gapped sentence and its English meaning are shown; that answer is recognition, not listening. Six topics offer the round: F1, F2, F3, F6, A1.4 and A1.5. The other topics need practice sentences that use different verbs in the same context. The daily 20, learner history, mastery, retention, Flashcards, sync, schema, authentication, services and running cost are unchanged. A headless phone-width run covered the hidden start, both audio-failure paths, the summary and leaving the round. A heard round on the installed iPhone app and on the MacBook is still outstanding. The offline cache is `dutch-v5.1.175-20261005-missing-word`. Rollback is the V5.1.174 main source at `79280f2`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-185-missing-word.md`.
 
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
 
-The live app is Zin V5.1.174. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
+The live app is Zin V5.1.175. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
 
-Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word is a local Practice candidate on a branch (DAB-185). Short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
+Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word is on the live app as optional Practice in V5.1.175 (DAB-185); a heard round on the installed phone is still outstanding. Short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
 
 Directions, requests, connecting ideas, daily life, a simple problem, introductions, and arranging a simple plan are live. On 4 October 2026 the owner confirmed the installed-phone checks of the S1, S2 and S3 lessons, and a native-speaker pass of the S3 Dutch. The S1 and S2 Dutch was already accepted. These confirmations do not include a mastery or retention score. DAB-190, the course outcome map, is on the live app as V5.1.173. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding. DAB-171 stays open.
 

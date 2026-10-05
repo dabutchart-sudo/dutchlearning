@@ -46,15 +46,36 @@ export function agreementKey(item){
  return 'third';
 }
 
-// Distractors are finite verbs from other sentences in the same topic with the
-// same agreement. Forms of the heard verb are excluded, so near-homophones such
-// as word/wordt never compete.
+const PERSON_PRONOUNS=new Set(['ik','jij','je','u','hij','zij','ze','wij','we','jullie']);
+
+// The sentence without its missing verb, and without a personal-pronoun subject:
+// "het raam" for "Hij sluit het raam." A noun subject stays, because it limits
+// which verbs make sense ("jouw auto" stands, it does not live somewhere).
+// Two verbs that share this context really occur with it in the course.
+function context(item){
+ const words=tokens(item.nl),target=targetWord(item),subject=tokens(item.subject||'');
+ const rest=words.filter((_,index)=>index!==target.index);
+ if(subject.length===1&&PERSON_PRONOUNS.has(subject[0])){
+  const at=rest.findIndex((_,index)=>subject.every((word,offset)=>rest[index+offset]===word));
+  if(at>=0)rest.splice(at,subject.length);
+ }
+ return rest.join(' ');
+}
+
+const paradigm=item=>[...new Set((item.forms||[]).map(normalize))].sort().join('|')||normalize(targetWord(item).word);
+
+// Distractors are verbs that occur in this topic with the same context as the
+// heard verb, in the form that agrees with this subject. Each option therefore
+// makes a sensible, grammatical sentence, so only the audio can tell them apart.
+// Forms of the heard verb are excluded, so near-homophones such as word/wordt
+// never compete.
 function wordChoices(item,pool,seed){
- const target=targetWord(item),key=agreementKey(item);
+ const target=targetWord(item),key=agreementKey(item),own=paradigm(item),frame=context(item);
  const ownForms=new Set([target.word,...(item.forms||[])].map(normalize));
- const candidates=pool.filter(candidate=>normalize(candidate.nl)!==normalize(item.nl)&&agreementKey(candidate)===key).flatMap(candidate=>{
+ const collocates=new Set(pool.filter(candidate=>context(candidate)===frame).map(paradigm).filter(verb=>verb!==own));
+ const candidates=pool.filter(candidate=>collocates.has(paradigm(candidate))&&agreementKey(candidate)===key).flatMap(candidate=>{
   const other=targetWord(candidate);
-  return other&&!ownForms.has(normalize(other.word))?[other.word]:[];
+  return !ownForms.has(normalize(other.word))?[other.word]:[];
  });
  const picked=[],seen=new Set([normalize(target.word)]);
  for(const word of shuffle(candidates,`${seed}:distractors`)){
