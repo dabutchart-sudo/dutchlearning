@@ -13,13 +13,14 @@ import {lessonMaterial,guidanceFor,patternTipFor} from './teaching-support.js';
 import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen} from './speech.js';
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
+import {answerMissingWord,currentMissingWordQuestion,missingWordSummary,startMissingWord} from '../engine/listening-missing-word.js';
 import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
 import {SPEAKING_MAX_RECORDING_MS} from '../engine/speaking-budget.js';
 import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
-let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0;
+let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0;
 let speakingSession=null,speakingRun=0,speakingCapture=null;
 function abandonSpeakingCapture(){
  const capture=speakingCapture;
@@ -211,6 +212,58 @@ function renderDiscrimination(){
   on('next-discrimination',renderDiscrimination);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-discrimination').focus();
  });
  on('leave-discrimination',()=>{const conceptId=discriminationSession?.conceptId;discriminationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();});
+}
+function beginMissingWord(conceptId){
+ try{missingWordRun++;listeningSession=null;discriminationSession=null;missingWordSession=startMissingWord(state,content,{conceptId,seed:`${dayKey(now())}:${state.learnerId}:${conceptId}:missing:${missingWordRun}`});renderMissingWord();}catch(e){notify(e.message)}
+}
+function leaveMissingWord(){const conceptId=missingWordSession?.conceptId;missingWordSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();}
+function renderMissingWord(){
+ sessionChrome(true);notify('');
+ const question=currentMissingWordQuestion(missingWordSession);
+ if(!question){
+  const summary=missingWordSummary(missingWordSession);
+  const heading=summary.heard?`${summary.heardCorrect} of ${summary.heard} heard words matched`:'No answers were completed from audio';
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL LISTENING PRACTICE</div><h2>${heading}</h2><p>${summary.textFallbacks?`${summary.textFallbacks} ${summary.textFallbacks===1?'sentence used':'sentences used'} the visible-text fallback (${summary.audioUnclear} unclear · ${summary.audioUnavailable} unavailable). ${summary.textFallbacks===1?'That answer is':'Those answers are'} recognition practice, not listening evidence.`:'Every answer was completed from audio without revealing the sentence.'}</p>${summary.audioIssues.length?`<div class="rule"><strong>Audio to review</strong><ul>${summary.audioIssues.map(issue=>`<li><span class="pill">${esc(issue.issue)}</span> <span lang="nl">${esc(issue.audio)}</span> — ${esc(issue.meaning)}</li>`).join('')}</ul></div>`:''}<p class="muted">No Course, mastery, or retention progress changed. This session-only result is not added to your permanent learning record.</p><div class="actions">${button('repeat-missing-word','Practise this listening again')}${button('leave-missing-word','Back to the topic',false)}</div></article></section>`;
+  on('repeat-missing-word',()=>beginMissingWord(missingWordSession.conceptId));on('leave-missing-word',leaveMissingWord);return;
+ }
+ const audioText=question.audio;let raw='',usedTextFallback=false,audioIssue=null,locked=false,revealed=false;
+ // The gapped line and word choices appear only once the Dutch audio has started.
+ const frameHTML=()=>`<p class="audio-issue-sentence missing-word-frame" lang="nl">${esc(question.frame)}</p>`;
+ const choicesHTML=()=>`<div class="answers" role="group" aria-label="Words that might fill the gap">${question.options.map((option,index)=>`<button type="button" class="choice" data-missing-word-choice="${index}" aria-pressed="false" lang="nl">${esc(option)}</button>`).join('')}</div>`;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Listening ${missingWordSession.index+1} of ${missingWordSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card listening-practice-card"><span class="direction">Dutch audio → missing word</span><div class="q-type">Listen and choose the word</div><h2 class="prompt">Listen, then choose the missing word.</h2>${button('missing-word-play','Play Dutch audio',false)}<div class="row"><button id="missing-word-audio-unclear" class="text-link" type="button">Audio unclear</button><button id="missing-word-audio-unavailable" class="text-link" type="button">Audio unavailable</button></div><div id="missing-word-visible-text"><p class="small muted">The sentence with its gap appears when the audio starts.</p></div><div id="answer-area"></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-missing-word','Check answer')}</div></article><button id="leave-missing-word" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const bindChoices=()=>{
+  const area=document.getElementById('answer-area');
+  area.querySelectorAll('[data-missing-word-choice]').forEach(choice=>choice.onclick=()=>{raw=question.options[Number(choice.dataset.missingWordChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))});});
+ };
+ const revealFrame=()=>{
+  if(revealed||locked)return;revealed=true;
+  document.getElementById('missing-word-visible-text').innerHTML=frameHTML();
+  document.getElementById('answer-area').innerHTML=choicesHTML();bindChoices();
+ };
+ const play=document.getElementById('missing-word-play');prepareSpeech(audioText);
+ on('missing-word-play',()=>{play.disabled=true;play.setAttribute('aria-busy','true');play.textContent='Loading Dutch audio…';const audioError=message=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Try Dutch audio again';notify(message)};speak(audioText,audioError,{onStart:()=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Playing… tap to replay';if(!usedTextFallback)revealFrame()},onEnd:()=>{play.textContent='Play Dutch audio again'}})});
+ const revealForAudioIssue=issue=>{
+  if(locked)return;
+  usedTextFallback=true;audioIssue=issue;revealed=true;discardPreparedSpeech(audioText);play.textContent='Retry with fresh Dutch audio';
+  document.getElementById('missing-word-visible-text').innerHTML=`${frameHTML()}<p class="meaning">${esc(question.meaning)}</p><p class="small muted">Marked ${esc(issue)}. The sentence and its English meaning are shown above. Choose the missing word, then Check answer. This counts only as recognition, not listening.</p>`;
+  document.getElementById('answer-area').innerHTML=choicesHTML();raw='';bindChoices();
+  document.getElementById('missing-word-audio-unclear').disabled=true;document.getElementById('missing-word-audio-unavailable').disabled=true;document.getElementById('answer-area').scrollIntoView({block:'nearest'});
+ };
+ on('missing-word-audio-unclear',()=>revealForAudioIssue('unclear'));on('missing-word-audio-unavailable',()=>revealForAudioIssue('unavailable'));
+ on('check-missing-word',()=>{
+  if(locked)return;if(!raw){notify(revealed?'Choose an answer first.':'Play the Dutch audio first.');return;}locked=true;
+  const next=answerMissingWord(missingWordSession,raw,{usedTextFallback,audioIssue});
+  const result=next.answers.at(-1);missingWordSession=next;const upcoming=currentMissingWordQuestion(missingWordSession);if(upcoming)prepareSpeech(upcoming.audio);
+  el.querySelectorAll('button').forEach(button=>{if(button.id!=='leave-missing-word')button.disabled=true});
+  const words=question.sentence.trim().split(/\s+/);
+  const marked=words.map((word,index)=>index===question.wordIndex?`<mark>${esc(word)}</mark>`:esc(word)).join(' ');
+  const contrast=!result.correct?`<span class="meaning">You chose: <span lang="nl">${esc(raw)}</span></span>`:'';
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?(usedTextFallback?'Word recognised':'You heard the missing word'):'Not this time'}</strong><span class="correct" lang="nl">${marked}</span><span class="meaning">${esc(question.meaning)}</span>${contrast}<div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening diagnostic'}</span>${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;
+  document.querySelector('.actions').innerHTML=`${button('replay-missing-word','Hear it again',false)}${button('next-missing-word',upcoming?'Continue':'View listening summary')}`;
+  on('replay-missing-word',()=>speak(audioText,notify));
+  on('next-missing-word',renderMissingWord);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-missing-word').focus();
+ });
+ on('leave-missing-word',leaveMissingWord);
 }
 function beginSpeakingPractice(conceptId=selectedConcept){
  try{
@@ -408,6 +461,7 @@ function renderCourse(){
   on('start-course',()=>beginDaily({skipGate:false}));
   on('extra-course',()=>beginExtra(selectedConcept));
   on('start-listening-discrimination',()=>beginDiscrimination(selectedConcept));
+  on('start-listening-missing-word',()=>beginMissingWord(selectedConcept));
   on('start-speaking-practice',()=>beginSpeakingPractice(selectedConcept));
   bindProof(selectedConcept);return;
  }
