@@ -1,6 +1,27 @@
 # DAB-182 — course words in Flashcards: proposal
 
-Status: **proposal for owner decision.** Nothing is implemented. No code, data, schema, scheduling or deployment has changed.
+Status: **approved by the owner on 5 October 2026, with a course share of 3; implemented as a local candidate on a branch.** Not merged, not released, and not checked on a device or against the live deck. No data, schema or deployment has changed.
+
+## Implementation
+
+- `src/engine/course-flashcard-intake.js` holds the rules: headwords, identity matching, eligibility, earliest-taught order, and the share of 3. It also has a switch, `COURSE_INTAKE_ENABLED`.
+- `buildFlashcardQueue` accepts an optional priority list and limit inside the same `newLimit`. Without them it behaves exactly as before.
+- The Flashcards screen loads the course word list alongside the cards. When a session starts it passes the course priority.
+- The dashboard says how many course words are ready and how many can join today. A closed list shows taught words that have no single matching card.
+- If a session is restarted, or another device already introduced course cards today, those count against the share of 3. They are identified by `first_seen`.
+- The share caps how far course words jump the queue. A course card can still arrive through ordinary card-ID order.
+- If the course word list or Learning progress cannot load, Flashcards keep card-ID order.
+
+Tests: `tests/course-flashcard-intake.test.js` and the full suite.
+
+A headless browser run used a fake card collection, with no access to the live deck. It confirmed:
+- the dashboard note;
+- that taught course words lead the session (*werken* by its card link, *komen* by its Dutch text);
+- that no write request was made.
+
+Still needed before release:
+- a development preview on iPhone and MacBook against the real collection;
+- a check that today's new cards and the shared count are as expected, and that sync and cross-device behaviour are correct. The issue's acceptance requires this.
 
 ## The question
 
@@ -64,9 +85,9 @@ Automated scenarios:
 
 Then: a development preview on iPhone and MacBook, and a check against real (protected) learner data that the day's new cards and the shared count are as expected. That comes before any production release.
 
-## Decisions requested
+## Decisions (approved 5 October 2026)
 
 1. Approve eligibility from the study day after a word is first taught, headwords only.
 2. Approve the identity rule: ID link, then a single exact Dutch match, otherwise no card.
-3. Choose the share of the five daily new cards for course words: **3 (recommended)**, 2, or all.
+3. Course words take up to **3** of the five daily new cards.
 4. Confirm that creating cards for unmatched course words is left to a later, separate decision.
