@@ -112,7 +112,7 @@ test('a heard answer is listening diagnostic and does not change learner state',
  session=answerSentenceDiscrimination(session,missed.options.find(option=>normalize(option)!==normalize(missed.answer)));
  assert.equal(session.answers[0].correct,false);
  assert.equal(session.answers[0].capability,'listen');
- assert.deepEqual(discriminationSummary(session),{total:1,heard:1,heardCorrect:0,textFallbacks:0,audioUnclear:0,audioUnavailable:0,audioIssues:[],countsTowardProgress:false});
+ assert.deepEqual(discriminationSummary(session),{total:1,heard:1,heardCorrect:0,slowed:0,textFallbacks:0,audioUnclear:0,audioUnavailable:0,audioIssues:[],countsTowardProgress:false});
  assert.equal(JSON.stringify(state),before);
  assert.equal(state.daily.count,0);
  assert.equal(state.attempts.length,0);

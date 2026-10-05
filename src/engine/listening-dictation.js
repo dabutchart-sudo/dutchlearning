@@ -100,14 +100,16 @@ export function dictationMarking(raw,answer){
 
 // Typing a heard sentence is listening plus writing. It is never speaking
 // evidence. After an audio issue the sentence is shown and the learner chooses
-// its English meaning instead, which is recognition.
-export function answerDictation(session,raw,{usedTextFallback=false,audioIssue=null}={}){
+// its English meaning instead, which is recognition. A slower replay is
+// supported listening.
+export function answerDictation(session,raw,{usedTextFallback=false,audioIssue=null,slowed=false}={}){
  const question=currentDictationQuestion(session);
  if(!question)throw Error('Listening practice is already complete.');
  const text=String(raw??'');
  if(!text.trim())throw Error(usedTextFallback?'Choose an answer first.':'Type what you heard first.');
  const issue=['unclear','unavailable'].includes(audioIssue)?audioIssue:null;
- const base={questionId:question.id,sourceId:question.sourceId,concept:question.concept,support:'independent',releaseLevel:'practice',speakingEvidence:false,countsTowardProgress:false};
+ const heardSlowly=Boolean(slowed&&!usedTextFallback);
+ const base={questionId:question.id,sourceId:question.sourceId,concept:question.concept,support:heardSlowly?'supported':'independent',slowed:heardSlowly,releaseLevel:'practice',speakingEvidence:false,countsTowardProgress:false};
  let result;
  if(usedTextFallback){
   result={...base,correct:normalize(text)===normalize(question.meaning),near:false,capability:'recognise',writing:false,usedTextFallback:true,...(issue?{audioIssue:issue}:{})};
@@ -129,7 +131,7 @@ export function dictationSummary(session){
   return Object.freeze({sourceId:answer.sourceId,issue:answer.audioIssue,audio:question?.audio||'',meaning:question?.meaning||''});
  });
  return Object.freeze({
-  total:answers.length,heard:heard.length,heardCorrect:heard.filter(answer=>answer.correct).length,heardNear:heard.filter(answer=>answer.near).length,
+  total:answers.length,heard:heard.length,heardCorrect:heard.filter(answer=>answer.correct).length,heardNear:heard.filter(answer=>answer.near).length,slowed:heard.filter(answer=>answer.slowed).length,
   wordsHeard:heard.reduce((sum,answer)=>sum+answer.wordsHeard,0),words:heard.reduce((sum,answer)=>sum+answer.wordCount,0),
   textFallbacks:answers.filter(answer=>answer.usedTextFallback).length,audioUnclear:answers.filter(answer=>answer.audioIssue==='unclear').length,audioUnavailable:answers.filter(answer=>answer.audioIssue==='unavailable').length,
   audioIssues:Object.freeze(audioIssues),countsTowardProgress:false

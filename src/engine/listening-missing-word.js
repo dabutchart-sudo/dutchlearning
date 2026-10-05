@@ -133,8 +133,8 @@ export function currentMissingWordQuestion(session){return session?.questions?.[
 
 // A heard answer is listening only when it was made before the sentence was shown.
 // After an audio issue the same choice is made with the English meaning visible,
-// so it counts as recognition.
-export function answerMissingWord(session,raw,{usedTextFallback=false,audioIssue=null}={}){
+// so it counts as recognition. A slower replay is supported listening.
+export function answerMissingWord(session,raw,{usedTextFallback=false,audioIssue=null,slowed=false}={}){
  const question=currentMissingWordQuestion(session);
  if(!question)throw Error('Listening practice is already complete.');
  if(!String(raw??'').trim())throw Error('Choose an answer first.');
@@ -142,8 +142,8 @@ export function answerMissingWord(session,raw,{usedTextFallback=false,audioIssue
  const correct=normalize(raw)===normalize(question.answer);
  const result=Object.freeze({
   questionId:question.id,sourceId:question.sourceId,concept:question.concept,correct,
-  capability:usedTextFallback?'recognise':'listen',support:'independent',releaseLevel:'practice',
-  usedTextFallback:Boolean(usedTextFallback),...(issue?{audioIssue:issue}:{}),countsTowardProgress:false
+  capability:usedTextFallback?'recognise':'listen',support:slowed&&!usedTextFallback?'supported':'independent',releaseLevel:'practice',
+  usedTextFallback:Boolean(usedTextFallback),slowed:Boolean(slowed&&!usedTextFallback),...(issue?{audioIssue:issue}:{}),countsTowardProgress:false
  });
  return Object.freeze({...session,index:session.index+1,answers:Object.freeze([...session.answers,result])});
 }
@@ -155,5 +155,5 @@ export function missingWordSummary(session){
   const question=session?.questions?.find(item=>item.id===answer.questionId);
   return Object.freeze({sourceId:answer.sourceId,issue:answer.audioIssue,audio:question?.audio||'',meaning:question?.meaning||''});
  });
- return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(answer=>answer.correct).length,textFallbacks:answers.filter(answer=>answer.usedTextFallback).length,audioUnclear:answers.filter(answer=>answer.audioIssue==='unclear').length,audioUnavailable:answers.filter(answer=>answer.audioIssue==='unavailable').length,audioIssues:Object.freeze(audioIssues),countsTowardProgress:false});
+ return Object.freeze({total:answers.length,heard:heard.length,heardCorrect:heard.filter(answer=>answer.correct).length,slowed:heard.filter(answer=>answer.slowed).length,textFallbacks:answers.filter(answer=>answer.usedTextFallback).length,audioUnclear:answers.filter(answer=>answer.audioIssue==='unclear').length,audioUnavailable:answers.filter(answer=>answer.audioIssue==='unavailable').length,audioIssues:Object.freeze(audioIssues),countsTowardProgress:false});
 }
