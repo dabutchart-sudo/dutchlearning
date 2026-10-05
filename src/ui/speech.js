@@ -12,6 +12,14 @@ let speechSource=null;
 let listenAuth=null;
 let listenAuthPending=null;
 let listenGen=0;
+// Playback speed for the current speak() call. 1 is normal; SLOWER_RATE is the
+// optional slower replay in Practice listening. Audio elements keep pitch.
+export const SLOWER_RATE=.8;
+let requestedRate=1;
+function applyRate(audio){
+ try{audio.defaultPlaybackRate=requestedRate;audio.playbackRate=requestedRate;}catch{}
+ try{audio.preservesPitch=true;audio.webkitPreservesPitch=true;}catch{}
+}
 let lastBlobUrl='';
 const ttsCache=new Map();
 const ttsPending=new Map();
@@ -179,7 +187,7 @@ function queueDutch(synth,Utterance,text,onError,events={}){
  const u=new Utterance(String(text??''));
  if(voice&&!voice.__systemFallback)u.voice=voice;
  u.lang=voice?.lang||'nl-NL';
- u.rate=.85;
+ u.rate=.85*requestedRate;
  u.volume=1;
  u.onerror=event=>{if(!ignoreDeviceError(event))onError(message);};
  if(events.onStart)u.onstart=()=>events.onStart();
@@ -218,6 +226,7 @@ function speakLan(dutch,onError,events={}){
  audio.onerror=()=>{explainPlayError(onError);};
  audio.onended=()=>{if(gen===listenGen)events.onEnd?.();};
  audio.src=listenAudioUrl(dutch);
+ applyRate(audio);
  try{
   const start=audio.play();
   if(start&&typeof start.then==='function')start.then(()=>{if(gen===listenGen)events.onStart?.();},()=>explainPlayError(onError));
@@ -259,6 +268,7 @@ function startHtmlClip(audio,blob){
  audio.muted=false;
  audio.volume=1;
  audio.src=lastBlobUrl||listenAudioUrl('');
+ applyRate(audio);
  try{audio.currentTime=0;}catch{}
  try{return audio.play();}catch(error){return Promise.reject(error);}
 }
@@ -296,6 +306,8 @@ function startDecodedBuffer(buffer,gen,events){
   if(gen!==listenGen)return false;
   const source=audioCtx.createBufferSource();
   source.buffer=buffer;
+  // Last-resort path: a slowed buffer also lowers pitch, but stays audible.
+  if(requestedRate!==1)try{source.playbackRate.value=requestedRate;}catch{}
   source.connect(audioCtx.destination);
   source.onended=()=>{if(gen===listenGen&&speechSource===source){speechSource=null;events.onEnd();}};
   source.start(0);
@@ -397,7 +409,8 @@ function speakProduction(dutch,onError,events={}){
  stopSpeechSource();
  resumeAudioContext();
  const decoded=decodedCache.get(dutch);
- if(decoded&&startDecodedBuffer(decoded,gen,hooks))return true;
+ // A slower replay prefers the audio element, which keeps pitch.
+ if(decoded&&requestedRate===1&&startDecodedBuffer(decoded,gen,hooks))return true;
  const ready=ttsCache.get(dutch);
  if(ready){
   // Play the downloaded sentence in this tap. A separate near-silent clip was the faint hiss.
@@ -412,6 +425,7 @@ function speakProduction(dutch,onError,events={}){
 export function speak(text,onError=()=>{},events={}){
  const dutch=String(text??'').trim();
  if(!dutch)return false;
+ requestedRate=events.rate===SLOWER_RATE?SLOWER_RATE:1;
  if(canUseLanListen())return speakLan(dutch,onError,events);
  if(canUseProductionListen())return speakProduction(dutch,onError,events);
  return speakDevice(dutch,onError,events);
