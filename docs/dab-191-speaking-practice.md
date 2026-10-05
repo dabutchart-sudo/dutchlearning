@@ -1,6 +1,6 @@
 # DAB-191 — optional assessed speaking practice
 
-Status: in source, 5 October 2026. Not on the live app. No version change. The owner said to begin Assessed Speaking on 5 October 2026. DAB-191 stays in progress. iPhone and MacBook checks are still outstanding before any later Trial.
+Status: in source, 5 October 2026. Not on the live app. No version change. The owner said to begin Assessed Speaking on 5 October 2026 and accepted this wording the same day. DAB-191 stays in progress. iPhone and MacBook checks are still outstanding before any later Trial. Speech on the live app still needs an owner spend limit for a production transcription route.
 
 ## This slice
 
