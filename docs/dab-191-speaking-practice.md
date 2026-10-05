@@ -1,13 +1,14 @@
 # DAB-191 — optional assessed speaking practice
 
-Status: in source, 5 October 2026. Not on the live app. No version change. The owner said to begin Assessed Speaking on 5 October 2026 and accepted this wording the same day. DAB-191 stays in progress. iPhone and MacBook checks are still outstanding before any later Trial. Speech on the live app still needs an owner spend limit for a production transcription route.
+Status: in source, 5 October 2026. Not on the live app. No version change. The owner said to begin Assessed Speaking on 5 October 2026, accepted this wording the same day, and set the transcription spend limit at £5 per month. DAB-191 stays in progress. iPhone and MacBook checks are still outstanding before any later Trial. The production route is in source, switched off, and has not been deployed.
 
 ## This slice
 
 On a topic the learner has already started, the topic page offers a short optional Practice activity.
 
 - The prompt is the English sentence. The Dutch stays hidden until the answer is checked.
-- Record sends the audio to the existing local preview route, `/preview/stt`. The page never receives a provider key.
+- On a development copy, Record sends the audio to the existing local preview route, `/preview/stt`. On the live origin, a signed-in learner’s recording is sent to the `speaking-transcription` function. The page never receives a provider key.
+- The function is off until `SPEAKING_TRANSCRIPTION_ENABLED=true`. Each attempt reserves £0.02 before OpenAI is called, and the month stops at £5. A recording is limited to 15 seconds and 600KB. The budget table is in `supabase/migrations/20261005_speaking_transcription_budget.sql` and has not been applied.
 - The transcript is compared with the Dutch sentence. An exact word match is “Understood”. A very small difference is “Very close”. Anything else is “Not this time”.
 - This comparison is about the words. It is not a pronunciation score.
 - A spoken miss can be tried once more. The kept answer is the one that counts in the session summary.
@@ -17,6 +18,6 @@ On a topic the learner has already started, the topic page offers a short option
 
 ## What this does not change
 
-No new provider, no OpenAI Realtime, and no new production transcription service. No spend is added. The daily 20, scheduler, learner history, schema, and authentication stay as they are. The offline cache name stays `dutch-v5.1.173-20261004-course-outcomes` until a later release. Rollback of this source slice is the V5.1.173 main source at `c80515ebf20585e153ab7b752d5b224820a4852a`.
+No new provider and no OpenAI Realtime. The £5 monthly cap is recorded, and no spend has been added because the function is not deployed. `listen-tts` is unchanged. The daily 20, scheduler, learner history, and authentication stay as they are. The new budget table is source only and has not been applied to production. The offline cache name stays `dutch-v5.1.173-20261004-course-outcomes` until a later release. Rollback of this source slice is the V5.1.173 main source at `c80515ebf20585e153ab7b752d5b224820a4852a`.
 
 DAB-172 stays open. Controlled dialogue stays waiting.

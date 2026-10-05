@@ -14,6 +14,7 @@ import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen}
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
 import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
+import {SPEAKING_MAX_RECORDING_MS} from '../engine/speaking-budget.js';
 import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -25,6 +26,7 @@ function abandonSpeakingCapture(){
  speakingCapture=null;
  if(!capture)return;
  capture.abandoned=true;
+ clearTimeout(capture.stopTimer);
  try{capture.stream?.getTracks?.().forEach(track=>track.stop());}catch{}
  try{if(capture.recorder?.state==='recording')capture.recorder.stop();}catch{}
 }
@@ -251,7 +253,7 @@ function renderSpeakingTurn(question,{retried=false}={}){
  const transcribeBlob=async blob=>{
   const line=document.getElementById('spoken-practice-transcript');
   if(line)line.textContent='Transcribing…';
-  const heard=await transcribeSpokenAnswer(blob);
+  const heard=await transcribeSpokenAnswer(blob,{origin:location.hostname});
   if(!document.getElementById('check-speaking-practice')||typedFallback)return;
   if(!heard.ok){convert(heard.speechIssue||'unavailable');return;}
   raw=heard.text;
@@ -271,10 +273,11 @@ function renderSpeakingTurn(question,{retried=false}={}){
   try{recorder=new MediaRecorder(stream);}
   catch{stream.getTracks().forEach(track=>track.stop());convert('unavailable');return;}
   const chunks=[];
-  const capture={recorder,stream,abandoned:false};
+  const capture={recorder,stream,abandoned:false,stopTimer:0};
   speakingCapture=capture;
   recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data)};
   recorder.onstop=()=>{
+   clearTimeout(capture.stopTimer);
    stream.getTracks().forEach(track=>track.stop());
    if(speakingCapture===capture)speakingCapture=null;
    if(capture.abandoned)return;
@@ -282,6 +285,7 @@ function renderSpeakingTurn(question,{retried=false}={}){
    transcribeBlob(blob).catch(()=>convert('unavailable'));
   };
   recorder.start();
+  capture.stopTimer=setTimeout(()=>{try{if(recorder.state==='recording')recorder.stop();}catch{}},SPEAKING_MAX_RECORDING_MS);
   const record=document.getElementById('record-speaking-practice');
   if(record)record.textContent='Stop recording';
  };

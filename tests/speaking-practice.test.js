@@ -138,7 +138,7 @@ test('transcription uses the existing preview route and fails closed without a k
  assert.deepEqual(await transcribeSpokenAnswer(blob,{fetchImpl:async()=>({ok:true,json:async()=>({text:'  '})})}),{ok:false,speechIssue:'unclear',text:''});
  const source=readFileSync(new URL('../src/engine/speaking-transcription.js',import.meta.url),'utf8');
  assert.match(source,/\/preview\/stt/);
- assert.doesNotMatch(source,/api\.openai\.com|Authorization|Bearer |sk-/);
+ assert.doesNotMatch(source,/api\.openai\.com|OPENAI_API_KEY|sk-/);
 });
 
 test('the topic page offers speaking practice without putting it on Course home or in the daily 20',()=>{

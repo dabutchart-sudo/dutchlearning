@@ -1,2 +1,5 @@
 [functions.listen-tts]
 verify_jwt = false
+
+[functions.speaking-transcription]
+verify_jwt = true
