@@ -1,6 +1,6 @@
 # DAB-185 — missing heard word
 
-Status: on the live app as V5.1.175, 5 October 2026. Optional Practice only. On 5 October the owner asked for the distractor fix below and then for release. A heard round on the installed iPhone app and on the MacBook has not yet been done.
+Status: on the live app as V5.1.175, 5 October 2026. Optional Practice only. On 5 October the owner asked for the distractor fix below and then for release. On 5 October the owner confirmed that the round works on the installed iPhone app. A MacBook check has not been reported.
 
 This is the third listening step in DAB-170, after hidden-text meaning selection and sentence discrimination.
 
@@ -55,8 +55,7 @@ A headless browser run at phone width confirmed:
 
 The heard path could not be played in the headless browser. The live sentence-discrimination round behaves the same way there.
 
-Still needed:
-- a heard round on the installed iPhone app and on the MacBook, with the sentence staying hidden until the audio starts.
+Installed iPhone app: on 5 October, after V5.1.175 was deployed, the owner reported that the round works. A MacBook check has not been reported.
 
 ## Rollback
 
