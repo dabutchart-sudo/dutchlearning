@@ -12,6 +12,11 @@ Status: **approved by the owner on 5 October 2026, with a course share of 3; rel
 - The share caps how far course words jump the queue. A course card can still arrive through ordinary card-ID order.
 - If the course word list or Learning progress cannot load, Flashcards keep card-ID order.
 
+Follow-up (V5.1.180, 5 October 2026, at the owner's request): the dashboard line is always shown.
+- With nothing ready it reads “0 course words are ready for Flashcards…”.
+- If the course word list cannot load, it says that today's new cards use the usual order.
+- So 0 ready can be told apart from the feature not running.
+
 Tests: `tests/course-flashcard-intake.test.js` and the full suite.
 
 A headless browser run used a fake card collection, with no access to the live deck. It confirmed:
