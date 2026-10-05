@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.173**.
+- Current documented release: **Zin V5.1.174**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -156,21 +156,23 @@ The owner asked for this slice on the live app. S3 Arrange a simple plan follows
 
 The owner asked for this slice on the live app and accepted the wording on 4 October 2026. The course path and topic page state what A1.22 through A1.25, S1, S2 and S3 let the learner do. This is presentation only. No new sentences and no new topic. Unlock rules, the daily 20, mastery, retention, learner history, schema, authentication and services are unchanged. A1.26 stays closed. All 516 local tests passed before release. The offline cache is `dutch-v5.1.173-20261004-course-outcomes`. Rollback is the V5.1.172 main source at `2ff6d9491313b50c3fa4effc4a2c36db00e93005`; preserve learner history and the standalone Flashcards fallback. An installed-phone check of the course path is still outstanding. See `docs/dab-190-outcomes.md`.
 
-## DAB-191 assessed speaking — in source, 2026-10-05
+## DAB-191 assessed speaking — V5.1.174 release, 2026-10-05
 
-The owner said to begin Assessed Speaking on 5 October 2026, accepted the wording the same day, and set the transcription spend limit at £5 per month. A taught topic can offer an optional Practice activity: read an English sentence, say the Dutch, and hear whether the words matched. A development copy uses the existing local preview transcription route. The live origin is wired to a signed-in `speaking-transcription` function that reserves £0.02 before each OpenAI call and stops at £5 in a month. The function is switched off, its budget table has not been applied, and it has not been deployed, so no spend has been added. The browser does not receive a provider key. If recording or transcription fails, that item becomes typing. A typed answer is writing practice and is not speaking evidence. A spoken miss can be tried once more. The activity does not use today’s 20 and does not change Course, mastery, retention, or saved history. Mastery and retention stay written. `listen-tts` is unchanged. This is not on the live app. No version change. iPhone and MacBook checks remain outstanding before any later Trial. See `docs/dab-191-speaking-practice.md`.
+The owner asked for this slice on the live app on 5 October 2026, after accepting the wording and setting the transcription spend limit at £5 per month. A taught topic offers an optional Practice activity: read an English sentence and say the Dutch. The comparison is about the words, not pronunciation. A spoken miss can be tried once more. Typing, or a recording that cannot be transcribed, is writing practice and is not speaking evidence. The activity does not use today’s 20 and does not change Course, mastery, retention, or saved history. Mastery and retention stay written. The daily skippable spoken question is unchanged. All 528 local tests passed before release. The offline cache is `dutch-v5.1.174-20261005-speaking-practice`. Rollback of the app is the V5.1.173 main source at `c80515ebf20585e153ab7b752d5b224820a4852a`; preserve learner history and the standalone Flashcards fallback.
+
+The `speaking-transcription` function and its budget table stay in source. This environment has no Supabase access token, so the migration was not applied and the function was not deployed or enabled. On the live app, Record asks the learner to type. No provider key reaches the browser, and no new spend is added. `listen-tts` is unchanged. iPhone and MacBook checks of a real recording remain outstanding before any later Trial. DAB-191 stays in progress. DAB-172 stays open. See `docs/dab-191-speaking-practice.md`.
 
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
 
-The live app is Zin V5.1.173. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
+The live app is Zin V5.1.174. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
 
 Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word, short dictation, two-line exchange comprehension, and controlled voice or speed are not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
 
 Directions, requests, connecting ideas, daily life, a simple problem, introductions, and arranging a simple plan are live. On 4 October 2026 the owner confirmed the installed-phone checks of the S1, S2 and S3 lessons, and a native-speaker pass of the S3 Dutch. The S1 and S2 Dutch was already accepted. These confirmations do not include a mastery or retention score. DAB-190, the course outcome map, is on the live app as V5.1.173. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding. DAB-171 stays open.
 
-The owner said to begin Assessed Speaking on 5 October 2026, accepted the wording the same day, and set the transcription spend limit at £5 per month. The first optional speaking Practice loop is in source and is not on the live app. The production transcription route is in source, switched off, and not deployed. It does not use today’s 20, and mastery and retention stay written. DAB-191 stays in progress until that loop is accepted. iPhone and MacBook checks remain outstanding before any later Trial. DAB-172 stays open because the wider spoken-answer loop is not finished. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
+The owner asked for the first optional speaking Practice loop on the live app on 5 October 2026. It is V5.1.174. Record on the live app asks the learner to type, because the production transcription function and its £5 monthly budget table have not been deployed. The agreed ceiling stays £5 per month for when that function is switched on. The activity does not use today’s 20, and mastery and retention stay written. DAB-191 stays in progress until an installed-phone check and a MacBook check of a real recording are done, and until speech can be scored under that cap. DAB-172 stays open because the wider spoken-answer loop is not finished. DAB-173 waits for that loop. DAB-174 stays later. A1.26 stays closed under DAB-87 until earlier topics are retained and the unseen written check is in the course. DAB-182 still needs an owner decision before course words enter Flashcards.
 
 ### Question quality and teaching audit — completed
 

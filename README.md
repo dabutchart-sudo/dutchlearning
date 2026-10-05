@@ -4,7 +4,7 @@ Zin is a personal, mobile-first Dutch-learning PWA for one learner. Its long-ter
 
 ## Current production position
 
-Production is Zin V5.1.173 on GitHub Pages:
+Production is Zin V5.1.174 on GitHub Pages:
 
 - Course is the home screen and shows the syllabus, current position, and an explanation of each topic’s learning state.
 - Progress shows separate recorded evidence for recall, construction, reading, listening, writing, speaking, and interaction.
@@ -24,6 +24,7 @@ Production is Zin V5.1.173 on GitHub Pages:
 - The daily session includes one hidden-text listening beat.
 - A taught topic can offer an optional listening round: hear a hidden Dutch sentence and choose which written line it was. It does not use the daily 20 or change saved progress. If audio fails, the same item becomes a visible-text meaning choice.
 - Speaking can add one skippable spoken beat when enabled; skipping converts the same item to typing without adding work.
+- A taught topic can offer optional speaking practice: say the Dutch for an English sentence. It does not use the daily 20 or change saved progress. If speech cannot be transcribed, the same item becomes typing, which is writing practice.
 - Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting.
 - On phones, the four Flashcards summary figures share one row.
 - The configured new-card limit is a hard ceiling; the current required maximum is 5 per day.
