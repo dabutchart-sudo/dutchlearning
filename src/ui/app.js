@@ -14,13 +14,14 @@ import {dutchVoice,speak,prepareSpeech,discardPreparedSpeech,canUseServerListen}
 import {LISTENING_PRACTICE_SIZE,answerListeningPractice,currentListeningQuestion,listeningPracticeItems,listeningPracticeSummary,startListeningPractice} from '../engine/listening-practice.js';
 import {answerSentenceDiscrimination,currentDiscriminationQuestion,discriminationSummary,startSentenceDiscrimination} from '../engine/listening-discrimination.js';
 import {answerMissingWord,currentMissingWordQuestion,missingWordSummary,startMissingWord} from '../engine/listening-missing-word.js';
+import {answerDictation,currentDictationQuestion,dictationMarking,dictationSummary,startDictation} from '../engine/listening-dictation.js';
 import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
 import {SPEAKING_MAX_RECORDING_MS} from '../engine/speaking-budget.js';
 import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
-let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0;
+let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0,dictationSession=null,dictationRun=0;
 let speakingSession=null,speakingRun=0,speakingCapture=null;
 function abandonSpeakingCapture(){
  const capture=speakingCapture;
@@ -235,9 +236,11 @@ function renderMissingWord(){
   const area=document.getElementById('answer-area');
   area.querySelectorAll('[data-missing-word-choice]').forEach(choice=>choice.onclick=()=>{raw=question.options[Number(choice.dataset.missingWordChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))});});
  };
+ const visibleText=document.getElementById('missing-word-visible-text');
+ // A late audio start from a screen already left must not change the new one.
  const revealFrame=()=>{
-  if(revealed||locked)return;revealed=true;
-  document.getElementById('missing-word-visible-text').innerHTML=frameHTML();
+  if(revealed||locked||!visibleText.isConnected)return;revealed=true;
+  visibleText.innerHTML=frameHTML();
   document.getElementById('answer-area').innerHTML=choicesHTML();bindChoices();
  };
  const play=document.getElementById('missing-word-play');prepareSpeech(audioText);
@@ -264,6 +267,69 @@ function renderMissingWord(){
   on('next-missing-word',renderMissingWord);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-missing-word').focus();
  });
  on('leave-missing-word',leaveMissingWord);
+}
+function beginDictation(conceptId){
+ try{dictationRun++;listeningSession=null;discriminationSession=null;missingWordSession=null;dictationSession=startDictation(state,content,{conceptId,seed:`${dayKey(now())}:${state.learnerId}:${conceptId}:dictation:${dictationRun}`});renderDictation();}catch(e){notify(e.message)}
+}
+function leaveDictation(){const conceptId=dictationSession?.conceptId;dictationSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();}
+function renderDictation(){
+ sessionChrome(true);notify('');
+ const question=currentDictationQuestion(dictationSession);
+ if(!question){
+  const summary=dictationSummary(dictationSession);
+  const heading=summary.heard?`${summary.heardCorrect} of ${summary.heard} sentences typed exactly`:'No answers were completed from audio';
+  const words=summary.heard?`${summary.wordsHeard} of ${summary.words} words heard${summary.heardNear?`; ${summary.heardNear} ${summary.heardNear===1?'sentence had':'sentences had'} only small spelling slips`:''}.`:'';
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL LISTENING PRACTICE</div><h2>${heading}</h2>${words?`<p>${words}</p>`:''}<p>${summary.textFallbacks?`${summary.textFallbacks} ${summary.textFallbacks===1?'sentence used':'sentences used'} the visible-text fallback (${summary.audioUnclear} unclear · ${summary.audioUnavailable} unavailable). ${summary.textFallbacks===1?'That answer is':'Those answers are'} recognition practice, not listening evidence.`:'Every answer was typed from audio without seeing the sentence.'} Typing is listening and writing practice, not speaking evidence.</p>${summary.audioIssues.length?`<div class="rule"><strong>Audio to review</strong><ul>${summary.audioIssues.map(issue=>`<li><span class="pill">${esc(issue.issue)}</span> <span lang="nl">${esc(issue.audio)}</span> — ${esc(issue.meaning)}</li>`).join('')}</ul></div>`:''}<p class="muted">No Course, mastery, or retention progress changed. This session-only result is not added to your permanent learning record.</p><div class="actions">${button('repeat-dictation','Practise this listening again')}${button('leave-dictation','Back to the topic',false)}</div></article></section>`;
+  on('repeat-dictation',()=>beginDictation(dictationSession.conceptId));on('leave-dictation',leaveDictation);return;
+ }
+ const audioText=question.audio;let raw='',usedTextFallback=false,audioIssue=null,locked=false,started=false;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Listening ${dictationSession.index+1} of ${dictationSession.questions.length}</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card listening-practice-card"><span class="direction">Dutch audio → typed Dutch</span><div class="q-type">Listen and type</div><h2 class="prompt">Listen, then type the Dutch sentence you heard.</h2>${button('dictation-play','Play Dutch audio',false)}<div class="row"><button id="dictation-audio-unclear" class="text-link" type="button">Audio unclear</button><button id="dictation-audio-unavailable" class="text-link" type="button">Audio unavailable</button></div><div id="dictation-visible-text"><p class="small muted">${question.wordCount} words. You can type once the audio starts, and replay it as often as you like.</p></div><div id="answer-area"><input id="dictation-answer" class="input" lang="nl" placeholder="Play the audio first" aria-label="The Dutch sentence you heard" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" disabled></div><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-dictation','Check answer')}</div></article><button id="leave-dictation" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const field=document.getElementById('dictation-answer'),input=()=>field;
+ // A late audio start from a screen already left must not change the new one.
+ const enableTyping=()=>{
+  if(started||locked||usedTextFallback||!field.isConnected)return;started=true;
+  field.disabled=false;field.placeholder='Type in Dutch';
+ };
+ const play=document.getElementById('dictation-play');prepareSpeech(audioText);
+ on('dictation-play',()=>{play.disabled=true;play.setAttribute('aria-busy','true');play.textContent='Loading Dutch audio…';const audioError=message=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Try Dutch audio again';notify(message)};speak(audioText,audioError,{onStart:()=>{play.disabled=false;play.removeAttribute('aria-busy');play.textContent='Playing… tap to replay';enableTyping()},onEnd:()=>{play.textContent='Play Dutch audio again';if(!usedTextFallback&&!locked&&field.isConnected)field.focus()}})});
+ const revealForAudioIssue=issue=>{
+  if(locked)return;
+  usedTextFallback=true;audioIssue=issue;raw='';discardPreparedSpeech(audioText);play.textContent='Retry with fresh Dutch audio';
+  document.getElementById('dictation-visible-text').innerHTML=`<p class="audio-issue-sentence" lang="nl">${esc(audioText)}</p><p class="small muted">Marked ${esc(issue)}. The Dutch sentence is shown above. Choose its English meaning, then Check answer. This counts only as recognition, not listening.</p>`;
+  document.getElementById('answer-area').innerHTML=`<div class="answers" role="group" aria-label="English meanings">${question.meaningOptions.map((option,index)=>`<button type="button" class="choice" data-dictation-choice="${index}" aria-pressed="false">${esc(option)}</button>`).join('')}</div>`;
+  const area=document.getElementById('answer-area');
+  area.querySelectorAll('[data-dictation-choice]').forEach(choice=>choice.onclick=()=>{raw=question.meaningOptions[Number(choice.dataset.dictationChoice)];area.querySelectorAll('button').forEach(button=>{button.classList.toggle('selected',button===choice);button.setAttribute('aria-pressed',String(button===choice))});});
+  document.getElementById('dictation-audio-unclear').disabled=true;document.getElementById('dictation-audio-unavailable').disabled=true;area.scrollIntoView({block:'nearest'});
+ };
+ on('dictation-audio-unclear',()=>revealForAudioIssue('unclear'));on('dictation-audio-unavailable',()=>revealForAudioIssue('unavailable'));
+ const check=()=>{
+  if(locked)return;
+  const answer=usedTextFallback?raw:input()?.value||'';
+  if(!usedTextFallback&&!started){notify('Play the Dutch audio first.');return;}
+  if(!answer.trim()){notify(usedTextFallback?'Choose an answer first.':'Type what you heard first.');return;}
+  locked=true;
+  const next=answerDictation(dictationSession,answer,{usedTextFallback,audioIssue});
+  const result=next.answers.at(-1);dictationSession=next;const upcoming=currentDictationQuestion(dictationSession);if(upcoming)prepareSpeech(upcoming.audio);
+  el.querySelectorAll('button,input').forEach(control=>{if(control.id!=='leave-dictation')control.disabled=true});
+  let body;
+  if(usedTextFallback){
+   body=`<strong>${result.correct?'Meaning understood':'Not this time'}</strong><span class="correct" lang="nl">${esc(audioText)}</span><span class="meaning">${esc(question.meaning)}</span>`;
+  }else{
+   const marking=dictationMarking(answer,question.answer);
+   const marked=marking.words.map(word=>word.status==='heard'?esc(word.text):word.status==='spelling'?`<span class="dictation-spelling">${esc(word.text)}</span>`:`<mark>${esc(word.text)}</mark>`).join(' ');
+   const slips=marking.words.filter(word=>word.status==='spelling').map(word=>`<span lang="nl">${esc(word.typed)}</span> → <span lang="nl">${esc(word.text)}</span>`);
+   const missed=marking.words.filter(word=>word.status==='missed').map(word=>`<span lang="nl">${esc(word.text)}</span>`);
+   const notes=[slips.length?`Spelling: ${slips.join(', ')}.`:'',missed.length?`Not heard: ${missed.join(', ')}.`:'',marking.extra.length?`Not in the sentence: ${marking.extra.map(word=>`<span lang="nl">${esc(word)}</span>`).join(', ')}.`:''].filter(Boolean);
+   body=`<strong>${result.correct?'Every word heard':result.near?'Every word heard — check the spelling':'Not quite'}</strong><span class="correct" lang="nl">${marked}</span><span class="meaning">${esc(question.meaning)}</span><span class="meaning">You typed: <span lang="nl">${esc(answer)}</span></span>${notes.map(note=>`<span class="meaning">${note}</span>`).join('')}`;
+  }
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}">${body}<div class="badges"><span class="badge">${usedTextFallback?'Recognition only':'Listening and writing'}</span>${usedTextFallback?'':'<span class="badge">Not speaking evidence</span>'}${audioIssue?`<span class="badge">Audio ${esc(audioIssue)}</span>`:''}<span class="badge">Does not change progress</span></div></div>`;
+  document.querySelector('.actions').innerHTML=`${button('replay-dictation','Hear it again',false)}${button('next-dictation',upcoming?'Continue':'View listening summary')}`;
+  on('replay-dictation',()=>speak(audioText,notify));
+  on('next-dictation',renderDictation);document.getElementById('feedback')?.scrollIntoView({block:'nearest'});document.getElementById('next-dictation').focus();
+ };
+ on('check-dictation',check);
+ input().addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();check();}});
+ on('leave-dictation',leaveDictation);
 }
 function beginSpeakingPractice(conceptId=selectedConcept){
  try{
@@ -462,6 +528,7 @@ function renderCourse(){
   on('extra-course',()=>beginExtra(selectedConcept));
   on('start-listening-discrimination',()=>beginDiscrimination(selectedConcept));
   on('start-listening-missing-word',()=>beginMissingWord(selectedConcept));
+  on('start-listening-dictation',()=>beginDictation(selectedConcept));
   on('start-speaking-practice',()=>beginSpeakingPractice(selectedConcept));
   bindProof(selectedConcept);return;
  }

@@ -173,7 +173,7 @@ function ignoreDeviceError(event){
  return reason==='canceled'||reason==='interrupted';
 }
 
-function queueDutch(synth,Utterance,text,onError){
+function queueDutch(synth,Utterance,text,onError,events={}){
  const message='Audio could not play. Check that speech is enabled for this browser.';
  const voice=dutchVoice();
  const u=new Utterance(String(text??''));
@@ -182,21 +182,23 @@ function queueDutch(synth,Utterance,text,onError){
  u.rate=.85;
  u.volume=1;
  u.onerror=event=>{if(!ignoreDeviceError(event))onError(message);};
+ if(events.onStart)u.onstart=()=>events.onStart();
+ if(events.onEnd)u.onend=()=>events.onEnd();
  try{if(synth.paused)synth.resume();}catch{}
  synth.speak(u);
 }
 
-function speakDevice(text,onError){
+function speakDevice(text,onError,events={}){
  const synth=globalThis.speechSynthesis;
  const Utterance=globalThis.SpeechSynthesisUtterance;
  if(!synth||!Utterance){onError('Speech playback is not available in this browser.');return false;}
  try{
   if(synth.speaking||synth.pending){
    synth.cancel();
-   setTimeout(()=>{try{queueDutch(synth,Utterance,text,onError);}catch{onError('Audio could not play. Check that speech is enabled for this browser.');}},50);
+   setTimeout(()=>{try{queueDutch(synth,Utterance,text,onError,events);}catch{onError('Audio could not play. Check that speech is enabled for this browser.');}},50);
    return true;
   }
-  queueDutch(synth,Utterance,text,onError);
+  queueDutch(synth,Utterance,text,onError,events);
   return true;
  }catch{
   onError('Audio could not play. Check that speech is enabled for this browser.');
@@ -204,17 +206,22 @@ function speakDevice(text,onError){
  }
 }
 
-function speakLan(dutch,onError){
+// The development copy reports start and end like the live path, so screens that
+// wait for audio to begin (missing word, dictation) also work on a Mac preview.
+function speakLan(dutch,onError,events={}){
  const audio=ensurePlayer();
- if(!audio)return speakDevice(dutch,onError);
+ if(!audio)return speakDevice(dutch,onError,events);
+ const gen=++listenGen;
  audio.pause();
  audio.muted=false;
  audio.volume=1;
  audio.onerror=()=>{explainPlayError(onError);};
+ audio.onended=()=>{if(gen===listenGen)events.onEnd?.();};
  audio.src=listenAudioUrl(dutch);
  try{
   const start=audio.play();
-  if(start&&typeof start.catch==='function')start.catch(()=>explainPlayError(onError));
+  if(start&&typeof start.then==='function')start.then(()=>{if(gen===listenGen)events.onStart?.();},()=>explainPlayError(onError));
+  else events.onStart?.();
   return true;
  }catch{
   explainPlayError(onError);
@@ -380,7 +387,7 @@ async function playProductionAudio(audio,dutch,onError,gen,events){
 
 function speakProduction(dutch,onError,events={}){
  const audio=ensurePlayer();
- if(!audio)return speakDevice(dutch,onError);
+ if(!audio)return speakDevice(dutch,onError,events);
  audio.pause();
  try{audio.currentTime=0;}catch{}
  const status=globalThis.document?.getElementById?.('system-message');
@@ -405,9 +412,9 @@ function speakProduction(dutch,onError,events={}){
 export function speak(text,onError=()=>{},events={}){
  const dutch=String(text??'').trim();
  if(!dutch)return false;
- if(canUseLanListen())return speakLan(dutch,onError);
+ if(canUseLanListen())return speakLan(dutch,onError,events);
  if(canUseProductionListen())return speakProduction(dutch,onError,events);
- return speakDevice(dutch,onError);
+ return speakDevice(dutch,onError,events);
 }
 
 if(typeof document!=='undefined')prefetchListenAuth();
