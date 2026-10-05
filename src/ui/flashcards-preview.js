@@ -14,7 +14,9 @@ async function loadCourseContent(){
 function coursePriority(data,today){return courseNewCardPriority({content:courseContent,learnerState:learnerState(),cards:data.cards,today});}
 function courseIntakeNote(data,c){
  const p=coursePriority(data,c.today);
- const waiting=p.waiting?`<p class="flashcard-allowance-note">${p.waiting} course ${p.waiting===1?'word is':'words are'} ready for Flashcards. ${p.share&&!c.complete?`Up to ${Math.min(p.share,p.waiting)} can join today’s new cards, within the same daily limit.`:'They wait for a later day’s new cards.'}</p>`:'';
+ // Always shown, so 0 ready is distinguishable from the feature not running.
+ if(!courseContent)return '<p class="flashcard-allowance-note">Course words could not be loaded, so today’s new cards use the usual order.</p>';
+ const waiting=p.waiting?`<p class="flashcard-allowance-note">${p.waiting} course ${p.waiting===1?'word is':'words are'} ready for Flashcards. ${p.share&&!c.complete?`Up to ${Math.min(p.share,p.waiting)} can join today’s new cards, within the same daily limit.`:'They wait for a later day’s new cards.'}</p>`:'<p class="flashcard-allowance-note">0 course words are ready for Flashcards. A word you are taught joins from the next study day if it matches a card that is still new.</p>';
  const missing=[...p.unmatched,...p.ambiguous];
  const list=missing.length?`<details class="flashcard-allowance-note"><summary>Course words without a single matching card (${missing.length})</summary><p class="muted small">These are not added to Flashcards. No cards are created automatically.</p><p lang="nl">${missing.map(esc).join(', ')}</p></details>`:'';
  return waiting+list;

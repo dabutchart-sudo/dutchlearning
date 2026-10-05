@@ -139,6 +139,8 @@ test('the Flashcards screen passes the course priority into the same allowance a
  assert.match(ui,/buildFlashcardQueue\(loaded\.cards,\{today:c\.today,newLimit:c\.dueNew,priorityNewIds:p\.cardIds,priorityLimit:p\.share\}\)/);
  assert.match(ui,/within the same daily limit/);
  assert.match(ui,/No cards are created automatically/);
+ assert.match(ui,/0 course words are ready for Flashcards/);
+ assert.match(ui,/Course words could not be loaded, so today’s new cards use the usual order/);
  const intake=readFileSync(new URL('../src/engine/course-flashcard-intake.js',import.meta.url),'utf8');
  assert.doesNotMatch(intake,/fetch\(|localStorage|setItem|POST|PATCH/);
  assert.match(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),/course-flashcard-intake\.js/);
