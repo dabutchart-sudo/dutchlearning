@@ -1,6 +1,6 @@
 # DAB-182 — course words in Flashcards: proposal
 
-Status: **approved by the owner on 5 October 2026, with a course share of 3; implemented as a local candidate on a branch.** Not merged, not released, and not checked on a device or against the live deck. No data, schema or deployment has changed.
+Status: **approved by the owner on 5 October 2026, with a course share of 3; released as V5.1.179 on 5 October 2026.** The owner asked for release, merge and deployment before the recommended device and live-collection check. That check had not been done at release. No data or schema changed.
 
 ## Implementation
 
@@ -19,9 +19,9 @@ A headless browser run used a fake card collection, with no access to the live d
 - that taught course words lead the session (*werken* by its card link, *komen* by its Dutch text);
 - that no write request was made.
 
-Still needed before release:
+Still needed after release (the owner chose to release first):
 - a development preview on iPhone and MacBook against the real collection;
-- a check that today's new cards and the shared count are as expected, and that sync and cross-device behaviour are correct. The issue's acceptance requires this.
+- a check that today's new cards and the shared count are as expected, and that sync and cross-device behaviour are correct. The issue's acceptance requires this. If anything looks wrong, set `COURSE_INTAKE_ENABLED` to `false`, or revert to the V5.1.178 main source at `2f8b053`. No data needs reverting.
 
 ## The question
 
