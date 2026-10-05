@@ -1,6 +1,6 @@
 # DAB-188 — slower replay for accepted listening
 
-Status: local candidate on a branch. Optional Practice only. Not merged, not released, and not checked on a phone.
+Status: on the live app as V5.1.178, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release.
 
 This is the sixth listening step in DAB-170. The issue covers a second voice and a slower speed. This slice adds the slower speed only.
 
@@ -48,4 +48,4 @@ Still needed:
 
 ## Rollback
 
-Revert the branch. No learner data is involved.
+Revert to the V5.1.177 main source at `4d2b006`. No learner data is involved.
