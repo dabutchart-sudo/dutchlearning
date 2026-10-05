@@ -1,6 +1,6 @@
 # DAB-186 — short dictation
 
-Status: local candidate on a branch. Optional Practice only. Not merged, not released, and not checked on a phone.
+Status: on the live app as V5.1.176, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release.
 
 This is the fourth listening step in DAB-170, after hidden-text meaning selection, sentence discrimination and missing heard word.
 
@@ -58,4 +58,4 @@ Still needed:
 
 ## Rollback
 
-Set `DICTATION_RELEASE.listening.enabled` to `false` in `src/engine/listening-dictation.js` to hide the offer, or revert the branch. No learner data is involved.
+Revert to the V5.1.175 main source at `f67c0d5`, or set `DICTATION_RELEASE.listening.enabled` to `false` in `src/engine/listening-dictation.js` to hide the offer, or revert the branch. No learner data is involved.
