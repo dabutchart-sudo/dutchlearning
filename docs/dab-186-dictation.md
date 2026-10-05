@@ -1,6 +1,6 @@
 # DAB-186 — short dictation
 
-Status: on the live app as V5.1.176, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release.
+Status: on the live app as V5.1.176, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October. No phone check had been done at release. Later on 5 October the owner confirmed that the round works on the installed iPhone app. A MacBook check has not been reported.
 
 This is the fourth listening step in DAB-170, after hidden-text meaning selection, sentence discrimination and missing heard word.
 
@@ -52,9 +52,7 @@ A headless browser run at phone width, with audio playback simulated, confirmed:
 
 The same run confirmed that the missing-word round now reveals its choices on a development copy.
 
-Still needed:
-- a dictation round on the installed iPhone app and on the MacBook, including typing with the phone keyboard;
-- an owner review of the wording and the spelling-slip rule.
+Installed iPhone app: on 5 October, after V5.1.176 was deployed, the owner reported that the round works. A MacBook check has not been reported.
 
 ## Rollback
 
