@@ -1,6 +1,6 @@
 # DAB-187 — two-line exchange
 
-Status: local candidate on a branch. Optional Practice only. Not merged, not released, and not checked on a phone. The Dutch below has not yet had the owner's check.
+Status: on the live app as V5.1.177, 5 October 2026. Optional Practice only. The owner asked for release, merge and deployment on 5 October, before a separate check of the Dutch below was reported. No phone check had been done at release.
 
 This is the fifth listening step in DAB-170, after hidden-text meaning selection, sentence discrimination, missing heard word and short dictation.
 
@@ -96,4 +96,4 @@ Still needed:
 
 ## Rollback
 
-Set `EXCHANGE_RELEASE.listening.enabled` to `false` in `src/engine/listening-exchange.js` to hide the offer, or revert the branch. No learner data is involved.
+Revert to the V5.1.176 main source at `9adaf8f`, or set `EXCHANGE_RELEASE.listening.enabled` to `false` in `src/engine/listening-exchange.js` to hide the offer, or revert the branch. No learner data is involved.
