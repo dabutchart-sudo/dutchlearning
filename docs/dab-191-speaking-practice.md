@@ -1,6 +1,6 @@
 # DAB-191 — optional assessed speaking practice
 
-Status: on the live app as V5.1.174, with production transcription enabled on 5 October 2026. The owner asked for this slice on the live app after accepting the wording and setting the transcription spend limit at £5 per month. The production budget migration is applied and the authenticated `speaking-transcription` function is active. The owner confirmed the real MacBook recording path works, including after a Dutch-language transcription cue was added for learner speech. DAB-191 stays in progress until the installed-iPhone path is checked before any later Trial.
+Status: accepted at Practice level on 6 October 2026. The owner asked for this slice on the live app after accepting the wording and setting the transcription spend limit at £5 per month. The production budget migration is applied and the authenticated `speaking-transcription` function is active. The owner confirmed real recordings on both MacBook and the installed iPhone app, including transcription and answer feedback. DAB-191 is complete at Practice level; any later promotion to Trial remains a separate decision.
 
 ## This slice
 
@@ -19,6 +19,6 @@ On a topic the learner has already started, the topic page offers a short option
 
 ## What this does not change
 
-No new provider and no OpenAI Realtime. The £5 monthly cap is enforced by a server-only additive table and atomic reservation before each OpenAI call. Three successful live checks reserved £0.06 on 5 October. `listen-tts` is unchanged. The daily 20, scheduler, learner history, and authentication stay as they are. The offline cache is `dutch-v5.1.174-20261005-speaking-practice`. Rollback of the app is the V5.1.173 main source at `c80515ebf20585e153ab7b752d5b224820a4852a`; switching `SPEAKING_TRANSCRIPTION_ENABLED` off stops new transcription without touching `listen-tts`. The budget table is additive and browser roles have no access to it.
+No new provider and no OpenAI Realtime. The £5 monthly cap is enforced by a server-only additive table and atomic reservation before each OpenAI call. Three successful live checks reserved £0.06 on 5 October, before the accepted installed-iPhone check on 6 October. `listen-tts` is unchanged. The daily 20, scheduler, learner history, and authentication stay as they are. The offline cache is `dutch-v5.1.174-20261005-speaking-practice`. Rollback of the app is the V5.1.173 main source at `c80515ebf20585e153ab7b752d5b224820a4852a`; switching `SPEAKING_TRANSCRIPTION_ENABLED` off stops new transcription without touching `listen-tts`. The budget table is additive and browser roles have no access to it.
 
 DAB-172 stays open. Controlled dialogue stays waiting.
