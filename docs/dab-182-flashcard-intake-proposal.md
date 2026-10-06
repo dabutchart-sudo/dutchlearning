@@ -17,6 +17,8 @@ Follow-up (V5.1.180, 5 October 2026, at the owner's request): the dashboard line
 - If the course word list cannot load, it says that today's new cards use the usual order.
 - So 0 ready can be told apart from the feature not running.
 
+Cross-device completion follow-up (V5.1.181, 6 October 2026): the phone correctly limited a 47-review day to three new course cards, but the Mac then offered two unused slots because it recalculated workload from the now-empty due queue. Completion detection now reconstructs the opening workload from distinct shared review-card ids, excluding retries and new-card introductions. The Mac therefore closes the batch at the same reduced allowance and updates its dashboard and header to done. No schema or learner-data rewrite is involved.
+
 Tests: `tests/course-flashcard-intake.test.js` and the full suite.
 
 A headless browser run used a fake card collection, with no access to the live deck. It confirmed:
@@ -27,6 +29,8 @@ A headless browser run used a fake card collection, with no access to the live d
 Still needed after release (the owner chose to release first):
 - a development preview on iPhone and MacBook against the real collection;
 - a check that today's new cards and the shared count are as expected, and that sync and cross-device behaviour are correct. The issue's acceptance requires this. If anything looks wrong, set `COURSE_INTAKE_ENABLED` to `false`, or revert to the V5.1.178 main source at `2f8b053`. No data needs reverting.
+
+The 6 October phone check confirmed that `appel`, `eten`, and `soep` filled the three workload-reduced new-card slots. The first Mac check exposed the completion defect addressed in V5.1.181; repeat the Mac check after deployment before closing the cross-device acceptance item.
 
 ## The question
 
