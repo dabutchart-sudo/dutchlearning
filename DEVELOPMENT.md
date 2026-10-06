@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.180**.
+- Current documented release: **Zin V5.1.181**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -186,11 +186,17 @@ On 5 October the owner asked for release, merge and deployment. The owner chose 
 
 The daily 20 and its listening question, learner history, mastery, retention, Flashcards, sync, schema, authentication, services and running cost are unchanged. All 568 local tests pass. A headless phone-width run with simulated playback confirmed 0.8 speed with pitch kept, a return to normal speed, and the Heard slower badge in all three rounds. No phone check had been done at release. Later on 5 October the owner confirmed that the slower replay works on the installed iPhone app. A MacBook check has not been reported. The offline cache is `dutch-v5.1.178-20261005-slower`. Rollback is the V5.1.177 main source at `4d2b006`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-188-slower-speed.md`.
 
+## DAB-182 cross-device completion — V5.1.181 release, 2026-10-06
+
+The owner completed a workload-reduced Flashcard batch on the phone after 47 reviews produced an allowance of three new cards. The Mac saw the three shared introductions and no remaining reviews, but incorrectly recalculated the allowance from the now-empty review queue and offered two more new cards. V5.1.181 reconstructs the opening workload from distinct shared review-card ids, excluding retry ratings and new-card history, before inferring completion on another device. When completion is detected, the dashboard, allowance explanation and header all change to done.
+
+The hard five-card ceiling, workload reduction, Course priority share, ratings, scheduling and stored records are unchanged. No learner data, Supabase schema, authentication, service or cost change is required. The exact 47-review, five-retry, three-new-card case has regression coverage; all 582 local tests pass. The offline cache is `dutch-v5.1.181-20261006-flashcard-completion`. Rollback is the V5.1.180 main source at `7ae470f`; preserve learner history and the standalone Flashcards fallback. A post-deployment Mac check remains required.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 4 October 2026
 
-The live app is Zin V5.1.180. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
+The live app is Zin V5.1.181. Trustworthy progress, the question-format contracts, and the first daily listening and speaking beats are already in the course.
 
 Listening has hidden-text meaning selection and optional sentence discrimination. The installed phone confirmed that discrimination plays Dutch words. Missing heard word is on the live app as optional Practice in V5.1.175 (DAB-185), and the owner confirmed it works on the installed iPhone app. Short dictation is on the live app as optional Practice in V5.1.176 (DAB-186), and the owner confirmed it works on the installed iPhone app. Two-line exchange comprehension is on the live app as optional Practice in V5.1.177 (DAB-187); the owner's check of its Dutch and a phone check are outstanding. A slower replay for the phone-accepted rounds is on the live app in V5.1.178 (DAB-188), and the owner confirmed it works on the installed iPhone app; a second voice is not in the course. DAB-170 stays open for those steps, as DAB-185, DAB-186, DAB-187, and DAB-188. Each starts in optional Practice.
 

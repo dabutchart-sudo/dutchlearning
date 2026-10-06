@@ -1,4 +1,5 @@
-import {inferExternalStudyDayComplete} from '../engine/flashcard-session.js';
+import {inferExternalStudyDayComplete,reviewLoadAllowance,reviewLoadAtStart} from '../engine/flashcard-session.js';
+import {paintDailyChrome} from './daily-chrome.js';
 
 const tab=document.getElementById('flashcards-preview-tab');
 const content=document.getElementById('content');
@@ -17,15 +18,6 @@ async function fetchAll(base,key,table){
  return rows;
 }
 
-function reviewLoadAllowance(raw,due,target){
- if(!target||target<=0)return raw;
- const ratio=Math.max(0,Number(due||0))/target;
- if(ratio>=1)return 0;
- if(ratio>=.9)return Math.min(raw,Math.max(1,Math.floor(raw*.2)));
- if(ratio>=.7)return Math.min(raw,Math.max(1,Math.ceil(raw*.5)));
- return raw;
-}
-
 async function reconcile(){
  if(busy||!document.querySelector('.flashcard-hero'))return;
  busy=true;
@@ -38,7 +30,10 @@ async function reconcile(){
   const dueReview=cards.filter(card=>!card.suspended&&card.type!=='new'&&card.due_date&&String(card.due_date).slice(0,10)<=today).length;
   const introducedToday=cards.filter(card=>!card.suspended&&card.first_seen&&String(card.first_seen).slice(0,10)===today).length;
   const todayReviews=history.filter(row=>row.timestamp&&String(row.timestamp).slice(0,10)===today).length;
-  const effectiveNewCap=reviewLoadAllowance(configuredMax,dueReview,reviewTarget);
+  // Reconstruct the workload seen when today's batch began. Using only the
+  // remaining due count would restore capacity after another device cleared it.
+  const startingReviewLoad=reviewLoadAtStart({cards,history,today});
+  const effectiveNewCap=reviewLoadAllowance(configuredMax,startingReviewLoad,reviewTarget);
   const complete=inferExternalStudyDayComplete({dueReview,todayReviews,introducedToday,configuredMax,effectiveNewCap,reviewTarget});
   if(!complete)return;
   localStorage.setItem(lockKey,'complete');
@@ -48,6 +43,8 @@ async function reconcile(){
   const metrics=[...hero.querySelectorAll('.metric')];
   const newMetric=metrics.find(m=>m.querySelector('.eyebrow')?.textContent.trim().toLowerCase()==='new available');if(newMetric)newMetric.querySelector('.n').textContent='0';
   const button=hero.querySelector('#start-flashcard-review');if(button){button.disabled=true;button.textContent='Done for today';}
+  const allowance=hero.querySelector('.flashcard-allowance-note');if(allowance)allowance.textContent='Your Flashcard session is complete, so no more new cards can be introduced today.';
+  paintDailyChrome({flashcards:'done'});
   hero.insertAdjacentHTML('beforeend','<p class="muted small" data-external-complete>Completion detected from shared Flashcard review history.</p>');
  }catch(error){console.warn('Flashcard completion sync skipped:',error);}
  finally{busy=false;}

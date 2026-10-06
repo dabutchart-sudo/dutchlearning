@@ -1,5 +1,31 @@
 const finite=(value,fallback=0)=>Number.isFinite(Number(value))?Number(value):fallback;
 
+export function reviewLoadAtStart({cards=[],history=[],today}={}){
+ if(!today)return 0;
+ const ids=new Set();
+ for(const card of cards){
+  if(card?.suspended||card?.type==='new'||!card?.due_date||String(card.due_date).slice(0,10)>today)continue;
+  if(card.id!==undefined&&card.id!==null)ids.add(String(card.id));
+ }
+ for(const row of history){
+  if(!row?.timestamp||String(row.timestamp).slice(0,10)!==today||String(row.review_type??'').toLowerCase()==='new')continue;
+  const id=row.cardid??row.card_id;
+  if(id!==undefined&&id!==null)ids.add(String(id));
+ }
+ return ids.size;
+}
+
+export function reviewLoadAllowance(raw,due,target){
+ const ceiling=Math.max(0,Math.trunc(finite(raw)));
+ const goal=Math.max(0,finite(target));
+ if(!goal)return ceiling;
+ const ratio=Math.max(0,finite(due))/goal;
+ if(ratio>=1)return 0;
+ if(ratio>=.9)return Math.min(ceiling,Math.max(1,Math.floor(ceiling*.2)));
+ if(ratio>=.7)return Math.min(ceiling,Math.max(1,Math.ceil(ceiling*.5)));
+ return ceiling;
+}
+
 /**
  * Infer that a study day was completed in another client when there are no due
  * reviews left and the shared evidence shows the user reached a sensible end point.
