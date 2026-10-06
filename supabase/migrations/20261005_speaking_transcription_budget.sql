@@ -1,4 +1,4 @@
--- Source only. This migration has not been applied to production.
+-- Applied to production on 5 October 2026.
 -- It records speaking-transcription attempts so the £5 monthly ceiling can be
 -- reserved before OpenAI is called. Clients have no access.
 
