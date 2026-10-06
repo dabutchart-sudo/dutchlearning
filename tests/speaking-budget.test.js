@@ -48,7 +48,7 @@ test('the live origin sends the learner token to the capped function and never a
  assert.equal(learningAccessToken(storage),'saved-session');
 });
 
-test('the production function reserves the £5 cap before OpenAI and stays disabled',()=>{
+test('the production function reserves the £5 cap before OpenAI and fails closed behind its switch',()=>{
  const fn=readFileSync(new URL('../supabase/functions/speaking-transcription/index.ts',import.meta.url),'utf8');
  const sql=readFileSync(new URL('../supabase/migrations/20261005_speaking_transcription_budget.sql',import.meta.url),'utf8');
  const config=readFileSync(new URL('../supabase/config.toml',import.meta.url),'utf8');
@@ -56,6 +56,10 @@ test('the production function reserves the £5 cap before OpenAI and stays disab
  assert.match(fn,/SPEAKING_TRANSCRIPTION_ENABLED'\)==='true'/);
  assert.match(fn,/reserve_speaking_transcription/);
  assert.match(fn,/gpt-4o-mini-transcribe/);
+ assert.match(fn,/body\.append\('language','nl'\)/);
+ assert.match(fn,/body\.append\('prompt',DUTCH_TRANSCRIPTION_PROMPT\)/);
+ assert.match(fn,/vertaal niet naar het Engels/);
+ assert.doesNotMatch(fn,/Hij sluit de deur/);
  assert.match(fn,/speakingBudgetDecision/);
  assert.doesNotMatch(fn,/sk-|console\.log\(openaiKey|whisper-1/);
  assert.ok(fn.indexOf('reserve_speaking_transcription')<fn.indexOf('api.openai.com'));

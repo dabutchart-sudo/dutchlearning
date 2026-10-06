@@ -6,6 +6,7 @@ const cors={
  'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type',
  'Access-Control-Allow-Methods':'POST, OPTIONS'
 };
+const DUTCH_TRANSCRIPTION_PROMPT='Dit is een korte Nederlandse zin van een beginnende cursist. Schrijf alleen de gesproken Nederlandse woorden uit; vertaal niet naar het Engels.';
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
 
 Deno.serve(async req=>{
@@ -56,6 +57,7 @@ Deno.serve(async req=>{
  const body=new FormData();
  body.append('model','gpt-4o-mini-transcribe');
  body.append('language','nl');
+ body.append('prompt',DUTCH_TRANSCRIPTION_PROMPT);
  body.append('file',audio,'speech.webm');
  let openai:Response;
  try{
