@@ -17,6 +17,7 @@ import {answerMissingWord,currentMissingWordQuestion,missingWordSummary,startMis
 import {answerDictation,currentDictationQuestion,dictationMarking,dictationSummary,startDictation} from '../engine/listening-dictation.js';
 import {answerExchange,currentExchangeQuestion,exchangeSummary,startExchangePractice} from '../engine/listening-exchange.js';
 import {answerSpeakingPractice,currentSpeakingQuestion,speakingPracticeFeedback,speakingPracticeSummary,speakingPracticeSummaryCopy,startSpeakingPractice} from '../engine/speaking-practice.js';
+import {answerControlledDialogue,controlledDialogueSummary,currentDialogueTurn,startControlledDialogue} from '../engine/controlled-dialogue.js';
 import {SPEAKING_MAX_RECORDING_MS} from '../engine/speaking-budget.js';
 import {transcribeSpokenAnswer} from '../engine/speaking-transcription.js';
 const el=document.querySelector('#content'),message=document.querySelector('#system-message');
@@ -24,6 +25,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let content,state,repo,view='curriculum',dev=false,selectedConcept=null,lastFeedback=null,skipProofGate=false;
 let listeningSession=null,listeningRun=0,discriminationSession=null,discriminationRun=0,missingWordSession=null,missingWordRun=0,dictationSession=null,dictationRun=0,exchangeSession=null,exchangeRun=0;
 let speakingSession=null,speakingRun=0,speakingCapture=null;
+let dialogueSession=null;
 function abandonSpeakingCapture(){
  const capture=speakingCapture;
  speakingCapture=null;
@@ -404,6 +406,40 @@ function renderSpeakingPractice(){
  }
  renderSpeakingTurn(question,{retried:false});
 }
+
+function beginControlledDialogue(conceptId=selectedConcept){
+ try{dialogueSession=startControlledDialogue(state,{conceptId});renderControlledDialogue();}catch(e){notify(e.message)}
+}
+function leaveControlledDialogue(){const conceptId=dialogueSession?.conceptId;dialogueSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();}
+function renderControlledDialogue(){
+ if(!dialogueSession){goHome();return;}
+ sessionChrome(true);notify('');
+ const turn=currentDialogueTurn(dialogueSession);
+ if(!turn){
+  const summary=controlledDialogueSummary(dialogueSession),response=dialogueSession.responses.at(-1);
+  const heading=summary.appropriate===summary.total?'You completed the exchange':'You finished the exchange';
+  const badge=response?.correct?(response.support==='independent'?'Independent interaction':'Supported interaction'):'Response to revisit';
+  el.innerHTML=`<section class="session stack"><article class="card evidence-card complete"><div class="bigcheck">✓</div><div class="eyebrow">OPTIONAL INTERACTION PRACTICE</div><h2>${esc(heading)}</h2><div class="exchange-turns"><p><span class="pill">Partner</span> <span lang="nl">${esc(dialogueSession.dialogue.turns[0].partner.nl)}</span></p><p><span class="pill">You</span> <span lang="nl">${esc(response?.answer||'')}</span></p></div><div class="badges"><span class="badge">${esc(badge)}</span>${response?.repaired?'<span class="badge">Repaired after a retry</span>':''}<span class="badge">Does not change progress</span></div><p class="muted">This is a session-only interaction diagnostic. It did not use today’s 20 or change Course, mastery, retention, or saved learner history.</p><div class="actions">${button('repeat-controlled-dialogue','Practise this exchange again')}${button('leave-controlled-dialogue','Back to the topic',false)}</div></article></section>`;
+  on('repeat-controlled-dialogue',()=>beginControlledDialogue(dialogueSession.conceptId));on('leave-controlled-dialogue',leaveControlledDialogue);return;
+ }
+ let raw='',usedClarify=false,usedPhraseSupport=false,locked=false;
+ const dialogue=dialogueSession.dialogue;
+ el.innerHTML=`<section class="session"><div class="session-head"><strong>Short exchange</strong><span class="pill">Optional Practice</span></div><p class="muted small">Session-only diagnostic. This does not use today’s 20.</p><article class="card question-card dialogue-practice-card"><span class="direction">Dutch interaction</span><div class="q-type">${esc(dialogue.title)}</div><p>${esc(dialogue.situation)}</p><div class="exchange-turns"><p><span class="pill">Partner</span> <strong lang="nl">${esc(turn.partner.nl)}</strong></p></div><div class="row"><button id="repeat-dialogue-turn" class="text-link" type="button">Repeat</button><button id="clarify-dialogue-turn" class="text-link" type="button">Clarify</button><button id="support-dialogue-turn" class="text-link" type="button">Phrase support</button></div><div id="dialogue-support" aria-live="polite"></div><label for="dialogue-answer" class="sr-only">Your Dutch reply</label><input id="dialogue-answer" class="input" lang="nl" placeholder="Reply in Dutch" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"><div id="feedback" aria-live="polite"></div><div class="actions">${button('check-controlled-dialogue',dialogueSession.repair?'Try the repair':'Check reply')}</div></article><button id="leave-controlled-dialogue" class="text-link" type="button">Leave practice — no Course progress to save</button></section>`;
+ const input=document.getElementById('dialogue-answer');input.oninput=()=>raw=input.value;
+ on('repeat-dialogue-turn',()=>speak(turn.partner.nl,notify));
+ on('clarify-dialogue-turn',()=>{usedClarify=true;document.getElementById('dialogue-support').innerHTML=`<p class="tipbox"><strong>Meaning:</strong> ${esc(turn.partner.en)}</p>`;});
+ on('support-dialogue-turn',()=>{usedPhraseSupport=true;document.getElementById('dialogue-support').innerHTML=`<p class="tipbox"><strong>Start with:</strong> ${turn.phraseHints.map(esc).join(' &nbsp;or&nbsp; ')}</p>`;});
+ const check=()=>{
+  if(locked)return;if(!raw.trim()){notify('Type a Dutch reply first.');return;}
+  const next=answerControlledDialogue(dialogueSession,raw,{usedClarify,usedPhraseSupport});
+  if(next.repair){dialogueSession=next;renderControlledDialogue();notify('That reply does not fit this phone problem yet. Try the turn once more, or use phrase support.');document.getElementById('dialogue-answer')?.focus();return;}
+  locked=true;dialogueSession=next;const result=next.responses.at(-1);
+  el.querySelectorAll('input,button').forEach(control=>{if(control.id!=='leave-controlled-dialogue')control.disabled=true});
+  document.getElementById('feedback').innerHTML=`<div class="feedback ${result.correct?'ok':'bad'}"><strong>${result.correct?(result.repaired?'Repair worked':'That response fits'):'Not this time'}</strong><span class="meaning">${result.correct?'More than one Dutch response can work here.':'A fitting reply could be:'}</span>${turn.accepted.map(option=>`<span class="correct" lang="nl">${esc(option.nl)}</span><span class="meaning">${esc(option.en)}</span>`).join('')}<div class="badges"><span class="badge">${result.correct?(result.support==='independent'?'Interaction diagnostic':'Supported interaction'):'Needs more practice'}</span><span class="badge">Does not change progress</span></div></div>`;
+  document.querySelector('.actions').innerHTML=button('finish-controlled-dialogue','View dialogue summary');on('finish-controlled-dialogue',renderControlledDialogue);document.getElementById('finish-controlled-dialogue')?.focus();
+ };
+ on('check-controlled-dialogue',check);input.onkeydown=event=>{if(event.key==='Enter'&&!event.isComposing){event.preventDefault();check();}};on('leave-controlled-dialogue',leaveControlledDialogue);input.focus();
+}
 function renderSpeakingTurn(question,{retried=false}={}){
  let raw='',typedFallback=false,speechIssue=null,locked=false;
  const prompt=question.prompt;
@@ -581,6 +617,7 @@ function renderCourse(){
   on('start-listening-dictation',()=>beginDictation(selectedConcept));
   on('start-listening-exchange',()=>beginExchange(selectedConcept));
   on('start-speaking-practice',()=>beginSpeakingPractice(selectedConcept));
+  on('start-controlled-dialogue',()=>beginControlledDialogue(selectedConcept));
   bindProof(selectedConcept);return;
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});

@@ -190,7 +190,13 @@ The daily 20 and its listening question, learner history, mastery, retention, Fl
 
 The owner completed a workload-reduced Flashcard batch on the phone after 47 reviews produced an allowance of three new cards. The Mac saw the three shared introductions and no remaining reviews, but incorrectly recalculated the allowance from the now-empty review queue and offered two more new cards. V5.1.181 reconstructs the opening workload from distinct shared review-card ids, excluding retry ratings and new-card history, before inferring completion on another device. When completion is detected, the dashboard, allowance explanation and header all change to done.
 
-The hard five-card ceiling, workload reduction, Course priority share, ratings, scheduling and stored records are unchanged. No learner data, Supabase schema, authentication, service or cost change is required. The exact 47-review, five-retry, three-new-card case has regression coverage; all 582 local tests pass. The offline cache is `dutch-v5.1.181-20261006-flashcard-completion`. Rollback is the V5.1.180 main source at `7ae470f`; preserve learner history and the standalone Flashcards fallback. A post-deployment Mac check remains required.
+The hard five-card ceiling, workload reduction, Course priority share, ratings, scheduling and stored records are unchanged. No learner data, Supabase schema, authentication, service or cost change is required. The exact 47-review, five-retry, three-new-card case has regression coverage; all 582 local tests pass. The offline cache is `dutch-v5.1.181-20261006-flashcard-completion`. Rollback is the V5.1.180 main source at `7ae470f`; preserve learner history and the standalone Flashcards fallback. On 7 October the owner confirmed the post-deployment Mac cross-device completion check was successful.
+
+## DAB-173 controlled dialogue — local Practice candidate, 2026-10-07
+
+The first bounded controlled-dialogue slice is available after S1 teaching in a development copy. The partner asks **Wat is het probleem?** in a phone-problem situation. The learner types one of several already-taught appropriate replies, with optional replay, clarification and partial phrase support. One unsuitable reply opens one repair attempt; the next answer ends the finite exchange. The result is a session-only interaction diagnostic and never enters saved progress.
+
+The candidate does not use the daily 20, alter Course/mastery/retention, write learner history, or change Supabase, authentication, services or cost. It is not merged or deployed. All 592 automated tests pass. A 390 × 844 development-sandbox check completed the unsuitable reply, visible repair guidance, suitable repair and finite summary path with the action reachable. Owner installed-phone acceptance remains outstanding; real production progress is currently at F2 and must not be advanced for validation. See `docs/dab-173-controlled-dialogue.md`.
 
 ## Active milestone
 
