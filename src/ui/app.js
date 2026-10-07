@@ -64,7 +64,7 @@ function proofReport(){
  const route=recovery?.failures>=2?'Choose practice for a simpler step using familiar sentences before another full retake. It uses the normal daily 20.':'Practice will revisit these patterns in different sentences. A full retake can start from your next study day if enough fresh sentences and all 20 questions are available.';
  return `<article class="card evidence-card proof-report"><div class="eyebrow">Latest ${esc(r.type)} result · ${esc(r.concept)}</div><h2>${r.passed?'Grammar proven in both directions':r.type==='mastery'?retakeReady?'Mastery retake ready':retakeWaiting?'Retake from next study day':'More practice before the retake':'More practice before the next test'}</h2><p>NL → EN: ${r.directions['nl-en'].correct}/${r.directions['nl-en'].total} · EN → NL: ${r.directions['en-nl'].correct}/${r.directions['en-nl'].total}</p>${patterns}<p class="muted small">${r.passed?(r.type==='mastery'?'The next topic’s lesson and practice may begin while you wait. This topic is not retained yet. Its retention test can open from '+esc(state.progress[r.concept].retentionDue)+' if ten fresh sentences and ten daily questions are available.':'The next concept is unlocked. This one will return for maintenance.'):r.type==='mastery'?retakeReady?'Start the retake before ordinary practice so all 20 questions are available. '+esc(route):retakeWaiting?esc(route):esc(dailyProofOffer(state,content,now())?.reason||route):'Complete eight successful practice questions before trying fresh proof material again.'}</p></article>`;
 }
-function sessionChrome(active){document.body.classList.toggle('session-active',active);const footer=document.querySelector('footer');if(active)footer.setAttribute('aria-hidden','true');else footer.removeAttribute('aria-hidden');}
+function sessionChrome(active){document.body.classList.toggle('session-active',active);if(!active)document.body.classList.remove('dialogue-active');const footer=document.querySelector('footer');if(active)footer.setAttribute('aria-hidden','true');else footer.removeAttribute('aria-hidden');}
 function markTopTab(){
  document.querySelectorAll('.tabs > .tab').forEach(tab=>{
   const onCourse=view==='curriculum'&&tab.id==='course-tab';
@@ -413,7 +413,7 @@ function beginControlledDialogue(conceptId=selectedConcept){
 function leaveControlledDialogue(){const conceptId=dialogueSession?.conceptId;dialogueSession=null;selectedConcept=conceptId||selectedConcept;view='curriculum';render();}
 function renderControlledDialogue(){
  if(!dialogueSession){goHome();return;}
- sessionChrome(true);notify('');
+ sessionChrome(true);document.body.classList.add('dialogue-active');notify('');
  const turn=currentDialogueTurn(dialogueSession);
  if(!turn){
   const summary=controlledDialogueSummary(dialogueSession),response=dialogueSession.responses.at(-1);

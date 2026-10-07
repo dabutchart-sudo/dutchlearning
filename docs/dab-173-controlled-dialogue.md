@@ -21,7 +21,7 @@ This is the first DAB-173 slice. It establishes turn-taking, more than one accep
 | Repair | The first unsuitable response keeps the same turn open for one repair. The second attempt finishes the exchange, whether or not it fits, so there is no indefinite loop. |
 | Feedback | Shows the partner turn, the learner's final reply, suitable alternatives and whether the interaction was independent, supported or repaired. |
 | Audio/service failure | The partner's Dutch remains visible. Audio is a repeat aid only, so playback failure cannot block the exchange. |
-| Mobile layout | One question card with a pinned Check reply / Try the repair action above the bottom navigation. |
+| Mobile layout | One question card with the reply field before Check reply / Try the repair. The whole dialogue scrolls above the bottom navigation, so the action remains reachable without covering the field or support text. |
 | Persistence | The session stays in memory only. Leaving or refreshing discards it. Nothing is written or synced. |
 | Release control | `dialogue` is registered at Practice and has an immediate enabled/disabled switch. It cannot enter Trial or Core scheduling. |
 
@@ -42,7 +42,7 @@ Each reply is an existing S1 practice sentence. No proof sentence is reused.
 - No scheduler, daily limit, proof, Flashcard, learner-history, schema, authentication, service, deployment or cost change.
 - Automated coverage checks content provenance, multiple accepted replies, support, a single repair, session-only state, release gating, topic placement, mobile action placement and offline caching. The complete suite passes: 592 tests.
 - A 390 × 844 development-sandbox check completed the unsuitable reply → visible repair guidance → suitable repair → finite summary path. The Check reply action remained reachable.
-- The owner completed the Mac development-sandbox checks for an independent valid reply, a phrase-supported reply, and an unsuitable reply followed by a successful repair. The pinned action remained reachable after support and audio-error messages.
+- The owner completed the Mac development-sandbox checks for an independent valid reply, a phrase-supported reply, and an unsuitable reply followed by a successful repair. The primary action remained reachable after support and audio-error messages.
 - Repeat audio remains unvalidated in this candidate because the local preview has no server-side OpenAI key. Real-phone verification also remains outstanding. Because the owner's real course is at F2, production progress must not be advanced for either check.
 
 Rollback: disable `CONTROLLED_DIALOGUE_RELEASE.dialogue.enabled`, or revert this focused branch. No learner data is involved.
