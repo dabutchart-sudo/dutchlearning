@@ -113,7 +113,7 @@ test('the taught S1 topic offers dialogue Practice without adding it to Course h
  assert.doesNotMatch(topicPage(ready('F2'),foundation,'F2',{today}),/start-controlled-dialogue/);
 });
 
-test('the phone UI exposes repeat, clarify, phrase support, one repair, and a sticky action',()=>{
+test('the phone UI exposes repeat, clarify, phrase support, one repair, and a pinned action',()=>{
  const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
  const slice=app.slice(app.indexOf('function beginControlledDialogue'),app.indexOf('function renderSpeakingTurn'));
  assert.match(slice,/Repeat/);
@@ -126,7 +126,11 @@ test('the phone UI exposes repeat, clarify, phrase support, one repair, and a st
  assert.doesNotMatch(slice,/repo\.save|transaction\(|submit\(/);
  assert.match(app,/on\('start-controlled-dialogue'/);
  const styles=readFileSync(new URL('../src/ui/v51.css',import.meta.url),'utf8');
- assert.match(styles,/\.dialogue-practice-card \.actions\{position:sticky/);
+ assert.match(app,/class="dialogue-scroll"/);
+ assert.match(styles,/\.session \.dialogue-practice-card\{overflow:hidden;padding-bottom:78px\}/);
+ assert.match(styles,/\.dialogue-practice-card \.dialogue-scroll\{min-height:0;overflow:auto/);
+ assert.match(styles,/\.dialogue-practice-card \.actions\{position:fixed/);
+ assert.match(styles,/bottom:calc\(78px \+ env\(safe-area-inset-bottom\)\)/);
  const worker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
  assert.match(worker,/controlled-dialogue\.js/);
  assert.match(worker,/controlled-dialogues\.js/);
