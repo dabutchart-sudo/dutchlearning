@@ -45,7 +45,7 @@ A headless browser run at phone width with simulated playback confirmed, in all 
 
 Installed iPhone app: on 5 October, after V5.1.178 was deployed, the owner reported that the slower replay works. A MacBook check has not been reported.
 
-Still open in DAB-188: the second voice, which needs an approved `listen-tts` change, a spend limit and deploy access; and the slower replay for the two-line exchange once DAB-187 is accepted.
+The accepted slower-speed slice completes the controlled-variation requirement at Practice level. A second voice remains a separate possible addition requiring an approved `listen-tts` change, spend limit and deploy access. Extending slower replay to the now-accepted two-line exchange is also a separate bounded follow-up, not a blocker for DAB-170 acceptance.
 
 ## Rollback
 
