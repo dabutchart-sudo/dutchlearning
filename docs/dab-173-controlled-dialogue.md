@@ -44,6 +44,6 @@ Each reply is an existing S1 practice sentence. No proof sentence is reused.
 - A 390 × 844 development-sandbox check completed the unsuitable reply → visible repair guidance → suitable repair → finite summary path. The Check reply action remained reachable.
 - The owner completed the Mac development-sandbox checks for an independent valid reply, a phrase-supported reply, and an unsuitable reply followed by a successful repair. The primary action remained reachable after support and audio-error messages.
 - After an initial fixed action covered the reply field on real iPhone Safari, the field and action were returned to document order and the dialogue was made scrollable above the bottom navigation. The owner confirmed that corrected iPhone layout works well.
-- Repeat audio remains unvalidated in this candidate. Because the owner's real course is at F2, production progress must not be advanced for that check.
+- The owner confirmed that Repeat plays the Dutch prompt successfully on iPhone through the server-side audio path. The required Mac and real-iPhone validation is complete without advancing the owner's real F2 course progress.
 
 Rollback: disable `CONTROLLED_DIALOGUE_RELEASE.dialogue.enabled`, or revert this focused branch. No learner data is involved.
