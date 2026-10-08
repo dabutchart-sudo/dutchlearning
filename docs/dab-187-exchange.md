@@ -90,9 +90,7 @@ A headless browser run at phone width, with audio playback simulated, on a learn
 - both audio-failure paths, the summary, and leaving the round;
 - saved learner state, the daily count and attempt history are unchanged.
 
-Still needed:
-- the owner's check of the Dutch above;
-- an exchange round on the installed iPhone app and on the MacBook.
+Owner acceptance, 8 October 2026: the owner completed the A1.2 round in the built-in developer sandbox on the installed iPhone app. The Dutch/audio, delayed appearance of the choices, mobile layout, reachable Check answer action and finite five-exchange completion all worked correctly. The sandbox remained separate from the owner's real F2 progress. The focused exchange suite passed 12 of 12 on V5.1.182. A separate MacBook listening round has not been reported, but the live Mac production sandbox confirmed that playback started and revealed the three choices.
 
 ## Rollback
 
