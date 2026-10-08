@@ -46,4 +46,6 @@ Each reply is an existing S1 practice sentence. No proof sentence is reused.
 - After an initial fixed action covered the reply field on real iPhone Safari, the field and action were returned to document order and the dialogue was made scrollable above the bottom navigation. The owner confirmed that corrected iPhone layout works well.
 - The owner confirmed that Repeat plays the Dutch prompt successfully on iPhone through the server-side audio path. The required Mac and real-iPhone validation is complete without advancing the owner's real F2 course progress.
 
-Rollback: disable `CONTROLLED_DIALOGUE_RELEASE.dialogue.enabled`, or revert this focused branch. No learner data is involved.
+Release: V5.1.182 with offline cache `dutch-v5.1.182-20261008-controlled-dialogue`.
+
+Rollback: disable `CONTROLLED_DIALOGUE_RELEASE.dialogue.enabled`, or revert to the V5.1.181 source at `82f5d35`. No learner data is involved.
