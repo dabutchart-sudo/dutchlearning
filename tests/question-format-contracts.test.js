@@ -7,7 +7,7 @@ import {registerPacks} from '../src/content/registry.js';
 import {CAPABILITIES,QUESTION_FORMATS,RELEASE_LEVELS,SUPPORT_LEVELS,formatKinds,questionFormat,validateQuestionFormats} from '../src/engine/question-formats.js';
 
 test('every generated course question kind has one valid format contract',()=>{
- assert.deepEqual([...formatKinds].sort(),[...kinds].sort());
+ for(const kind of kinds)assert.ok(formatKinds.includes(kind));
  assert.deepEqual(validateQuestionFormats(),[]);
  for(const kind of kinds)assert.equal(questionFormat(kind),QUESTION_FORMATS[kind]);
  assert.equal(questionFormat('unknown'),null);
@@ -25,8 +25,15 @@ test('listening and speaking declare safe fallbacks without overstating their ev
  assert.match(QUESTION_FORMATS.speaking.notes,/not pronunciation assessment/);
 });
 
+test('controlled dialogue is a Practice-only interaction format',()=>{
+ assert.deepEqual(QUESTION_FORMATS.dialogue,{...QUESTION_FORMATS.dialogue,capability:'interact',response:'type-contextual-reply',releaseLevel:'practice'});
+ assert.deepEqual(QUESTION_FORMATS.dialogue.support,['independent','supported']);
+ assert.match(QUESTION_FORMATS.dialogue.notes,/Session-only interaction diagnostics/);
+});
+
 test('the registry describes current Core formats but cannot mutate at runtime',()=>{
  assert.ok(kinds.every(kind=>QUESTION_FORMATS[kind].releaseLevel==='core'));
+ assert.equal(QUESTION_FORMATS.dialogue.releaseLevel,'practice');
  assert.throws(()=>{QUESTION_FORMATS.choice.releaseLevel='experimental';},TypeError);
  assert.throws(()=>{QUESTION_FORMATS.choice.support.push('revealed');},TypeError);
 });

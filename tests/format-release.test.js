@@ -17,6 +17,13 @@ test('a Practice format stays optional and cannot enter Trial or Core scheduling
  assert.equal(QUESTION_FORMATS.listening.releaseLevel,'core');
 });
 
+test('the dialogue contract is available only through Experimental and Practice routes',()=>{
+ assert.equal(formatAvailable('dialogue','experimental'),true);
+ assert.equal(formatAvailable('dialogue','practice'),true);
+ assert.equal(formatAvailable('dialogue','trial'),false);
+ assert.equal(formatAvailable('dialogue','core'),false);
+});
+
 test('the kill switch disables a format in every context without mutating its contract',()=>{
  const overrides={listening:{releaseLevel:'practice',enabled:false}};
  for(const context of FORMAT_CONTEXTS)assert.equal(formatAvailable('listening',context,overrides),false);

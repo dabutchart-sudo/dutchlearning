@@ -4,8 +4,8 @@ export const RELEASE_LEVELS=Object.freeze(['experimental','practice','trial','co
 
 const attemptEvidence=Object.freeze(['kind','direction','phase','assisted','grammar','spelling','capitalization','lexicalErrors','vocabulary','errorType']);
 
-function contract(capability,response,{support=['independent'],fallback='none',roles=['guided-practice'],notes=''}={}){
- return Object.freeze({capability,response,support:Object.freeze(support),releaseLevel:'core',roles:Object.freeze(roles),fallback,attemptEvidence,notes});
+function contract(capability,response,{support=['independent'],fallback='none',roles=['guided-practice'],releaseLevel='core',notes=''}={}){
+ return Object.freeze({capability,response,support:Object.freeze(support),releaseLevel,roles:Object.freeze(roles),fallback,attemptEvidence,notes});
 }
 
 // Describes current production behaviour. It does not change scheduling, scoring,
@@ -19,7 +19,8 @@ export const QUESTION_FORMATS=Object.freeze({
  correction:contract('recall','type-suffix',{support:['independent','revealed'],notes:'Complete the hidden suffix of a Dutch form.'}),
  typed:contract('produce','type-sentence',{support:['independent','revealed'],roles:['guided-practice','independent-practice','proof'],notes:'Only correct, unassisted English-to-Dutch practice earns current independent evidence.'}),
  listening:contract('listen','select-meaning',{fallback:'convert-to-choice',notes:'Hidden Dutch audio to English meaning selection. Current learner-state progression also increments recognised.'}),
- speaking:contract('speak','record-sentence',{fallback:'convert-to-typed',notes:'English prompt to Dutch speech transcript. Current learner-state progression also increments recognised; transcript matching is not pronunciation assessment.'})
+ speaking:contract('speak','record-sentence',{fallback:'convert-to-typed',notes:'English prompt to Dutch speech transcript. Current learner-state progression also increments recognised; transcript matching is not pronunciation assessment.'}),
+ dialogue:contract('interact','type-contextual-reply',{support:['independent','supported'],releaseLevel:'practice',roles:['independent-practice'],notes:'Bounded optional dialogue with several appropriate replies. Session-only interaction diagnostics do not enter permanent progress.'})
 });
 
 export const formatKinds=Object.freeze(Object.keys(QUESTION_FORMATS));
