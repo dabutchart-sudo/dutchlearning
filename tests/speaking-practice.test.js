@@ -58,7 +58,7 @@ test('a spoken match is speaking evidence and a typed match is not',()=>{
  assert.equal(session.answers[1].capability,'produce');
  assert.equal(session.answers[1].speakingEvidence,false);
  assert.equal(session.answers[1].correct,true);
- assert.deepEqual(speakingPracticeSummary(session),{total:2,spoken:1,spokenCorrect:1,spokenNear:0,typed:1,typedCorrect:1,speechUnavailable:0,speechUnclear:0,retried:0,countsTowardProgress:false});
+ assert.deepEqual(speakingPracticeSummary(session),{total:2,spoken:1,spokenCorrect:1,spokenNear:0,typed:1,typedCorrect:1,speechUnavailable:0,speechUnclear:0,retried:0,laterReviewed:0,laterReviewSpoken:0,laterReviewRecovered:0,laterReviewTyped:0,countsTowardProgress:false});
  assert.equal(JSON.stringify(state),before);
 });
 
@@ -79,6 +79,88 @@ test('a close spoken miss can be retried once and a second miss stays a miss',()
  assert.equal(speakingPracticeMayRetry(settled.answers[0]),false);
  assert.equal(speakingPracticeFeedback(settled.answers[0],question,'not the sentence').retry,false);
  assert.equal(speakingPracticeSummary(settled).retried,1);
+});
+
+test('one spoken miss returns once after different prompts and can be recovered',()=>{
+ const state=ready(),before=JSON.stringify(state);
+ let session=startSpeakingPractice(state,content,{conceptId:'F1',size:3,seed:'later-review'});
+ const missed=currentSpeakingQuestion(session);
+ session=answerSpeakingPractice(session,'not the sentence');
+ assert.equal(session.questions.length,4);
+ assert.equal(session.questions.at(-1).laterReview,true);
+ assert.equal(session.questions.at(-1).reviewOf,missed.id);
+ const intervening=[];
+ while(!currentSpeakingQuestion(session).laterReview){
+  const question=currentSpeakingQuestion(session);
+  intervening.push(question.id);
+  session=answerSpeakingPractice(session,question.answer);
+ }
+ assert.ok(intervening.length>=1);
+ assert.ok(intervening.every(id=>id!==missed.id));
+ const review=currentSpeakingQuestion(session);
+ session=answerSpeakingPractice(session,review.answer);
+ assert.equal(currentSpeakingQuestion(session),null);
+ const result=session.answers.at(-1);
+ assert.equal(result.laterReview,true);
+ assert.equal(result.reviewOf,missed.id);
+ assert.equal(result.correct,true);
+ assert.equal(speakingPracticeMayRetry(result),false);
+ assert.equal(speakingPracticeFeedback(result,review,review.answer).headline,'Recovered on later review');
+ const summary=speakingPracticeSummary(session);
+ assert.equal(summary.total,3);
+ assert.equal(summary.laterReviewed,1);
+ assert.equal(summary.laterReviewSpoken,1);
+ assert.equal(summary.laterReviewRecovered,1);
+ assert.match(speakingPracticeSummaryCopy(summary).review,/recovered on later review/);
+ assert.equal(JSON.stringify(state),before);
+});
+
+test('later review is finite, limited to one item, and never manufactures an intervening prompt',()=>{
+ let session=startSpeakingPractice(ready(),content,{conceptId:'F1',size:3,seed:'one-review'});
+ session=answerSpeakingPractice(session,'first miss');
+ const scheduled=session.questions.length;
+ session=answerSpeakingPractice(session,'second miss');
+ assert.equal(session.questions.length,scheduled);
+ const third=currentSpeakingQuestion(session);
+ session=answerSpeakingPractice(session,third.answer);
+ const review=currentSpeakingQuestion(session);
+ session=answerSpeakingPractice(session,'still missed');
+ assert.equal(currentSpeakingQuestion(session),null);
+ assert.equal(session.questions.length,4);
+ assert.equal(speakingPracticeSummary(session).laterReviewed,1);
+ assert.equal(speakingPracticeSummary(session).laterReviewRecovered,0);
+ assert.match(speakingPracticeSummaryCopy(speakingPracticeSummary(session)).review,/finished without another repeat/);
+
+ let finalMiss=startSpeakingPractice(ready(),content,{conceptId:'F1',size:2,seed:'final-miss'});
+ finalMiss=answerSpeakingPractice(finalMiss,currentSpeakingQuestion(finalMiss).answer);
+ finalMiss=answerSpeakingPractice(finalMiss,'miss on final prompt');
+ assert.equal(finalMiss.questions.length,2);
+ assert.equal(currentSpeakingQuestion(finalMiss),null);
+ assert.equal(speakingPracticeSummary(finalMiss).laterReviewed,0);
+});
+
+test('typing the later review completes the round without claiming speaking recovery',()=>{
+ let session=startSpeakingPractice(ready(),content,{conceptId:'F1',size:2,seed:'typed-later-review'});
+ const missed=currentSpeakingQuestion(session);
+ session=answerSpeakingPractice(session,'spoken miss');
+ session=answerSpeakingPractice(session,currentSpeakingQuestion(session).answer);
+ const review=currentSpeakingQuestion(session);
+ assert.equal(review.reviewOf,missed.id);
+ session=answerSpeakingPractice(session,review.answer,{typedFallback:true,speechIssue:'unavailable'});
+ const result=session.answers.at(-1);
+ assert.equal(currentSpeakingQuestion(session),null);
+ assert.equal(result.laterReview,true);
+ assert.equal(result.correct,true);
+ assert.equal(result.speakingEvidence,false);
+ assert.equal(speakingPracticeMayRetry(result),false);
+ assert.equal(speakingPracticeFeedback(result,review).headline,'Later review completed in writing');
+ const summary=speakingPracticeSummary(session);
+ assert.equal(summary.laterReviewed,1);
+ assert.equal(summary.laterReviewSpoken,0);
+ assert.equal(summary.laterReviewRecovered,0);
+ assert.equal(summary.laterReviewTyped,1);
+ assert.equal(summary.speechUnavailable,1);
+ assert.match(speakingPracticeSummaryCopy(summary).review,/writing practice, not speaking evidence/);
 });
 
 test('speech failure converts to typing and records no speaking evidence',()=>{
@@ -158,6 +240,9 @@ test('the topic page offers speaking practice without putting it on Course home 
  assert.match(slice,/Type instead/);
  assert.match(slice,/Speech unavailable/);
  assert.match(slice,/Try speaking again/);
+ assert.match(slice,/Later review/);
+ assert.match(slice,/Say it again from memory/);
+ assert.match(slice,/It will not repeat again/);
  assert.match(slice,/Check answer/);
  assert.match(slice,/Leave practice — no Course progress to save/);
  assert.match(slice,/not a pronunciation score/);
