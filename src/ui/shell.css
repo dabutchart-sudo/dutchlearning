@@ -31,3 +31,12 @@ body.is-development .app{grid-template-rows:auto auto auto minmax(0,1fr)}body.is
 @media(max-width:900px){.topbar{align-items:center}.brand{padding-right:0;width:auto}.brand p{position:static;max-width:none;text-align:left;margin:3px 0 0}.tabs{overflow:visible}.daily-chrome{width:auto;margin:0;align-self:center}}
 @media(max-width:520px){.topbar{gap:6px}.brand h1{font-size:1.85rem}.brand p{font-size:.67rem}.daily-chrome{font-size:.56rem}.daily-chrome>span{padding:4px 5px}}
 @media(max-height:760px){body.session-active .topbar{margin-bottom:3px}body.session-active .brand h1{font-size:1.6rem}}
+
+/* Active study uses one compact header and a shorter navigation dock. */
+body.session-active .topbar{display:contents!important}
+body.session-active .topbar>.brand{display:none!important}
+body.session-active .topbar>#sync-status{display:none!important}
+body.session-active .app{grid-template-rows:minmax(0,1fr);padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+body.session-active .tabs{min-height:calc(58px + env(safe-area-inset-bottom));padding-top:4px;padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+body.session-active .tabs>.tab{height:44px;min-height:44px;max-width:64px}
+body.session-active .tabs .nav-icon{width:25px;height:25px}

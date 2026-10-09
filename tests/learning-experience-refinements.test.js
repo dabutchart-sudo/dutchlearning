@@ -82,5 +82,6 @@ test('current build loads and caches the learning-session refinement module',()=
  assert.match(sw,/\.\/src\/ui\/learning-session-refinements\.js/);
  assert.match(ui,/Words for today’s practice/);
  assert.match(ui,/Type only the missing letters/);
- assert.match(ui,/min-height:clamp/);
+ assert.match(ui,/\.session \.question-card\{min-height:0\}/);
+ assert.doesNotMatch(ui,/min-height:clamp/);
 });

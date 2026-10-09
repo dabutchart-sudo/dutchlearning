@@ -1,5 +1,23 @@
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+export function exerciseLabel(direction,task){
+ return `<div class="exercise-label"><span>${esc(direction)}</span><span aria-hidden="true">·</span><strong>${esc(task)}</strong></div>`;
+}
+
+export function compactSessionOffer(offer){
+ if(!offer)return '';
+ const reason=String(offer.reason||'');
+ let summary=offer.canStartToday?`${offer.id} ${offer.type} ready · ${offer.needed} questions needed`:'Test readiness';
+ const accuracy=reason.match(/recent independent writing is (\d+) of (\d+).*Reach (\d+)%/i);
+ const sample=reason.match(/(\d+) of 10 recent typed answers.*across (\d+) study/i);
+ if(accuracy)summary=`Independent writing: ${accuracy[1]}/${accuracy[2]} · Target ${accuracy[3]}%`;
+ else if(sample)summary=`Independent writing: ${sample[1]}/10 · ${sample[2]} study ${sample[2]==='1'?'day':'days'}`;
+ else if(/another study day/i.test(reason))summary='Independent writing · another study day needed';
+ else if(reason)summary=reason.length<=72?reason:'Test readiness · details';
+ const detail=reason||`Pause and start the ${offer.id} ${offer.type} test now, or it waits until tomorrow.`;
+ return `<details class="session-offer"><summary>${esc(summary)}<span class="session-offer-info" aria-hidden="true">i</span></summary><p>${esc(detail)}</p></details>`;
+}
+
 export function questionHeader({question,dailyCount,proof,extraIndex,extraSize,topicTitle}){
  const extra=question.phase==='extra';
  const total=proof?proof.questions.length:extra?extraSize:20;
@@ -13,5 +31,6 @@ export function answerFeedback(record,feedback){
  const title=record.grammar===true?(record.spelling===false?'Grammar correct · spelling to revisit':'Grammar correct'):record.grammar===null?'Vocabulary needs review':'Let’s revisit this pattern';
  const tone=record.grammar===true?(record.spelling===false?'warn':'ok'):'bad';
  const sentence=feedback.words.map(part=>part.changed?`<mark class="problem-char">${esc(part.text)}</mark>`:esc(part.text)).join(' ')+esc(feedback.punctuation);
- return `<div class="feedback ${tone}"><strong>${title}</strong><span class="correct" lang="nl">${sentence}</span><span class="meaning">${esc(feedback.meaning)}</span>${feedback.differences.length?`<p lang="nl">${feedback.differences.map(esc).join(' · ')}</p>`:''}${feedback.explanation?`<p>${esc(feedback.explanation)}</p>`:''}${feedback.patternTip?`<p class="tipbox">Pattern to revisit: ${esc(feedback.patternTip)}</p>`:''}${record.capitalization===false?'<p>Start the sentence with a capital letter. This is separate from grammar.</p>':''}<details class="session-evidence"><summary>How this answer counts</summary><div class="badges"><span class="badge">Grammar ${record.grammar===true?'✓':record.grammar===null?'unproven':'review'}</span>${record.spelling!==null?`<span class="badge">Spelling ${record.spelling?'✓':'review'}</span>`:''}${record.capitalization!==null?`<span class="badge">Capitalisation ${record.capitalization?'✓':'review'}</span>`:''}${record.assisted?'<span class="badge">Guidance used</span>':''}${record.independent?'<span class="badge">Independent Dutch writing</span>':''}</div>${record.assisted?'<p>Guidance supports practice, but this answer does not count as independent Dutch writing. Recall will return later.</p>':''}</details></div>`;
+ const explanation=[feedback.differences.length?`<p lang="nl">${feedback.differences.map(esc).join(' · ')}</p>`:'',feedback.explanation?`<p>${esc(feedback.explanation)}</p>`:'',feedback.patternTip?`<p>Pattern to revisit: ${esc(feedback.patternTip)}</p>`:'',record.capitalization===false?'<p>Start the sentence with a capital letter. This is separate from grammar.</p>':''].filter(Boolean).join('');
+ return `<div class="feedback ${tone}"><strong>${title}</strong><div class="feedback-model"><span class="correct" lang="nl">${sentence}</span><span class="meaning">${esc(feedback.meaning)}</span></div>${explanation?`<details class="feedback-explanation"><summary>Why?</summary>${explanation}</details>`:''}<details class="session-evidence"><summary>How this answer counts</summary><div class="badges"><span class="badge">Grammar ${record.grammar===true?'✓':record.grammar===null?'unproven':'review'}</span>${record.spelling!==null?`<span class="badge">Spelling ${record.spelling?'✓':'review'}</span>`:''}${record.capitalization!==null?`<span class="badge">Capitalisation ${record.capitalization?'✓':'review'}</span>`:''}${record.assisted?'<span class="badge">Guidance used</span>':''}${record.independent?'<span class="badge">Independent Dutch writing</span>':''}</div>${record.assisted?'<p>Guidance supports practice, but this answer does not count as independent Dutch writing. Recall will return later.</p>':''}</details></div>`;
 }
