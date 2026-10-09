@@ -621,7 +621,7 @@ function renderCourse(){
   bindProof(selectedConcept);return;
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});
- if(view!=='evidence'&&state.lastProof)el.querySelector('.course-focus')?.insertAdjacentHTML('afterend',`<details class="course-last-proof" ${state.lastProof.passed?'':'open'}><summary>Latest test result</summary>${proofReport()}</details>`);
+ if(view!=='evidence'&&state.lastProof)el.querySelector('.course-path')?.insertAdjacentHTML('afterbegin',`<details class="course-last-proof" ${state.lastProof.passed?'':'open'}><summary>Latest test result</summary>${proofReport()}</details>`);
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
  el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});

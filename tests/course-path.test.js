@@ -25,13 +25,13 @@ test('Course opens on the path, not the evidence charts',()=>{
  const html=coursePage(state,content,{today:'2026-09-20'});
  assert.match(html,/data-course-path/);
  assert.match(html,/data-course-home/);
- assert.ok(html.indexOf('data-course-focus')<html.indexOf('class="course-unit"'));
+ assert.doesNotMatch(html,/data-course-focus|Current topic ·/);
  assert.match(html,/You’re here/);
  assert.doesNotMatch(html,/Where you are|See the whole path, then start from here\./);
  assert.match(html,/<h2 class="sr-only" tabindex="-1">Course<\/h2>/);
  assert.doesNotMatch(html,/course-path-here|You’re here —/);
  assert.match(html,/data-course-start="F1"/);
- assert.equal((html.match(/data-course-start=/g)||[]).length,2);
+ assert.equal((html.match(/data-course-start=/g)||[]).length,1);
  assert.match(html,/aria-label="Stage info: F1 · First sentences">Stage info/);
  assert.match(html,/aria-label="Start learning: F1 · First sentences">Start learning/);
  assert.doesNotMatch(html,/aria-label="Start learning: A1\.1/);
@@ -41,6 +41,7 @@ test('Course opens on the path, not the evidence charts',()=>{
  assert.doesNotMatch(html,/course-trend-chart/);
  assert.doesNotMatch(html,/data-course-pane/);
  assert.match(app,/view='curriculum'/);
+ assert.match(app,/querySelector\('\.course-path'\)\?\.insertAdjacentHTML\('afterbegin'/);
  assert.match(overview,/pane='path'/);
 });
 
@@ -62,6 +63,15 @@ test('a retained topic offers extra practice and the current topic can start fro
  assert.ok(current.indexOf('id="start-course"')<current.indexOf('What you’ll learn'));
  assert.match(current,/<details class="course-topic-evidence">/);
  assert.match(current,/0 of 40 required practice answers/);
+});
+
+test('a completed course keeps its completion notice without restoring the duplicate current-topic panel',()=>{
+ const state=freshState(content,new Date('2026-09-20T12:00:00Z'));
+ for(const progress of Object.values(state.progress))Object.assign(progress,{status:'mastered',masteredAt:'2026-09-20',taught:true,lessonAcknowledged:true});
+ const html=coursePage(state,content,{today:'2026-09-20'});
+ assert.match(html,/course-complete-notice/);
+ assert.match(html,/All available topics retained/);
+ assert.doesNotMatch(html,/data-course-focus|data-course-start=/);
 });
 
 test('a finished day and a ready test are obvious on the path',()=>{
