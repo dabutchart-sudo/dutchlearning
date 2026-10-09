@@ -6,6 +6,16 @@ test('mobile shell keeps bottom navigation visible and clear of Learning control
 test('icon navigation has four equal accessible touch targets',()=>{assert.match(shell,/\.tabs>\.tab\{height:54px;min-height:54px/);assert.match(shell,/\.tabs svg/);
  assert.doesNotMatch(flashcardStyles,/\.tabs \.tab\{flex:0 0 auto\}/);
 });
+test('main navigation uses distinct full-colour vector icons without changing its labels',()=>{
+ const tabs=index.match(/<nav class="tabs"[^>]*>.*?<\/nav>/)[0];
+ for(const name of ['course','flashcards','progress','settings'])assert.match(tabs,new RegExp(`nav-icon-${name}`));
+ for(const colour of ['blue','coral','teal','violet'])assert.match(shell,new RegExp(`nav-${colour}-fill`));
+ assert.match(shell,/\.tabs>\.nav-course\.active\{background:#e7f1ff\}/);
+ assert.match(shell,/\.tabs>\.nav-flashcards\.active\{background:#fff0e8\}/);
+ assert.match(shell,/\.tabs>\.nav-progress\.active\{background:#e5f7f1\}/);
+ assert.match(shell,/\.tabs>\.nav-settings\.active\{background:#f1edff\}/);
+ for(const label of ['Course','Flashcards','Progress','Settings'])assert.match(tabs,new RegExp(`aria-label="${label}"`));
+});
 test('the top menu shows four study destinations and keeps the rest inside Progress',()=>{
  const tabs=index.match(/<nav class="tabs"[^>]*>.*?<\/nav>/)[0];
  assert.match(tabs,/data-view="curriculum"[^>]*aria-label="Course"/);
