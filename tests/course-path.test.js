@@ -5,6 +5,7 @@ import {coursePage,topicPage} from '../src/ui/course-overview.js';
 import {freshState} from '../src/engine/learner.js';
 
 const overview=readFileSync(new URL('../src/ui/course-overview.js',import.meta.url),'utf8');
+const courseStyles=readFileSync(new URL('../src/ui/course-overview.css',import.meta.url),'utf8');
 const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
 
 const content={
@@ -32,7 +33,9 @@ test('Course opens on the path, not the evidence charts',()=>{
  assert.doesNotMatch(html,/course-path-here|You’re here —/);
  assert.match(html,/data-course-start="F1"/);
  assert.equal((html.match(/data-course-start=/g)||[]).length,1);
- assert.match(html,/aria-label="Stage info: F1 · First sentences">Stage info/);
+ assert.match(html,/aria-label="Stage info: F1 · First sentences" title="Stage info"><span aria-hidden="true">i<\/span>/);
+ assert.equal((html.match(/class="course-path-actions"/g)||[]).length,1);
+ assert.match(courseStyles,/\.course-path-info\{[^}]*width:44px;[^}]*height:44px;[^}]*min-height:44px/);
  assert.match(html,/aria-label="Start learning: F1 · First sentences">Start learning/);
  assert.doesNotMatch(html,/aria-label="Start learning: A1\.1/);
  assert.match(html,/Pass F1 mastery first/);
@@ -51,7 +54,7 @@ test('a retained topic offers extra practice and the current topic can start fro
  const path=coursePage(state,content,{today:'2026-09-20'});
  assert.doesNotMatch(path,/data-course-extra="F1"/);
  assert.match(path,/data-course-start="A1.1"/);
- assert.match(path,/aria-label="Stage info: F1 · First sentences">Stage info/);
+ assert.match(path,/aria-label="Stage info: F1 · First sentences" title="Stage info"><span aria-hidden="true">i<\/span>/);
  assert.match(path,/aria-label="Start learning: A1\.1 · Present tense">Start learning/);
  assert.doesNotMatch(path,/aria-label="Start learning: F1/);
  const retained=topicPage(state,content,'F1',{today:'2026-09-20'});
@@ -80,7 +83,8 @@ test('a finished day and a ready test are obvious on the path',()=>{
  const done=coursePage(state,content,{today:'2026-09-20'});
  assert.match(done,/Learning complete for today/);
  assert.doesNotMatch(done,/data-course-start="F1"/);
- assert.match(done,/aria-label="Stage info: F1 · First sentences">Stage info/);
+ assert.match(done,/aria-label="Stage info: F1 · First sentences" title="Stage info"><span aria-hidden="true">i<\/span>/);
+ assert.doesNotMatch(done,/class="course-path-actions"/);
  const ready=freshState(content,new Date('2026-09-20T12:00:00Z'));
  const testHtml=coursePage(ready,content,{today:'2026-09-20',offer:{id:'F1',canStartToday:true,type:'mastery'}});
  assert.match(testHtml,/Choose test or practice/);

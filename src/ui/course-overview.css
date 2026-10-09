@@ -39,8 +39,8 @@
 .course-path-card{display:grid;gap:7px;padding:9px 12px 11px;border-radius:13px;background:#fff;box-shadow:0 4px 12px #16324a10;color:inherit}
 .course-path-summary,.course-planned-label{display:grid;gap:2px;text-align:left;min-height:46px}
 .course-planned-label{padding:9px 12px;border-radius:13px;background:#fff;box-shadow:0 4px 12px #16324a10}
-.course-path-actions{display:flex;gap:8px;align-items:stretch}.course-path-actions button{flex:1 1 0;width:auto;min-height:44px;padding:8px 10px;border-radius:11px;font-size:.8rem;font-weight:750}.course-path-actions .course-path-info{border:1px solid #bfd0df;background:#f7fafc;color:#174b76}.course-path-actions .primary{margin:0}
-.course-path-main{display:flex;align-items:baseline;justify-content:space-between;gap:9px}.course-path-main strong{font-size:.9rem;line-height:1.25}.course-locked-reason,.course-planned-note,.course-stage-note{font-size:.72rem;color:var(--muted);line-height:1.35}.course-planned-note{margin:4px 0 0}
+.course-path-actions{display:flex}.course-path-actions .primary{width:100%;min-height:44px;margin:0;padding:8px 10px;border-radius:11px;font-size:.8rem;font-weight:750}
+.course-path-main{display:flex;align-items:center;gap:5px}.course-path-main strong{flex:1 1 auto;min-width:0;font-size:.9rem;line-height:1.25}.course-path-info{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#174b76;display:grid;place-items:center}.course-path-info>span{width:26px;height:26px;border:1px solid #9eb9cf;border-radius:50%;display:grid;place-items:center;background:#f7fafc;font:italic 750 .82rem Georgia,serif}.course-path-info:hover>span{background:#eaf2f8;border-color:#6f9dbc}.course-locked-reason,.course-planned-note,.course-stage-note{font-size:.72rem;color:var(--muted);line-height:1.35}.course-planned-note{margin:4px 0 0}
 .course-topic-outcome{display:block;margin-top:2px;color:var(--muted);font-size:.78rem;line-height:1.35}
 .course-can-do{margin-top:16px}.course-can-do h3{margin:0 0 6px;font-size:1.05rem}.course-can-do p{margin:0;line-height:1.5}
 .course-path-card .course-topic-status{white-space:normal;text-align:right;font-size:.68rem}

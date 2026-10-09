@@ -130,15 +130,12 @@ function pathNode(c,daily,offer){
   <div class="course-path-card">
    <div class="course-path-summary">
     <span class="course-topic-code">${esc(c.id)}${c.current?' · You’re here':''}</span>
-    <span class="course-path-main"><strong>${esc(c.title)}</strong><span class="course-topic-status status-${esc(c.status)}">${esc(c.journey.label)}</span></span>
+    <span class="course-path-main"><strong>${esc(c.title)}</strong><button type="button" class="course-path-info" data-course-concept="${esc(c.id)}" aria-label="Stage info: ${esc(c.id)} · ${esc(c.title)}" title="Stage info"><span aria-hidden="true">i</span></button><span class="course-topic-status status-${esc(c.status)}">${esc(c.journey.label)}</span></span>
     ${outcome?`<span class="course-topic-outcome">${esc(outcome)}</span>`:''}
     ${currentNote?`<small class="course-stage-note">${esc(currentNote)}</small>`:''}
     ${reason}
    </div>
-   <div class="course-path-actions">
-    <button type="button" class="course-path-info" data-course-concept="${esc(c.id)}" aria-label="Stage info: ${esc(c.id)} · ${esc(c.title)}">Stage info</button>
-    ${c.current&&!daily.done?`<button type="button" class="primary" data-course-start="${esc(c.id)}" aria-label="${esc(startLabel)}: ${esc(c.id)} · ${esc(c.title)}">${esc(startLabel)}</button>`:''}
-   </div>
+   ${c.current&&!daily.done?`<div class="course-path-actions"><button type="button" class="primary" data-course-start="${esc(c.id)}" aria-label="${esc(startLabel)}: ${esc(c.id)} · ${esc(c.title)}">${esc(startLabel)}</button></div>`:''}
   </div>
  </li>`;
 }
