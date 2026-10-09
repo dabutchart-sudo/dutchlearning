@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.183**.
+- Current documented release: **Zin V5.1.184**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -204,11 +204,17 @@ The owner approved the development preview and authorised production release. Co
 
 This is a presentation-only shell change. It does not alter the daily 20, Course, mastery, retention, Flashcards, learner history, Supabase, authentication, services or running cost. All 593 automated tests pass, including focused coverage for the four accessible navigation destinations and their release assets. The offline cache is `dutch-v5.1.183-20261009-colour-navigation`. Rollback is the V5.1.182 main source at `1031e96`; preserve learner history and the standalone Flashcards fallback.
 
+## Direct Course actions — V5.1.184 release, 2026-10-09
+
+The owner approved the development preview and authorised production deployment. Each available Course stage now separates **Stage info** from **Start learning** or **Continue learning**, so normal Learning can begin directly from the Course path while the stage explanation remains available on demand. The redundant current-topic banner is removed. Stage information uses a compact inline control with a 44 × 44 touch target, which substantially shortens locked stage cards on mobile. Test-ready stages retain the existing choice and readiness warning, and a completed daily session still shows its finished state without offering another normal-session start.
+
+This is a presentation and navigation change only. The existing lesson-first route, vocabulary briefing, daily 20, proof gates, mastery, retention, Flashcards, learner history, Supabase, authentication, services and running cost are unchanged. All 594 automated tests pass. Browser validation covered the direct start action, compact course path, stage-detail navigation and removal of the duplicate banner. A post-release installed-iPhone confirmation remains to be recorded. The offline cache is `dutch-v5.1.184-20261009-direct-course-actions`. Rollback is the V5.1.183 main source at `988bc8f`; preserve learner history and the standalone Flashcards fallback.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 8 October 2026
 
-The live app is Zin V5.1.183. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
+The live app is Zin V5.1.184. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
 
 The planned listening-depth steps are accepted at optional Practice level: hidden-text meaning selection, sentence discrimination, missing heard word, short dictation, two-line exchange comprehension and slower replay. The owner confirmed sentence discrimination, missing heard word, short dictation and slower replay on the installed iPhone app. On 8 October the owner completed the two-line exchange in an A1.2 developer sandbox on the installed iPhone and confirmed its Dutch/audio, delayed choices, mobile layout, reachable action and finite completion. DAB-170 is complete at Practice level. A second voice and slower replay on the exchange remain possible later additions, not acceptance blockers; either would require a separately approved protected-service or bounded client change.
 
