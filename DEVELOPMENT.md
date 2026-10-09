@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.184**.
+- Current documented release: **Zin V5.1.185**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -214,7 +214,7 @@ This is a presentation and navigation change only. The existing lesson-first rou
 
 ### Conversational Dutch, remaining steps — 8 October 2026
 
-The live app is Zin V5.1.184. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
+The live app is Zin V5.1.185. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
 
 The planned listening-depth steps are accepted at optional Practice level: hidden-text meaning selection, sentence discrimination, missing heard word, short dictation, two-line exchange comprehension and slower replay. The owner confirmed sentence discrimination, missing heard word, short dictation and slower replay on the installed iPhone app. On 8 October the owner completed the two-line exchange in an A1.2 developer sandbox on the installed iPhone and confirmed its Dutch/audio, delayed choices, mobile layout, reachable action and finite completion. DAB-170 is complete at Practice level. A second voice and slower replay on the exchange remain possible later additions, not acceptance blockers; either would require a separately approved protected-service or bounded client change.
 
@@ -455,8 +455,8 @@ A1.8 question-word practice now has 20 contexts, four each for waar, wat, wannee
 
 A1.9 perfect tense with zijn practice now has 20 contexts across 16 subjects. All six existing verb families have at least three examples; no new verb family is introduced. Added Dutch sentences are distinct from all registered course text. Existing record identities, teaching and proof material are preserved, including A1.10. No learner-data, scheduler, schema, authentication, service, cost or production-release changes are included. Phone/PWA acceptance remains outstanding. Next: A1.10 separable-verb practice breadth, followed by later small pools and the remaining audit work.
 
-## Compact practice layout — 2026-10-09 (local candidate)
+## Compact practice layout — V5.1.185 release, 2026-10-09
 
-GitHub issue #188 is implemented on `codex/compact-practice-layout` as a presentation-only candidate. Active Learning, proof and optional Practice screens now share one compact header for Zin, session progress/topic, pause and sync; the bottom navigation remains visible with 44-pixel controls. Direction and task are combined into one label, readiness guidance is one expandable line, and checked answers replace the input with a compact answer summary. The complete Dutch model and English meaning remain visible; longer explanations and answer-counting evidence are available in collapsed details. Vocabulary briefings and injected session screens inherit the same header, while long briefing content scrolls inside the card above the pinned action.
+The owner approved production deployment and GitHub issue #188 was merged through PR #189. Active Learning, proof and optional Practice screens now share one compact header for Zin, session progress/topic, pause and sync; the bottom navigation remains visible with 44-pixel controls. Direction and task are combined into one label, readiness guidance is one expandable line, and checked answers replace the input with a compact answer summary. The complete Dutch model and English meaning remain visible; longer explanations and answer-counting evidence are available in collapsed details. Vocabulary briefings and injected session screens inherit the same header, while long briefing content scrolls inside the card above the pinned action.
 
-No course rules, question selection, scoring, daily limits, scheduler, learner history, Supabase data/schema/authentication, services, audio path, costs or deployment settings changed. Browser checks covered lesson, vocabulary briefing, unanswered practice and answered practice at a 765×709 viewport with the action and navigation visible. The focused practice/layout suite passes 39/39 and the full suite passes 597/597. iPhone Safari and installed-PWA checks across typed, choice, listening, speaking and controlled-dialogue screens remain the release gate. No merge or deployment has occurred; rollback is the production V5.1.184 baseline at `cb86de4`.
+No course rules, question selection, scoring, daily limits, scheduler, learner history, Supabase data/schema/authentication, services, audio path or costs changed. Browser checks covered lesson, vocabulary briefing, unanswered practice and answered practice at a 765×709 viewport with the action and navigation visible. The focused practice/layout suite passes 39/39 and the full suite passes 597/597. The offline cache is `dutch-v5.1.185-20261009-compact-practice-layout`. iPhone Safari and installed-PWA confirmation across typed, choice, listening, speaking and controlled-dialogue screens remains the post-release check. Rollback is the V5.1.184 main source at `cb86de4`; preserve learner history and the standalone Flashcards fallback.
