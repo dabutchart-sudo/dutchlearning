@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.182**.
+- Current documented release: **Zin V5.1.183**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -198,11 +198,17 @@ The owner authorised production release on 8 October. The first bounded controll
 
 The release does not use the daily 20, alter Course/mastery/retention, write learner history, or change Supabase, authentication, services or cost. All 592 automated tests pass. A 390 × 844 development-sandbox check completed the unsuitable reply, visible repair guidance, suitable repair and finite summary path with the action reachable. The owner then completed the Mac development-sandbox checks for an independent valid reply, a phrase-supported reply, and an unsuitable reply followed by successful repair; the action remained reachable after support and audio-error messages. An initial fixed-action correction covered the reply field on real iPhone Safari, so the release keeps the field and action in document order and scrolls the dialogue above the bottom navigation. The owner confirmed that corrected iPhone layout works well and that Repeat plays the Dutch prompt successfully through the server-side audio path. Required Mac and real-iPhone validation is complete without advancing the owner's real F2 course progress. The offline cache is `dutch-v5.1.182-20261008-controlled-dialogue`. Rollback is the immediate release switch or the V5.1.181 source at `82f5d35`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-173-controlled-dialogue.md`.
 
+## Full-colour navigation — V5.1.183 release, 2026-10-09
+
+The owner approved the development preview and authorised production release. Course, Flashcards, Progress and Settings now use four distinct full-colour inline vector icons, with a matching soft tile for the selected section. Their labels, navigation behaviour and touch targets are unchanged.
+
+This is a presentation-only shell change. It does not alter the daily 20, Course, mastery, retention, Flashcards, learner history, Supabase, authentication, services or running cost. All 593 automated tests pass, including focused coverage for the four accessible navigation destinations and their release assets. The offline cache is `dutch-v5.1.183-20261009-colour-navigation`. Rollback is the V5.1.182 main source at `1031e96`; preserve learner history and the standalone Flashcards fallback.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 8 October 2026
 
-The live app is Zin V5.1.182. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
+The live app is Zin V5.1.183. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
 
 The planned listening-depth steps are accepted at optional Practice level: hidden-text meaning selection, sentence discrimination, missing heard word, short dictation, two-line exchange comprehension and slower replay. The owner confirmed sentence discrimination, missing heard word, short dictation and slower replay on the installed iPhone app. On 8 October the owner completed the two-line exchange in an A1.2 developer sandbox on the installed iPhone and confirmed its Dutch/audio, delayed choices, mobile layout, reachable action and finite completion. DAB-170 is complete at Practice level. A second voice and slower replay on the exchange remain possible later additions, not acceptance blockers; either would require a separately approved protected-service or bounded client change.
 
