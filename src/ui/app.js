@@ -6,6 +6,7 @@ import {labels} from '../engine/scoring.js';
 import {masteryRecovery} from '../engine/mastery-recovery.js';
 import {chooseTile,removeTile,bankAnswer,correctiveFeedback} from '../engine/exercises.js';
 import {coursePage,topicPage} from './course-overview.js';
+import {proofResultHeadline,proofResultIsToday,proofResultLabel,proofResultScore,proofResultSummary} from './proof-result.js';
 import {paintDailyChrome} from './daily-chrome.js';
 import {bindPeek} from './peek.js';
 import {questionHeader,answerFeedback} from './learning-session-ui.js';
@@ -62,7 +63,7 @@ function proofReport(){
  const retakeReady=r.type==='mastery'&&!r.passed&&dailyProofOffer(state,content,now())?.canStartToday;
  const patterns=recovery?.groups.length?`<div class="mastery-patterns"><h3>Patterns to revisit</h3><ul>${recovery.groups.slice(0,3).map(group=>`<li><strong>${esc(group.direction==='nl-en'?'Understand the meaning':'Write the Dutch')} · ${esc(group.label)}${group.count>1?` (${group.count})`:''}</strong><span lang="nl">${esc(group.sentence)}</span><span>${esc(group.meaning)}</span><p>${esc(group.tip)}</p></li>`).join('')}</ul>${recovery.groups.length>3?`<p class="small muted">${recovery.groups.length-3} more pattern ${recovery.groups.length===4?'is':'are'} recorded in Mistakes & weak areas.</p>`:''}</div>`:'';
  const route=recovery?.failures>=2?'Choose practice for a simpler step using familiar sentences before another full retake. It uses the normal daily 20.':'Practice will revisit these patterns in different sentences. A full retake can start from your next study day if enough fresh sentences and all 20 questions are available.';
- return `<article class="card evidence-card proof-report"><div class="eyebrow">Latest ${esc(r.type)} result · ${esc(r.concept)}</div><h2>${r.passed?'Grammar proven in both directions':r.type==='mastery'?retakeReady?'Mastery retake ready':retakeWaiting?'Retake from next study day':'More practice before the retake':'More practice before the next test'}</h2><p>NL → EN: ${r.directions['nl-en'].correct}/${r.directions['nl-en'].total} · EN → NL: ${r.directions['en-nl'].correct}/${r.directions['en-nl'].total}</p>${patterns}<p class="muted small">${r.passed?(r.type==='mastery'?'The next topic’s lesson and practice may begin while you wait. This topic is not retained yet. Its retention test can open from '+esc(state.progress[r.concept].retentionDue)+' if ten fresh sentences and ten daily questions are available.':'The next concept is unlocked. This one will return for maintenance.'):r.type==='mastery'?retakeReady?'Start the retake before ordinary practice so all 20 questions are available. '+esc(route):retakeWaiting?esc(route):esc(dailyProofOffer(state,content,now())?.reason||route):'Complete eight successful practice questions before trying fresh proof material again.'}</p></article>`;
+ return `<article class="card evidence-card proof-report"><div class="eyebrow">${esc(proofResultLabel(r))}</div><h2>${esc(proofResultHeadline(r))}</h2><p>${esc(proofResultScore(r))}</p>${patterns}<p class="muted small">${r.passed?(r.type==='mastery'?'The next topic’s lesson and practice may begin while you wait. This topic is not retained yet. Its retention test can open from '+esc(state.progress[r.concept].retentionDue)+' if ten fresh sentences and ten daily questions are available.':'The next concept is unlocked. This one will return for maintenance.'):r.type==='mastery'?retakeReady?'Start the retake before ordinary practice so all 20 questions are available. '+esc(route):retakeWaiting?esc(route):esc(dailyProofOffer(state,content,now())?.reason||route):'Complete eight successful practice questions before trying fresh proof material again.'}</p></article>`;
 }
 function sessionChrome(active){document.body.classList.toggle('session-active',active);if(!active)document.body.classList.remove('dialogue-active');const footer=document.querySelector('footer');if(active)footer.setAttribute('aria-hidden','true');else footer.removeAttribute('aria-hidden');}
 function markTopTab(){
@@ -621,7 +622,11 @@ function renderCourse(){
   bindProof(selectedConcept);return;
  }
  el.innerHTML=coursePage(state,content,{today,pane:view==='evidence'?'evidence':coursePane,days:courseDays,cohort:courseCohort,concept:courseConcept,offer:dailyProofOffer(state,content,now())});
- if(view!=='evidence'&&state.lastProof)el.querySelector('.course-focus')?.insertAdjacentHTML('afterend',`<details class="course-last-proof" ${state.lastProof.passed?'':'open'}><summary>Latest test result</summary>${proofReport()}</details>`);
+ if(view!=='evidence'&&state.lastProof){
+  const fresh=proofResultIsToday(state.lastProof,today);
+  const notice=fresh?`<section class="course-proof-announcement" aria-live="polite">${proofReport()}</section>`:`<details class="course-last-proof"><summary>${esc(proofResultSummary(state.lastProof))}</summary>${proofReport()}</details>`;
+  el.querySelector('.course-focus')?.insertAdjacentHTML(fresh?'beforebegin':'afterend',notice);
+ }
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
  el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});

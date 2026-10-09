@@ -198,6 +198,10 @@ The owner authorised production release on 8 October. The first bounded controll
 
 The release does not use the daily 20, alter Course/mastery/retention, write learner history, or change Supabase, authentication, services or cost. All 592 automated tests pass. A 390 × 844 development-sandbox check completed the unsuitable reply, visible repair guidance, suitable repair and finite summary path with the action reachable. The owner then completed the Mac development-sandbox checks for an independent valid reply, a phrase-supported reply, and an unsuitable reply followed by successful repair; the action remained reachable after support and audio-error messages. An initial fixed-action correction covered the reply field on real iPhone Safari, so the release keeps the field and action in document order and scrolls the dialogue above the bottom navigation. The owner confirmed that corrected iPhone layout works well and that Repeat plays the Dutch prompt successfully through the server-side audio path. Required Mac and real-iPhone validation is complete without advancing the owner's real F2 course progress. The offline cache is `dutch-v5.1.182-20261008-controlled-dialogue`. Rollback is the immediate release switch or the V5.1.181 source at `82f5d35`; preserve learner history and the standalone Flashcards fallback. See `docs/dab-173-controlled-dialogue.md`.
 
+## Mastery result announcement — in source, 2026-10-04
+
+After a mastery or retention test, the course states whether it was passed and how many answers were correct in each direction. The result from the same study day is shown on the course home. An older result stays visible as Passed or Not passed with the score. Scoring, the daily 20, learner history, schema, authentication and services are unchanged. This is not on the live app. No version change.
+
 ## Active milestone
 
 ### Conversational Dutch, remaining steps — 8 October 2026
