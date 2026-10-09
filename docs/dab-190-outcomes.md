@@ -1,6 +1,6 @@
 # DAB-190 — what each finished block lets you do
 
-Status: on the live app as V5.1.173, 4 October 2026. All 516 local tests passed before release. The owner accepted the wording on 4 October 2026. An installed-phone check of the course path is still outstanding.
+Status: on the live app as V5.1.173, 4 October 2026. All 516 local tests passed before release. The owner accepted the wording on 4 October 2026. On 8 October the owner confirmed that the installed-iPhone Course path works correctly: the outcome descriptions remain readable, topic controls work and bottom navigation stays reachable.
 
 ## This slice
 
