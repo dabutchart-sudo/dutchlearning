@@ -1,8 +1,8 @@
 import {registerPacks} from '../content/registry.js';
-import {activeConcept,teachConcept,markWordsTaught} from '../engine/learner.js';
+import {activeConcept,dailyProofOffer,teachConcept,markWordsTaught} from '../engine/learner.js';
 import {createRepository} from '../engine/persistence.js';
 import {dayKey} from '../engine/util.js';
-import {sessionVocabulary,briefingDone,rememberBriefing} from '../engine/session-briefing.js';
+import {sessionVocabulary,briefingDone,rememberBriefing,shouldShowSessionBriefing} from '../engine/session-briefing.js';
 
 let content=null,repo=null,bypassStart=false,autoSkipping=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,7 +39,7 @@ function restoreTodayAndStart(){
  }));
 }
 
-function showBriefing(conceptId){
+function showBriefing(conceptId,{onContinue=restoreTodayAndStart}={}){
  const words=sessionVocabulary(content,conceptId),date=dayKey(new Date());
  document.body.classList.add('session-active');
  document.querySelector('footer')?.setAttribute('aria-hidden','true');
@@ -50,11 +50,14 @@ function showBriefing(conceptId){
   markWordsTaught(state,{vocabulary:words},date);
   repo.save(state);
   rememberBriefing(localStorage,date,conceptId);
-  restoreTodayAndStart();
+  onContinue();
  });
 }
 
 function currentState(){try{return repo?.load()||null}catch{return null}}
+function briefingNeeded(state,date,conceptId,{proofReady=false,practiceChosen=false}={}){
+ return shouldShowSessionBriefing({dailyCount:state.daily.count,lessonAcknowledged:state.progress[conceptId]?.lessonAcknowledged,alreadyShown:briefingDone(localStorage,date,conceptId),proofReady,practiceChosen});
+}
 
 function adjustCorrectionScreen(){
  const qType=document.querySelector('.q-type');
@@ -92,11 +95,22 @@ function observe(){
 function interceptClicks(){
  document.addEventListener('click',event=>{
   if(inSandbox())return;
+  const practice=event.target.closest?.('#gate-practice');
+  if(practice){
+   const state=currentState();if(!state)return;
+   const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
+   if(briefingNeeded(state,date,conceptId,{proofReady:true,practiceChosen:true})){
+    // The detached button keeps app.js's direct listener and cannot re-enter this document handler.
+    event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId,{onContinue:()=>practice.click()});
+   }
+   return;
+  }
   const start=event.target.closest?.('#start,#start-course,[data-course-start]');
   if(start&&!bypassStart){
    const state=currentState();if(!state)return;
    const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
-   if(state.daily.count===0&&state.progress[conceptId]?.lessonAcknowledged&&!briefingDone(localStorage,date,conceptId)){
+   const proofReady=!!dailyProofOffer(state,content,new Date())?.canStartToday;
+   if(briefingNeeded(state,date,conceptId,{proofReady})){
     event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId);
    }
    return;

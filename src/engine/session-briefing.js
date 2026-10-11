@@ -19,3 +19,7 @@ export function rememberBriefing(storage,date,conceptId){
  const keep=Object.fromEntries(Object.entries(map).sort(([a],[b])=>b.localeCompare(a)).slice(0,20));
  storage.setItem(BRIEFING_STORAGE_KEY,JSON.stringify(keep));
 }
+
+export function shouldShowSessionBriefing({dailyCount=0,lessonAcknowledged=false,alreadyShown=false,proofReady=false,practiceChosen=false}={}){
+ return dailyCount===0&&lessonAcknowledged&&!alreadyShown&&(!proofReady||practiceChosen);
+}

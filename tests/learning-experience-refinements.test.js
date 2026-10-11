@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {makeExercise,maskedCorrection,correctiveFeedback} from '../src/engine/exercises.js';
 import {assess} from '../src/engine/scoring.js';
 import {practiceContextWeight} from '../src/engine/scheduler.js';
-import {sessionVocabulary,briefingDone,rememberBriefing,BRIEFING_STORAGE_KEY} from '../src/engine/session-briefing.js';
+import {sessionVocabulary,briefingDone,rememberBriefing,shouldShowSessionBriefing,BRIEFING_STORAGE_KEY} from '../src/engine/session-briefing.js';
 
 const item={
  id:'f1-write-home',concept:'F1',pool:'practice',nl:'Zij schrijft thuis.',en:'She writes at home.',verb:'schrijven',subject:'zij',family:'present',verbIndex:1,
@@ -70,6 +70,15 @@ test('session briefing collects practice vocabulary once without leaking proof-o
  assert.ok(values.has(BRIEFING_STORAGE_KEY));
 });
 
+test('the daily vocabulary briefing waits until practice is chosen when a test is ready',()=>{
+ const base={dailyCount:0,lessonAcknowledged:true,alreadyShown:false};
+ assert.equal(shouldShowSessionBriefing(base),true);
+ assert.equal(shouldShowSessionBriefing({...base,proofReady:true}),false);
+ assert.equal(shouldShowSessionBriefing({...base,proofReady:true,practiceChosen:true}),true);
+ assert.equal(shouldShowSessionBriefing({...base,dailyCount:1,practiceChosen:true}),false);
+ assert.equal(shouldShowSessionBriefing({...base,alreadyShown:true,practiceChosen:true}),false);
+});
+
 test('current build loads and caches the learning-session refinement module',()=>{
  const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
@@ -84,4 +93,13 @@ test('current build loads and caches the learning-session refinement module',()=
  assert.match(ui,/Type only the missing letters/);
  assert.match(ui,/\.session \.question-card\{min-height:0\}/);
  assert.doesNotMatch(ui,/min-height:clamp/);
+});
+
+test('a ready test choice appears before the daily practice vocabulary briefing',()=>{
+ const ui=readFileSync(new URL('../src/ui/learning-session-refinements.js',import.meta.url),'utf8');
+ assert.match(ui,/activeConcept,dailyProofOffer,teachConcept,markWordsTaught/);
+ assert.match(ui,/proofReady=!!dailyProofOffer\(state,content,new Date\(\)\)\?\.canStartToday/);
+ assert.match(ui,/closest\?\.\('#gate-practice'\)/);
+ assert.match(ui,/proofReady:true,practiceChosen:true/);
+ assert.match(ui,/showBriefing\(conceptId,\{onContinue:\(\)=>practice\.click\(\)\}\)/);
 });
