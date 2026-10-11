@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.186**.
+- Current documented release: **Zin V5.1.187**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -469,8 +469,8 @@ GitHub issue #183 was merged through PR #184 after the owner approved production
 
 The release uses offline cache `dutch-v5.1.186-20261011-speaking-later-review`. It does not alter the daily 20, Course, mastery, retention, saved learner history, Supabase schema/data/authentication, provider/model strategy, or the existing transcription function and £5 monthly cap. It may reserve at most one additional £0.02 transcription attempt in a speaking round. The focused speaking suite passed 11/11 and the full suite passed 600/600 locally; the main-branch test and GitHub Pages deployment workflows passed after merge. A local 390×844 browser smoke check confirmed the exact release version, compact speaking screen, reachable primary action and visible bottom navigation. The public origin serves V5.1.186 and the new cache. The owner already accepted a no-cost Mac and real-iPhone interaction simulation; the previously accepted recording and transcription path is unchanged. Refreshing the installed PWA and completing one finite production later-review round remains the post-release confirmation. Rollback is the V5.1.185 main source at `2f2d2f0`; preserve learner history and the standalone Flashcards fallback.
 
-## Test choice before practice briefing — V5.1.187 test-release candidate, 2026-10-11
+## Test choice before practice briefing — V5.1.187 release, 2026-10-11
 
 GitHub issue #193 corrects the F2 flow reported on the installed V5.1.185 app. When a mastery or retention test is ready, **Choose test or practice** now opens that choice first. Choosing **Practice anyway** then shows the existing once-per-day vocabulary briefing before normal practice. The briefing no longer hides the test choice behind a screen whose only action is **Start practice**.
 
-This is a routing-order correction only. Test readiness, proof content, scoring, the daily 20, scheduling, learner history, Supabase schema/data/authentication, services and costs are unchanged. The test candidate uses offline cache `dutch-v5.1.187-20261011-test-choice-first`. Focused routing and proof tests pass 24/24, and the full suite passes 602/602. A 390×844 browser check confirmed that a ready proof opens the test/practice gate first; the pure routing regression confirms that the briefing remains due only after practice is chosen. GitHub checks are recorded with the release PR. Installed-PWA verification remains required before production acceptance. Rollback is V5.1.186 at `97477c6`; preserve learner history and the standalone Flashcards fallback.
+This is a routing-order correction only. Test readiness, proof content, scoring, the daily 20, scheduling, learner history, Supabase schema/data/authentication, services and costs are unchanged. The owner approved merge and deployment on 11 October. PR #194 merged as `d2f1ee73904a97b16a10616fd7be82f357683aea`; the post-merge 602-test workflow and GitHub Pages deployment passed. The public origin serves V5.1.187 and offline cache `dutch-v5.1.187-20261011-test-choice-first`. Focused routing and proof tests passed 24/24. A 390×844 browser check confirmed that a ready proof opens the test/practice gate first; the pure routing regression confirms that the briefing remains due only after practice is chosen. Refreshing the installed PWA and checking the F2 choice flow remains the post-release confirmation. Rollback is V5.1.186 at `97477c6`; preserve learner history and the standalone Flashcards fallback.
