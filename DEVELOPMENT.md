@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.185**.
+- Current documented release: **Zin V5.1.186**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -216,7 +216,7 @@ This is a presentation and navigation change only. The existing lesson-first rou
 
 ### Conversational Dutch, remaining steps — 8 October 2026
 
-The live app is Zin V5.1.185. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
+The live app is Zin V5.1.186. Trustworthy progress, the question-format contracts, the first daily listening and speaking beats, and the first optional bounded interaction Practice are in the course.
 
 The planned listening-depth steps are accepted at optional Practice level: hidden-text meaning selection, sentence discrimination, missing heard word, short dictation, two-line exchange comprehension and slower replay. The owner confirmed sentence discrimination, missing heard word, short dictation and slower replay on the installed iPhone app. On 8 October the owner completed the two-line exchange in an A1.2 developer sandbox on the installed iPhone and confirmed its Dutch/audio, delayed choices, mobile layout, reachable action and finite completion. DAB-170 is complete at Practice level. A second voice and slower replay on the exchange remain possible later additions, not acceptance blockers; either would require a separately approved protected-service or bounded client change.
 
@@ -463,8 +463,8 @@ The owner approved production deployment and GitHub issue #188 was merged throug
 
 No course rules, question selection, scoring, daily limits, scheduler, learner history, Supabase data/schema/authentication, services, audio path or costs changed. Browser checks covered lesson, vocabulary briefing, unanswered practice and answered practice at a 765×709 viewport with the action and navigation visible. The focused practice/layout suite passes 39/39 and the full suite passes 597/597. The offline cache is `dutch-v5.1.185-20261009-compact-practice-layout`. The owner subsequently confirmed all requested V5.1.185 checks on 11 October 2026. Rollback is the V5.1.184 main source at `cb86de4`; preserve learner history and the standalone Flashcards fallback.
 
-## Speaking later review — V5.1.186 test-release candidate, 2026-10-11
+## Speaking later review — V5.1.186 release, 2026-10-11
 
-GitHub issue #183 and PR #184 add one bounded same-round later review to optional speaking Practice. At most one spoken miss or near miss can return after at least one different original prompt. It uses a fresh recording, reports recovery separately, and cannot repeat again. A miss on the final original prompt does not create filler work. Typed fallback remains available but is writing practice, not speaking evidence.
+GitHub issue #183 was merged through PR #184 after the owner approved production deployment. V5.1.186 adds one bounded same-round later review to optional speaking Practice. At most one spoken miss or near miss can return after at least one different original prompt. It uses a fresh recording, reports recovery separately, and cannot repeat again. A miss on the final original prompt does not create filler work. Typed fallback remains available but is writing practice, not speaking evidence.
 
-This candidate is based on V5.1.185 and uses offline cache `dutch-v5.1.186-20261011-speaking-later-review`. It does not alter the daily 20, Course, mastery, retention, saved learner history, Supabase schema/data/authentication, provider/model strategy, or the existing transcription function and £5 monthly cap. It may reserve at most one additional £0.02 transcription attempt in a speaking round. The focused speaking suite passes 11/11 and the full suite passes 600/600. A local 390×844 browser smoke check confirmed the exact candidate version, compact speaking screen, reachable primary action and visible bottom navigation. The owner already accepted a no-cost Mac and real-iPhone interaction simulation; the previously accepted recording and transcription path is unchanged. Merge and deployment remain separate owner decisions. Rollback is the V5.1.185 main source at `2f2d2f0`; preserve learner history and the standalone Flashcards fallback.
+The release uses offline cache `dutch-v5.1.186-20261011-speaking-later-review`. It does not alter the daily 20, Course, mastery, retention, saved learner history, Supabase schema/data/authentication, provider/model strategy, or the existing transcription function and £5 monthly cap. It may reserve at most one additional £0.02 transcription attempt in a speaking round. The focused speaking suite passed 11/11 and the full suite passed 600/600 locally; the main-branch test and GitHub Pages deployment workflows passed after merge. A local 390×844 browser smoke check confirmed the exact release version, compact speaking screen, reachable primary action and visible bottom navigation. The public origin serves V5.1.186 and the new cache. The owner already accepted a no-cost Mac and real-iPhone interaction simulation; the previously accepted recording and transcription path is unchanged. Refreshing the installed PWA and completing one finite production later-review round remains the post-release confirmation. Rollback is the V5.1.185 main source at `2f2d2f0`; preserve learner history and the standalone Flashcards fallback.
