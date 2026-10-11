@@ -114,28 +114,28 @@ const courseOutcomes={
  'S3':'Lets you name an appointment, say the time, and say that you are coming.'
 };
 const courseOutcome=id=>courseOutcomes[id]||'';
-function courseFocus(outline,daily,offer){
- const c=outline.current;
- if(!c)return `<article class="course-focus"><span class="eyebrow">Course complete so far</span><h3>All available topics retained</h3><p>More A1 topics are planned. Retained topics remain available below.</p></article>`;
- const ready=!daily.done&&offer?.canStartToday&&(!offer.id||offer.id===c.id);
- const action=ready?'Choose test or practice':daily.done?'':c.status==='lesson'?'Start learning':'Continue learning';
- const note=daily.done?'Learning complete for today.':ready?offer.type==='mastery'?'A full mastery test is available today, or you can keep practising. Availability does not predict a pass.':'A delayed retention test is available today, or you can keep practising.':c.status==='lesson'?'Begins with the lesson.':'';
- const outcome=courseOutcome(c.id);
- return `<article class="course-focus" data-course-focus><span class="eyebrow">Current topic · ${esc(c.id)}</span><h3>${esc(c.title)}</h3>${outcome?`<p class="course-topic-outcome">${esc(outcome)}</p>`:''}${note?`<p>${esc(note)}</p>`:''}<div class="course-focus-actions">${action?`<button type="button" class="primary" data-course-start="${esc(c.id)}">${esc(action)}</button>`:''}<button type="button" class="course-focus-details" data-course-concept="${esc(c.id)}">Topic details</button></div></article>`;
+function courseCompleteNotice(outline){
+ if(outline.current)return '';
+ return `<article class="card course-panel course-complete-notice"><span class="eyebrow">Course complete so far</span><h3>All available topics retained</h3><p class="course-caption">More A1 topics are planned. Retained topics remain available below.</p></article>`;
 }
-function pathNode(c){
+function pathNode(c,daily,offer){
  const locked=!c.available&&!c.retained;
  const reason=locked?`<small class="course-locked-reason">${c.journey.label==='Paused'?'Pass earlier retention to continue':'Pass '+esc((c.prerequisites||[]).join(' and '))+' mastery first'}</small>`:'';
  const outcome=courseOutcome(c.id);
- return `<li class="course-path-node ${c.current?'is-current':''} ${c.retained?'is-retained':''} ${locked?'is-locked':''}" ${c.current?'data-course-current="true"':''}>
+ const ready=c.current&&!daily.done&&offer?.canStartToday&&(!offer.id||offer.id===c.id);
+ const startLabel=ready?'Choose test or practice':c.status==='lesson'?'Start learning':'Continue learning';
+ const currentNote=!c.current?'':daily.done?'Learning complete for today.':ready?offer.type==='mastery'?'A full mastery test is available today, or you can keep practising. Availability does not predict a pass.':'A delayed retention test is available today, or you can keep practising.':c.status==='lesson'?'Begins with the lesson.':'';
+ return `<li class="course-path-node ${c.current?'is-current':''} ${c.retained?'is-retained':''} ${locked?'is-locked':''}" ${c.current?'data-course-current="true" aria-current="step"':''}>
   <div class="course-node-wrap"><span class="course-node" aria-hidden="true">${c.retained?'✓':c.current?'●':''}</span></div>
   <div class="course-path-card">
-   <button type="button" data-course-concept="${esc(c.id)}" ${c.current?'aria-current="step"':''}>
+   <div class="course-path-summary">
     <span class="course-topic-code">${esc(c.id)}${c.current?' · You’re here':''}</span>
-    <span class="course-path-main"><strong>${esc(c.title)}</strong><span class="course-topic-status status-${esc(c.status)}">${esc(c.journey.label)}</span></span>
+    <span class="course-path-main"><strong>${esc(c.title)}</strong><button type="button" class="course-path-info" data-course-concept="${esc(c.id)}" aria-label="Stage info: ${esc(c.id)} · ${esc(c.title)}" title="Stage info"><span aria-hidden="true">i</span></button><span class="course-topic-status status-${esc(c.status)}">${esc(c.journey.label)}</span></span>
     ${outcome?`<span class="course-topic-outcome">${esc(outcome)}</span>`:''}
+    ${currentNote?`<small class="course-stage-note">${esc(currentNote)}</small>`:''}
     ${reason}
-   </button>
+   </div>
+   ${c.current&&!daily.done?`<div class="course-path-actions"><button type="button" class="primary" data-course-start="${esc(c.id)}" aria-label="${esc(startLabel)}: ${esc(c.id)} · ${esc(c.title)}">${esc(startLabel)}</button></div>`:''}
   </div>
  </li>`;
 }
@@ -147,10 +147,10 @@ function recapCard(recap){
 function pathView(outline,daily,offer,recap){
  const waiting=outline.topics.find(c=>c.status==='retention-wait'&&!c.current);
  return `<section class="course-path" data-course-path>
-  ${courseFocus(outline,daily,offer)}
+  ${courseCompleteNotice(outline)}
   ${waiting?`<article class="card course-panel course-waiting-path"><strong>${esc(waiting.id)} retention is still due</strong><p>You can study ${esc(outline.current?.id||'the next topic')} while you wait. The delayed test can open from ${esc(waiting.retentionDue)} when ten fresh sentences and ten daily questions are available. This topic is not retained yet.</p><button type="button" data-course-concept="${esc(waiting.id)}">See retention timing</button></article>`:''}
   ${recapCard(recap)}
-  ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(pathNode).join('')}</ol></section>`;}).join('')}
+  ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(c=>pathNode(c,daily,offer)).join('')}</ol></section>`;}).join('')}
   ${outline.planned.length?`<section class="course-unit"><header class="course-unit-banner is-planned"><span>Still to come</span><h3>Completing A1</h3><small>${outline.planned.length} planned</small></header><ol class="course-path-list">${outline.planned.map(plannedNode).join('')}</ol></section>`:''}
   <section class="course-future"><span class="eyebrow">Later</span><h3>A2 · Beyond the basics</h3><p>A2 is planned, but its syllabus and exercises are not available yet. Finishing Zin’s course is not an official CEFR qualification.</p></section>
  </section>`;

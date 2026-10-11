@@ -17,9 +17,6 @@
 @media(max-width:600px){.course-stat-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .course-path{display:grid;gap:20px}
-.course-focus{padding:20px;border-radius:20px;background:linear-gradient(125deg,#174b76,#247c83);color:#fff;box-shadow:0 8px 24px #173a5730}
-.course-focus .eyebrow{color:#c9e7f0}.course-focus h3{font-size:clamp(1.35rem,4vw,1.7rem);letter-spacing:-.035em;margin:8px 0 6px}.course-focus p{color:#e4f1f5;margin:0 0 16px;font-size:.88rem;line-height:1.45}
-.course-focus-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:16px}.course-focus-actions button{min-height:44px;border-radius:12px;padding:9px 15px;font-weight:750}.course-focus-actions .primary{width:auto;flex:1 1 150px}.course-focus-details{border:1px solid #ffffff7a;background:#ffffff16;color:#fff}
 .course-waiting-path{padding:16px 20px;border-left:4px solid #218579;background:#edf8f5}.course-waiting-path strong{color:#16594f}.course-waiting-path p{font-size:.88rem;line-height:1.5;margin:7px 0 10px}.course-waiting-path button{min-height:44px;border:0;background:transparent;color:#16594f;font-weight:700;padding:0;text-align:left}
 .course-last-proof{border:1px solid var(--separator);border-radius:14px;background:#fff;padding:0 14px}.course-last-proof summary{font-size:.85rem;color:var(--accent);font-weight:700}.course-last-proof .proof-report{margin:0 0 14px;box-shadow:none}
 .mastery-patterns{margin:16px 0}.mastery-patterns h3{font-size:1rem;margin:0 0 8px}.mastery-patterns ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.mastery-patterns li{display:grid;gap:3px;min-width:0;padding:12px;border:1px solid var(--separator);border-radius:10px;overflow-wrap:anywhere}.mastery-patterns li strong{font-size:.85rem}.mastery-patterns li span[lang=nl]{font-weight:650}.mastery-patterns li p{margin:3px 0 0;color:var(--muted);font-size:.85rem}
@@ -39,12 +36,12 @@
 .course-path-node.is-retained .course-node{background:#def3ea;border-color:#7dccb0;color:#146b54}
 .course-path-node.is-current .course-node{background:#fff6e8;border-color:#e3a03a;color:#b45a12;box-shadow:0 0 0 6px #f6e4c4}
 .course-path-node.is-locked .course-node,.course-path-node.is-planned .course-node{background:#f3f6f8;border-color:#d5dee6;box-shadow:none}
-.course-path-card{display:grid}
-.course-path-card>button,.course-planned-label{display:grid;gap:2px;padding:9px 12px;border:0;border-radius:13px;background:#fff;text-align:left;min-height:54px;box-shadow:0 4px 12px #16324a10;color:inherit}
-.course-path-card>button:hover{background:#f7fafc}
-.course-path-main{display:flex;align-items:baseline;justify-content:space-between;gap:9px}.course-path-main strong{font-size:.9rem;line-height:1.25}.course-locked-reason,.course-planned-note{font-size:.72rem;color:var(--muted);line-height:1.35}.course-planned-note{margin:4px 0 0}
+.course-path-card{display:grid;gap:7px;padding:9px 12px 11px;border-radius:13px;background:#fff;box-shadow:0 4px 12px #16324a10;color:inherit}
+.course-path-summary,.course-planned-label{display:grid;gap:2px;text-align:left;min-height:46px}
+.course-planned-label{padding:9px 12px;border-radius:13px;background:#fff;box-shadow:0 4px 12px #16324a10}
+.course-path-actions{display:flex}.course-path-actions .primary{width:100%;min-height:44px;margin:0;padding:8px 10px;border-radius:11px;font-size:.8rem;font-weight:750}
+.course-path-main{display:flex;align-items:center;gap:5px}.course-path-main strong{flex:1 1 auto;min-width:0;font-size:.9rem;line-height:1.25}.course-path-info{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;color:#174b76;display:grid;place-items:center}.course-path-info>span{width:26px;height:26px;border:1px solid #9eb9cf;border-radius:50%;display:grid;place-items:center;background:#f7fafc;font:italic 750 .82rem Georgia,serif}.course-path-info:hover>span{background:#eaf2f8;border-color:#6f9dbc}.course-locked-reason,.course-planned-note,.course-stage-note{font-size:.72rem;color:var(--muted);line-height:1.35}.course-planned-note{margin:4px 0 0}
 .course-topic-outcome{display:block;margin-top:2px;color:var(--muted);font-size:.78rem;line-height:1.35}
-.course-focus .course-topic-outcome{margin:0 0 8px;color:#e4f1f5;font-size:.9rem}
 .course-can-do{margin-top:16px}.course-can-do h3{margin:0 0 6px;font-size:1.05rem}.course-can-do p{margin:0;line-height:1.5}
 .course-path-card .course-topic-status{white-space:normal;text-align:right;font-size:.68rem}
 .course-topic-detail .primary{margin-top:10px}

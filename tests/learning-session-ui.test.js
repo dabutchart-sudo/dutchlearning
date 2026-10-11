@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {questionHeader,answerFeedback} from '../src/ui/learning-session-ui.js';
+import {questionHeader,answerFeedback,exerciseLabel,compactSessionOffer} from '../src/ui/learning-session-ui.js';
 
 test('the Learning UI helper is cached for installed offline sessions',()=>{
  const serviceWorker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
@@ -32,8 +32,28 @@ test('feedback keeps the teaching context visible and folds detailed evidence',(
  assert.match(html,/Zij <mark class="problem-char">schrijft<\/mark> thuis\./);
  assert.match(html,/She writes at home/);
  assert.match(html,/Match the verb to the subject/);
+ assert.match(html,/<details class="feedback-explanation"><summary>Why\?<\/summary>/);
  assert.match(html,/<details class="session-evidence"><summary>How this answer counts<\/summary>/);
  assert.match(html,/Guidance used/);
  assert.match(html,/does not count as independent Dutch writing/);
  assert.doesNotMatch(html,/Independent Dutch writing<\/span>/);
+});
+
+test('exercise labels and readiness notices use one compact expandable line',()=>{
+ const label=exerciseLabel('English → Dutch','Choose the matching Dutch sentence');
+ assert.match(label,/class="exercise-label"/);
+ assert.match(label,/English → Dutch/);
+ assert.match(label,/Choose the matching Dutch sentence/);
+ const notice=compactSessionOffer({id:'F2',type:'mastery',needed:20,canStartToday:false,reason:'Your recent independent writing is 5 of 10. Reach 80% grammar accuracy before the first mastery test.'});
+ assert.match(notice,/<details class="session-offer">/);
+ assert.match(notice,/Independent writing: 5\/10 · Target 80%/);
+ assert.match(notice,/Your recent independent writing is 5 of 10/);
+});
+
+test('all active exercise families use the shared compact label and answered state',()=>{
+ const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
+ for(const task of ['Choose the matching Dutch sentence','Listen and choose the meaning','Listen and choose the sentence','Listen and choose the word','Listen and type','Listen to two people','Dutch interaction','Say the Dutch sentence'])assert.match(app,new RegExp(task));
+ assert.ok((app.match(/exerciseLabel\(/g)||[]).length>=8,'normal and optional exercise families should share the compact label');
+ assert.ok((app.match(/setAnsweredState\(/g)||[]).length>=8,'normal, listening, speaking and interaction answers should compact after checking');
+ assert.match(app,/compactSessionOffer\(offer\)/);
 });

@@ -23,13 +23,13 @@ test('the course path states what each finished communicative block is for',()=>
  const html=coursePage(state,content,{today,pane:'path'});
  assert.equal(JSON.stringify(state),before);
  for(const [id,line] of outcomes){
-  const start=html.indexOf(`data-course-concept="${id}"`);
+  const start=html.indexOf(`<span class="course-topic-code">${id}`);
   assert.ok(start>0,id);
-  const card=html.slice(start,html.indexOf('</button>',start));
+  const card=html.slice(start,html.indexOf('</li>',start));
   assert.match(card,new RegExp(line.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  }
  assert.equal((html.match(/Lets you/g)||[]).length,outcomes.length);
- const foundation=html.slice(html.indexOf('data-course-concept="F1"'),html.indexOf('data-course-concept="F2"'));
+ const foundation=html.slice(html.indexOf('<span class="course-topic-code">F1'),html.indexOf('<span class="course-topic-code">F2'));
  assert.doesNotMatch(foundation,/Lets you/);
  const planned=html.slice(html.indexOf('Still to come'));
  assert.match(planned,/A1\.26/);
