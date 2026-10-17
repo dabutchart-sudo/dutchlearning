@@ -18,3 +18,4 @@
 .flashcard-session:has(.flashcard-stage) .flashcard-review-card{justify-content:center;padding-top:70px;padding-bottom:70px}
 .flashcard-session:has(.flashcard-stage) .flashcard-rating-dock{flex:0 0 auto;margin-top:0}
 .flashcard-session:has(.flashcard-stage) .flashcard-rating-dock[hidden]{display:grid!important;visibility:hidden;pointer-events:none}
+.flashcard-sentence+.flashcard-sentence{margin-top:8px;font-size:1rem}

@@ -8,4 +8,11 @@ test('stored and generated sentence pairs are deduplicated',()=>{const bank=merg
 test('sentence bank asks for generation when fewer than five examples exist',()=>{assert.equal(sentenceBankNeedsRefresh([{id:'1'}]),true);assert.equal(sentenceBankNeedsRefresh(Array.from({length:5},(_,i)=>({id:String(i)}))),false);});
 test('rotation avoids recently shown sentence IDs when alternatives exist',()=>{const bank=[{id:'a',nl:'A',en:'A'},{id:'b',nl:'B',en:'B'}],chosen=chooseSentence(bank,{recentIds:['a'],random:()=>0});assert.equal(chosen.id,'b');});
 test('sentence bank record is capped and marks generated updates',()=>{const generated=Array.from({length:15},(_,i)=>({id:`g${i}`,nl:`Zin ${i}`,en:`Sentence ${i}`})),r=sentenceBankRecord(card,[],generated,new Date('2026-09-10T18:00:00Z'));assert.equal(r.sentences.length,10);assert.equal(r.updatedAt,'2026-09-10T18:00:00.000Z');});
+test('a varied example is chosen from the Dutch word and shown only on the answer face',()=>{
+ const ui=readFileSync(new URL('../src/ui/sentence-bank-ui.js',import.meta.url),'utf8');
+ assert.match(ui,/flashcard-word\[lang="nl"\]/);
+ assert.match(ui,/flashcard-sentence\[lang="nl"\]/);
+ assert.match(ui,/flashcard-sentence:not\(\[lang="nl"\]\)/);
+});
+
 test('sentence bank management UI is loaded and cached for offline use',()=>{const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(html,/sentence-bank-ui\.js/);assert.match(html,/sentence-bank-ui\.css/);assert.match(sw,/sentence-bank-client\.js/);assert.match(sw,/sentence-bank-ui\.js/);assert.match(sw,/sentence-bank-ui\.css/);});
