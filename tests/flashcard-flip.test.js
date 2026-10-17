@@ -38,11 +38,14 @@ test('after the flip the 3D card is replaced by a flat English card',()=>{
 
 test('Again Hard Good Easy live on a dock that is never 3D',()=>{
  assert.match(preview,/flashcard-rating-dock/);
- assert.match(preview,/if\(ratings\)ratings\.hidden=true/);
+ assert.match(preview,/if\(ratings\)\{ratings\.hidden=true/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*z-index:20/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*pointer-events:auto/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*transform:none/);
  assert.match(css,/\.flashcard-rating-dock\[hidden\]\{display:none!important\}/);
+ assert.match(css,/\.flashcard-session:has\(\.flashcard-stage\) \.flashcard-rating-dock\[hidden\]\{display:grid!important;visibility:hidden;pointer-events:none\}/);
+ assert.doesNotMatch(preview,/Pause — saved ratings are kept/);
+ assert.match(css,/\.flashcard-session:has\(\.flashcard-stage\) \.session-head \.pill\{width:fit-content/);
  assert.doesNotMatch(preview,/elementFromPoint/);
 });
 

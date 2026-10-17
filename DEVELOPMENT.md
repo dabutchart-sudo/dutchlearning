@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.188**.
+- Current documented release: **Zin V5.1.189**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -484,3 +484,9 @@ This is a routing-order correction only. Test readiness, proof content, scoring,
 The owner approved production release on 17 October after reviewing the locked course page and the revised past-event sentences on the development copy. V5.1.188 adds A2.1, Report a simple past event. The topic stays closed until A1.26 has been passed. Course shows it on the A2 path with “Pass the A1 checkpoint first.” The lesson distinguishes a finished event, ik heb gewerkt, from a short story, ik werkte, and teaches ’t kofschip only as the spelling aid for that story form. Practice has 26 contexts and the unseen proof pool has 92 sentences. A2.2–A2.8 are not included, and A1.26 is not built.
 
 The daily 20, five-new-card ceiling, written mastery and retention, learner history, schema, authentication, and services are unchanged. The local suite passed 606/606. PR #206 merged as `3fc2750`; the post-merge test workflow passed, and GitHub Pages serves V5.1.188 with offline cache `dutch-v5.1.188-20261017-a2-past-event`. Rollback is V5.1.187 at `c3322ed`; preserve learner history and the standalone Flashcards fallback. Confirming V5.1.188 and the locked A2.1 topic on the installed phone remains the check after release.
+
+## Flashcard review layout — V5.1.189 release, 2026-10-17
+
+The owner approved production release on 17 October. V5.1.189 adjusts the Flashcard review screen only. The Pause line is removed; leaving uses the bottom menu, and ratings already saved stay saved. The New or Review label sits on the right, and its background wraps only the word. The card fills down to the score buttons, which sit just above the menu. The word and example stay centred. The buttons still appear after the card is turned over, and the card keeps the same height before they appear.
+
+Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The offline cache is `dutch-v5.1.189-20261017-flashcard-layout`. Rollback is V5.1.188 at `d425b67`; preserve learner history and the standalone Flashcards fallback.
