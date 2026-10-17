@@ -14,7 +14,8 @@ const outcomes=[
  ['A1.25','Lets you talk about home, work, food, travel, an appointment, or free time.'],
  ['S1','Lets you say what is wrong and ask for help.'],
  ['S2','Lets you say your name, where you come from, and where you live, and ask a name politely.'],
- ['S3','Lets you name an appointment, say the time, and say that you are coming.']
+ ['S3','Lets you name an appointment, say the time, and say that you are coming.'],
+ ['A2.1','Lets you say what happened, with a familiar past form.']
 ];
 
 test('the course path states what each finished communicative block is for',()=>{

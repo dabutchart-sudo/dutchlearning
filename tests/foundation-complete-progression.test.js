@@ -6,6 +6,7 @@ import {seedCompletedPractice} from './helpers/practice-evidence.js';
 import {
   activeConcept,
   freshState,
+  unlocked,
   prepareQuestion,
   proofEligibility,
   startProof,
@@ -36,6 +37,10 @@ test('every Foundation concept can progress through real mastery and retention m
 
   for(let index=0;index<content.concepts.length;index++){
     const concept=content.concepts[index];
+    if(concept.requiresA1Checkpoint){
+      assert.equal(unlocked(concept,state),false,`${concept.id} stays closed until the A1 checkpoint is passed`);
+      break;
+    }
     assert.equal(activeConcept(state,content),concept.id,`${concept.id} should become the active concept in sequence`);
     assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:concept.id},`${concept.id} should begin with teaching`);
     teachConcept(state,concept.id,content);
@@ -59,7 +64,7 @@ test('every Foundation concept can progress through real mastery and retention m
     assert.equal(state.progress[concept.id].status,'retention-wait',`${concept.id} should wait for retention after mastery`);
     assert.equal(state.progress[concept.id].masteredAt,null,`${concept.id} is not retained by mastery alone`);
     const next=content.concepts[index+1];
-    assert.equal(activeConcept(state,content),next?.id||concept.id,`${next?.id||concept.id} is the study focus during the retention wait`);
+    assert.equal(activeConcept(state,content),next?.requiresA1Checkpoint?concept.id:next?.id||concept.id,`${next?.id||concept.id} is the study focus during the retention wait`);
 
     const retentionDate=state.progress[concept.id].retentionDue;
     now=noon(retentionDate);
@@ -74,7 +79,8 @@ test('every Foundation concept can progress through real mastery and retention m
     assert.equal(state.progress[concept.id].status,'mastered',`${concept.id} should be retained after a perfect retention proof`);
     assert.ok(state.progress[concept.id].masteredAt,`${concept.id} should record a mastery date`);
 
-    if(next){
+    if(next?.requiresA1Checkpoint)assert.equal(unlocked(next,state),false,`${next.id} stays closed until the A1 checkpoint is passed`);
+    else if(next){
       assert.equal(activeConcept(state,content),next.id,`${next.id} should unlock after ${concept.id} retention`);
       assert.deepEqual(prepareQuestion(state,content,now,false),{teachingConcept:next.id},`${next.id} should return to teaching before scored work`);
       state.pending=null;

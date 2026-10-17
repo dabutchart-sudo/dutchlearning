@@ -21,7 +21,8 @@ const focus={
  'A1.25':['Name the person, the action, and one daily detail: home, work, food, transport or free time.','An appointment is een afspraak. Say the time with om: ik heb om drie uur een afspraak.'],
  'S1':['Say the problem in one reusable chunk: ik begrijp het niet, ik ben te laat, or mijn telefoon werkt niet.','Ask for help with ik heb hulp nodig. Add the reason with want.'],
  'S2':['Say your name with ik heet, and ask politely with hoe heet u?','Say where you come from with ik kom uit, and where you live with ik woon in.'],
- 'S3':['Say the appointment with ik heb een afspraak, and the time with om.','Say you are coming with ik kom om. A second idea can join with en.']
+ 'S3':['Say the appointment with ik heb een afspraak, and the time with om.','Say you are coming with ik kom om. A second idea can join with en.'],
+ 'A2.1':['A finished event uses hebben or zijn plus the participle at the end: ik heb gewerkt. Use zijn for going: ik ben gegaan.','In a short story the past verb stands alone: ik werkte. was and had are already past. \'t kofschip chooses the other endings: a stem ending in t, k, f, s, ch or p takes -te (werkte); other stems take -de (speelde).']
 };
 const worked={
  'A1.7':[/\bniet\b/i,/\b(geen|niets)\b/i],
@@ -44,7 +45,8 @@ const worked={
  'A1.25':[/\bafspraak\b/i,/\bthuis\b/i],
  'S1':[/\bhulp nodig\b/i,/\bte laat\b/i],
  'S2':[/\bheet\b/i,/\bwoon/i],
- 'S3':[/\bafspraak\b/i,/\bkom/i]
+ 'S3':[/\bafspraak\b/i,/\bkom/i],
+ 'A2.1':[/lang gewerkt/i,/speelde/i]
 };
 
 export function lessonMaterial(content,id){
@@ -75,6 +77,7 @@ export function patternTipFor(id,nl,concept){
  if(id==='S1'&&/\bhulp nodig\b/i.test(nl))return notes[1];
  if(id==='S2'&&/\b(kom|komt|komen|woon|woont|wonen)\b/i.test(nl))return notes[1];
  if(id==='S3'&&/\b(kom|komt|komen)\b/i.test(nl))return notes[1];
+ if(id==='A2.1'&&/\b(was|waren|had|hadden|werkte|werkten|speelde|speelden|maakte|maakten)\b/i.test(nl))return notes[1];
  if(id==='A1.14'&&/^(waar|wat|wanneer|waarom|hoe|wie)\b/i.test(nl))return notes[1];
  return notes[0];
 }

@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.187**.
+- Current documented release: **Zin V5.1.188**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -14,6 +14,10 @@
 - Automated regression tests run with `npm test`.
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
+
+## A2 syllabus target — 2026-10-16
+
+The owner agreed a finite Zin A2 stage after A1. The map and the quality bar are in `docs/a2-completion-target.md`. A2.1, report a simple past event, is published in V5.1.188 and stays locked until A1.26 has been passed. The owner reviewed the locked course page and the revised sentences, then approved release on 17 October 2026. A2.2–A2.8 are not in the app. This release does not build A1.26. Daily limits, proofs, learner history, schema, authentication, and services are unchanged. Confirming V5.1.188 on the installed phone remains the check after release.
 
 The production `generate-sentences` and `listen-tts` Supabase Edge Functions use the server-side `OPENAI_API_KEY`. Treat deployed functions, owner/Google authentication, quota controls, and the deliberate internal-auth boundaries as protected production contracts. Do not recreate or redeploy them from assumptions.
 
@@ -474,3 +478,9 @@ The release uses offline cache `dutch-v5.1.186-20261011-speaking-later-review`. 
 GitHub issue #193 corrects the F2 flow reported on the installed V5.1.185 app. When a mastery or retention test is ready, **Choose test or practice** now opens that choice first. Choosing **Practice anyway** then shows the existing once-per-day vocabulary briefing before normal practice. The briefing no longer hides the test choice behind a screen whose only action is **Start practice**.
 
 This is a routing-order correction only. Test readiness, proof content, scoring, the daily 20, scheduling, learner history, Supabase schema/data/authentication, services and costs are unchanged. The owner approved merge and deployment on 11 October. PR #194 merged as `d2f1ee73904a97b16a10616fd7be82f357683aea`; the post-merge 602-test workflow and GitHub Pages deployment passed. The public origin serves V5.1.187 and offline cache `dutch-v5.1.187-20261011-test-choice-first`. Focused routing and proof tests passed 24/24. A 390×844 browser check confirmed that a ready proof opens the test/practice gate first; the pure routing regression confirms that the briefing remains due only after practice is chosen. On 12 October the owner confirmed that **Choose test or practice** passes in the installed PWA. Rollback is V5.1.186 at `97477c6`; preserve learner history and the standalone Flashcards fallback.
+
+## A2.1 past event — V5.1.188 release, 2026-10-17
+
+The owner approved production release on 17 October after reviewing the locked course page and the revised past-event sentences on the development copy. V5.1.188 adds A2.1, Report a simple past event. The topic stays closed until A1.26 has been passed. Course shows it on the A2 path with “Pass the A1 checkpoint first.” The lesson distinguishes a finished event, ik heb gewerkt, from a short story, ik werkte, and teaches ’t kofschip only as the spelling aid for that story form. Practice has 26 contexts and the unseen proof pool has 92 sentences. A2.2–A2.8 are not included, and A1.26 is not built.
+
+The daily 20, five-new-card ceiling, written mastery and retention, learner history, schema, authentication, and services are unchanged. The local suite passed 606/606. The offline cache is `dutch-v5.1.188-20261017-a2-past-event`. Rollback is V5.1.187 at `c3322ed`; preserve learner history and the standalone Flashcards fallback. Confirming V5.1.188 and the locked A2.1 topic on the installed phone remains the check after release.

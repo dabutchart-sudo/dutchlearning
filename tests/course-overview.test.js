@@ -16,7 +16,7 @@ const attempt=(overrides={})=>({date:today,kind:'typed',direction:'en-nl',assist
 
 test('outline uses the full registered curriculum, not just the base content pack',()=>{
  const s=fresh(),before=JSON.stringify(s),outline=courseOutline(s,content,{today});
- assert.equal(outline.total,34);assert.equal(outline.current.id,'F1');assert.equal(outline.current.status,'lesson');assert.equal(outline.retained,0);
+ assert.equal(outline.total,35);assert.equal(outline.current.id,'F1');assert.equal(outline.current.status,'lesson');assert.equal(outline.retained,0);
  assert.equal(outline.topics.find(c=>c.id==='A1.20').status,'upcoming');assert.equal(outline.planned.length,1);
  assert.equal(outline.planned[0].id,'A1.26');assert.equal(outline.planned.at(-1).id,'A1.26');assert.equal(JSON.stringify(s),before);
 });
@@ -35,7 +35,7 @@ test('outline uses configured practice requirements and handles completed course
  const s=fresh(),c={...content,concepts:content.concepts.map(c=>({...c,minPractice:50}))};studied(s,'F1');
  assert.equal(courseOutline(s,c,{today}).current.remaining,10);
  for(const c of content.concepts)Object.assign(s.progress[c.id],{masteredAt:today,status:'mastered',lessonAcknowledged:true});
- const o=courseOutline(s,content,{today});assert.equal(o.current,null);assert.equal(o.retained,34);assert.equal(o.planned.length,1);
+ const o=courseOutline(s,content,{today});assert.equal(o.current,null);assert.equal(o.retained,35);assert.equal(o.planned.length,1);
 });
 test('independent denominator includes failed attempts and excludes word help and scaffolding',()=>{
  const s=fresh();s.attempts=[attempt({grammar:false,independent:false}),attempt({independent:true}),attempt({assisted:true}),attempt({kind:'gap'}),attempt({kind:'wordbank',spelling:null}),attempt({kind:'choice',direction:'nl-en',spelling:null})];
