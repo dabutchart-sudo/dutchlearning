@@ -6,3 +6,15 @@
   .flashcard-hero .flashcard-due-grid .eyebrow{font-size:.6rem;line-height:1.15;letter-spacing:.01em;overflow-wrap:anywhere}
   .flashcard-hero .flashcard-due-grid .n{font-size:1.08rem;line-height:1.1;margin-top:auto;padding-top:6px}
 }
+
+#content:has(.flashcard-stage){display:flex;flex-direction:column;overflow:hidden}
+.flashcard-session:has(.flashcard-stage){flex:1 1 auto;align-self:center;width:100%;max-width:680px;margin-left:auto;margin-right:auto;min-height:0;height:auto;display:flex;flex-direction:column}
+.flashcard-session:has(.flashcard-stage) .session-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:0 0 auto}
+.flashcard-session:has(.flashcard-stage) .session-head .pill{width:fit-content;max-width:max-content;flex:0 0 auto;margin-left:auto}
+.flashcard-session:has(.flashcard-stage) .progress-track{flex:0 0 auto}
+.flashcard-session:has(.flashcard-stage) .flashcard-stage{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin:8px 0}
+.flashcard-session:has(.flashcard-stage) .flashcard-flip,.flashcard-session:has(.flashcard-stage) .flashcard-settled{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;height:auto;max-height:none}
+.flashcard-session:has(.flashcard-stage) .flashcard-flip-inner,.flashcard-session:has(.flashcard-stage) .flashcard-review-card{flex:1 1 auto;height:100%;min-height:0;max-height:none}
+.flashcard-session:has(.flashcard-stage) .flashcard-review-card{justify-content:center;padding-top:70px;padding-bottom:70px}
+.flashcard-session:has(.flashcard-stage) .flashcard-rating-dock{flex:0 0 auto;margin-top:0}
+.flashcard-session:has(.flashcard-stage) .flashcard-rating-dock[hidden]{display:grid!important;visibility:hidden;pointer-events:none}
