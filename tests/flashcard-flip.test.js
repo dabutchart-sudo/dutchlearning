@@ -9,6 +9,19 @@ const polish=readFileSync(new URL('../src/ui/mobile-polish.css',import.meta.url)
 const refinements=readFileSync(new URL('../src/ui/mobile-flashcard-refinements.js',import.meta.url),'utf8');
 const markers=readFileSync(new URL('../src/ui/flashcard-language-markers.js',import.meta.url),'utf8');
 
+test('the Dutch face asks for the word and the example waits on the English face',()=>{
+ const dutch=preview.match(/function dutchFace\(c,part,flagged\)\{return `([\s\S]*?)`;\}/);
+ const answers=preview.match(/function answerSentences\(c\)\{return `([\s\S]*?)`;\}/);
+ const english=preview.match(/function englishFace\(c,flagged\)\{return `([\s\S]*?)`;\}/);
+ assert.ok(dutch&&answers&&english);
+ assert.match(dutch[1],/flashcard-word/);
+ assert.doesNotMatch(dutch[1],/flashcard-sentence/);
+ assert.match(english[1],/answerSentences\(c\)/);
+ assert.match(answers[1],/dutch_sentence/);
+ assert.match(answers[1],/english_sentence/);
+ assert.match(answers[1],/lang="nl"/);
+});
+
 test('review cards keep both faces and flip horizontally in place',()=>{
  assert.match(preview,/class="flashcard-flip"/);
  assert.match(preview,/flashcard-face-front/);

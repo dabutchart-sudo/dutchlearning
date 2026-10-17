@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.189**.
+- Current documented release: **Zin V5.1.190**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -490,3 +490,7 @@ The daily 20, five-new-card ceiling, written mastery and retention, learner hist
 The owner approved production release on 17 October. V5.1.189 adjusts the Flashcard review screen only. The Pause line is removed; leaving uses the bottom menu, and ratings already saved stay saved. The New or Review label sits on the right, and its background wraps only the word. The card fills down to the score buttons, which sit just above the menu. The word and example stay centred. The buttons still appear after the card is turned over, and the card keeps the same height before they appear.
 
 Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The local suite passed 606/606. PR #207 merged as `f43b111`; the post-merge test workflow passed, and GitHub Pages serves V5.1.189 with offline cache `dutch-v5.1.189-20261017-flashcard-layout`. Rollback is V5.1.188 at `d425b67`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed app and turning one card over remains the check on the phone.
+
+## Flashcard word before sentence — V5.1.190 release, 2026-10-17
+
+The owner approved production release on 17 October after trying the word-first Flashcard. The Dutch side now shows the word and its word type. The example sentence appears on the English side, after the meaning, together with the English translation of that sentence. A varied checked example, when one exists, is also shown only after the card is turned. Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The offline cache is `dutch-v5.1.190-20261017-flashcard-word-first`. Rollback is V5.1.189 at `524259e`; preserve learner history and the standalone Flashcards fallback.
