@@ -19,3 +19,5 @@
 .flashcard-session:has(.flashcard-stage) .flashcard-rating-dock{flex:0 0 auto;margin-top:0}
 .flashcard-session:has(.flashcard-stage) .flashcard-rating-dock[hidden]{display:grid!important;visibility:hidden;pointer-events:none}
 .flashcard-sentence+.flashcard-sentence{margin-top:8px;font-size:1rem}
+.flashcard-hint{margin-top:14px;min-height:44px;font-weight:650}
+.flashcard-hint-sentence{margin-top:8px;max-width:90%;font-size:clamp(1.05rem,4vw,1.35rem);font-style:italic;color:var(--muted);line-height:1.45}

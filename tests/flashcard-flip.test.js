@@ -15,7 +15,14 @@ test('the Dutch face asks for the word and the example waits on the English face
  const english=preview.match(/function englishFace\(c,flagged\)\{return `([\s\S]*?)`;\}/);
  assert.ok(dutch&&answers&&english);
  assert.match(dutch[1],/flashcard-word/);
- assert.doesNotMatch(dutch[1],/flashcard-sentence/);
+ assert.match(dutch[1],/dutchHint\(c\)/);
+ assert.doesNotMatch(dutch[1],/class="flashcard-sentence"/);
+ const hint=preview.match(/function dutchHint\(c\)\{const sentence=c\.dutch_sentence\?esc\(c\.dutch_sentence\):'';return `([\s\S]*?)`;\}/);
+ assert.ok(hint);
+ assert.match(hint[1],/flashcard-hint/);
+ assert.match(hint[1],/flashcard-hint-sentence" lang="nl" hidden/);
+ assert.match(preview,/function revealCardHint\(/);
+ assert.doesNotMatch(preview.slice(preview.indexOf('function revealCardHint'),preview.indexOf('function dutchFace')),/saveRating/);
  assert.match(english[1],/answerSentences\(c\)/);
  assert.match(answers[1],/dutch_sentence/);
  assert.match(answers[1],/english_sentence/);

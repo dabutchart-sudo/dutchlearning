@@ -13,6 +13,7 @@ test('a varied example is chosen from the Dutch word and shown only on the answe
  assert.match(ui,/flashcard-word\[lang="nl"\]/);
  assert.match(ui,/flashcard-sentence\[lang="nl"\]/);
  assert.match(ui,/flashcard-sentence:not\(\[lang="nl"\]\)/);
+ assert.match(ui,/flashcard-hint-sentence/);
 });
 
 test('sentence bank management UI is loaded and cached for offline use',()=>{const html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(html,/sentence-bank-ui\.js/);assert.match(html,/sentence-bank-ui\.css/);assert.match(sw,/sentence-bank-client\.js/);assert.match(sw,/sentence-bank-ui\.js/);assert.match(sw,/sentence-bank-ui\.css/);});
