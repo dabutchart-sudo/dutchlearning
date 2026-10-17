@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.190**.
+- Current documented release: **Zin V5.1.191**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -494,3 +494,7 @@ Ratings, scheduling, the daily limits, learner history, schema, authentication, 
 ## Flashcard word before sentence — V5.1.190 release, 2026-10-17
 
 The owner approved production release on 17 October after trying the word-first Flashcard. The Dutch side now shows the word and its word type. The example sentence appears on the English side, after the meaning, together with the English translation of that sentence. A varied checked example, when one exists, is also shown only after the card is turned. Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The local suite passed 608/608. PR #209 merged as `ec90945`; the post-merge test workflow passed, and GitHub Pages serves V5.1.190 with offline cache `dutch-v5.1.190-20261017-flashcard-word-first`. Rollback is V5.1.189 at `524259e`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed app remains the phone check.
+
+## Flashcard scores during the turn — V5.1.191 release, 2026-10-17
+
+The owner approved production release on 17 October. Again, Hard, Good and Easy now appear as soon as a Flashcard starts turning toward English, instead of waiting until the turn has finished. Turning the card back to Dutch hides them again. The buttons stay outside the turning card, so a tap still rates the card. Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The local suite passed 608/608. The offline cache is `dutch-v5.1.191-20261017-flashcard-ratings`. Rollback is V5.1.190 at `8dc2adf`; preserve learner history and the standalone Flashcards fallback.

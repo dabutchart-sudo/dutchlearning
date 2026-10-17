@@ -51,7 +51,9 @@ test('after the flip the 3D card is replaced by a flat English card',()=>{
 
 test('Again Hard Good Easy live on a dock that is never 3D',()=>{
  assert.match(preview,/flashcard-rating-dock/);
- assert.match(preview,/if\(ratings\)\{ratings\.hidden=true/);
+ assert.match(preview,/function setReviewRatings\(show\)/);
+ assert.match(preview,/setReviewRatings\(session\.flipped\)/);
+ assert.match(preview,/if\(!session\?\.flipping\)return/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*z-index:20/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*pointer-events:auto/);
  assert.match(css,/\.flashcard-rating-dock\{[^}]*transform:none/);
