@@ -38,8 +38,9 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   const untouched=!p.masteredAt&&!p.retentionDue&&!p.lessonAcknowledged&&!p.practiceAttempts&&!p.recognised&&!p.constructed&&!p.independent;
   const status=!available?'upcoming':untouched?'lesson':phase(p,today);
   const required=Math.max(1,count(c.minPractice)||40),attempts=count(p.practiceAttempts),remaining=Math.max(0,required-attempts);
+  const checkpointClosed=!!c.requiresA1Checkpoint&&!state.progress?.['A1.26']?.masteredAt;
   let nextStep;
-  if(!available)nextStep=count(p.practiceAttempts)||p.taught?`Complete the earlier topic’s recovery and delayed retention check to continue this topic. Your practice here is saved.`:`Pass ${c.prerequisites.join(' and ')} mastery to begin this topic.`;
+  if(!available)nextStep=checkpointClosed?'Pass the A1 checkpoint before this topic opens.':count(p.practiceAttempts)||p.taught?`Complete the earlier topic’s recovery and delayed retention check to continue this topic. Your practice here is saved.`:`Pass ${c.prerequisites.join(' and ')} mastery to begin this topic.`;
   else if(state.proof?.concept===c.id)nextStep=`Finish your ${state.proof.type} test (${state.proof.index} of ${state.proof.questions.length} answered).`;
   else if(status==='lesson')nextStep='Read the lesson, then begin guided practice.';
   else if(status==='proof-ready'||status==='retention-ready'){
@@ -56,8 +57,9 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   const needsMaterial=status==='proof-ready'&&(vocabulary?.potential<vocabulary?.required||(!vocabulary?.missing&&availableProofCount(state,content,c.id)<20));
   const needsMorePractice=status==='proof-ready'&&(writingNeed||masteryPracticeNeed(state,content,c.id)||vocabulary?.missing);
   const readinessNeed=status==='proof-ready'?masteryPrerequisiteNeed(state,content,c.id)||masteryPracticeNeed(state,content,c.id)||writingNeed||(vocabulary?.missing?'More completed topic practice is needed before enough fresh test sentences use familiar words.':null):null;
-  const journey=journeyOf(p,status,available,readinessNeed);
-  return {...c,status,label:!available?journey.label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,retentionDue:p.retentionDue||null,nextStep};
+  let journey=journeyOf(p,status,available,readinessNeed);
+  if(!available&&checkpointClosed)journey={label:'Not started',reason:'A2 stays closed until the A1 checkpoint has been passed.'};
+  return {...c,status,label:!available?journey.label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,retentionDue:p.retentionDue||null,nextStep,lockReason:checkpointClosed?'Pass the A1 checkpoint first':null};
  });
  const checkpoint=a1CheckpointReadiness(state,content);
  return {topics,current:topics.find(c=>c.current)||null,retained:topics.filter(c=>c.retained).length,total:topics.length,

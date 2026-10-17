@@ -111,7 +111,8 @@ const courseOutcomes={
  'A1.25':'Lets you talk about home, work, food, travel, an appointment, or free time.',
  'S1':'Lets you say what is wrong and ask for help.',
  'S2':'Lets you say your name, where you come from, and where you live, and ask a name politely.',
- 'S3':'Lets you name an appointment, say the time, and say that you are coming.'
+ 'S3':'Lets you name an appointment, say the time, and say that you are coming.',
+ 'A2.1':'Lets you say what happened, with a familiar past form.'
 };
 const courseOutcome=id=>courseOutcomes[id]||'';
 function courseCompleteNotice(outline){
@@ -120,7 +121,7 @@ function courseCompleteNotice(outline){
 }
 function pathNode(c,daily,offer){
  const locked=!c.available&&!c.retained;
- const reason=locked?`<small class="course-locked-reason">${c.journey.label==='Paused'?'Pass earlier retention to continue':'Pass '+esc((c.prerequisites||[]).join(' and '))+' mastery first'}</small>`:'';
+ const reason=locked?`<small class="course-locked-reason">${c.lockReason?esc(c.lockReason):c.journey.label==='Paused'?'Pass earlier retention to continue':'Pass '+esc((c.prerequisites||[]).join(' and '))+' mastery first'}</small>`:'';
  const outcome=courseOutcome(c.id);
  const ready=c.current&&!daily.done&&offer?.canStartToday&&(!offer.id||offer.id===c.id);
  const startLabel=ready?'Choose test or practice':c.status==='lesson'?'Start learning':'Continue learning';
@@ -152,7 +153,7 @@ function pathView(outline,daily,offer,recap){
   ${recapCard(recap)}
   ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(c=>pathNode(c,daily,offer)).join('')}</ol></section>`;}).join('')}
   ${outline.planned.length?`<section class="course-unit"><header class="course-unit-banner is-planned"><span>Still to come</span><h3>Completing A1</h3><small>${outline.planned.length} planned</small></header><ol class="course-path-list">${outline.planned.map(plannedNode).join('')}</ol></section>`:''}
-  <section class="course-future"><span class="eyebrow">Later</span><h3>A2 · Beyond the basics</h3><p>A2 is planned, but its syllabus and exercises are not available yet. Finishing Zin’s course is not an official CEFR qualification.</p></section>
+  <section class="course-future"><span class="eyebrow">Later</span><h3>A2 · Beyond the basics</h3><p>A2.1 is on the course path and stays closed until the A1 checkpoint is passed. A2.2–A2.8 are still planned. Finishing Zin’s course is not an official CEFR qualification.</p></section>
  </section>`;
 }
 export function coursePage(state,content,{today,pane='path',days=30,cohort='independent',concept=null,offer=null}={}){

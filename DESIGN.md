@@ -6,6 +6,8 @@ Zin is a personal Dutch-learning application for one learner. Its purpose is to 
 
 The agreed long-term destination is **comfortable everyday conversation**. Zin is intended to become the learner's primary study method for reaching that level. Completing the current A1 syllabus is a necessary stage, not the final destination and not an official CEFR qualification.
 
+Zin A2 is the next finite stage after A1. It aims at slightly longer everyday situations: reporting a simple past event, giving a reason, comparing, stating a plan, and giving a short opinion, then using those together. It is not an official qualification. A2.1 is published and stays closed until the A1 checkpoint is passed. The map is in `docs/a2-completion-target.md`.
+
 Zin is not a commercial, multi-user language platform. Decisions optimise for the owner's learning needs, memory, devices, motivation, and preference for measurable progress without gamification.
 
 ## Product principles

@@ -21,7 +21,11 @@ export function phase(p,date){
  }
  return p.status;
 }
-export function unlocked(c,s){return c.prerequisites.every(id=>!!(s.progress[id]?.masteredAt||s.progress[id]?.retentionDue));}
+export function unlocked(c,s){
+ if(!c.prerequisites.every(id=>!!(s.progress[id]?.masteredAt||s.progress[id]?.retentionDue)))return false;
+ if(c.requiresA1Checkpoint&&!s.progress?.['A1.26']?.masteredAt)return false;
+ return true;
+}
 export function masteryPrerequisiteNeed(s,c,id){
  const waiting=c.conceptById[id]?.prerequisites.find(previous=>!s.progress[previous]?.masteredAt);
  return waiting?`Pass ${waiting}'s delayed retention test before taking this mastery test.`:null;
