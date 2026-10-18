@@ -1,3 +1,4 @@
+import {cachedSentenceEntry} from './sentence-bank-cache.js';
 const clean=value=>String(value??'').trim();
 const canonical=value=>clean(value).toLocaleLowerCase('nl-NL').replace(/[.!?]+$/,'').replace(/\s+/g,' ');
 export const SENTENCE_BANK_TARGET=5;
@@ -30,6 +31,19 @@ export function sentenceBankNeedsRefresh(bank=[],now=new Date(),{target=SENTENCE
  if(!dated.length)return false;
  const newest=new Date(Math.max(...dated.map(d=>d.getTime()))),age=(now-newest)/86400000;
  return age>=maxAgeDays;
+}
+
+const reviewSentence={recentIds:[],shown:null};
+export function resetShownReviewSentence(){reviewSentence.shown=null;reviewSentence.recentIds.length=0;}
+export function shownReviewSentence(card,storage,{random=Math.random}={}){
+ const cardId=String(card?.id??'');
+ if(reviewSentence.shown?.cardId===cardId)return reviewSentence.shown.pair;
+ const stored=cachedSentenceEntry(storage,card?.id)?.sentences||[];
+ const bank=mergeSentenceBank(card,stored,[]);
+ const pair=chooseSentence(bank,{recentIds:reviewSentence.recentIds,random});
+ if(pair){reviewSentence.recentIds.push(String(pair.id));while(reviewSentence.recentIds.length>8)reviewSentence.recentIds.shift();}
+ reviewSentence.shown={cardId,pair:pair||null};
+ return pair;
 }
 
 export function chooseSentence(bank=[],{recentIds=[],random=Math.random}={}){

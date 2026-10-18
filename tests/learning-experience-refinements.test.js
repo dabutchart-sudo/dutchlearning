@@ -26,6 +26,28 @@ test('correction shows the exact number of missing letters and grades only those
  const bad=assess(q,'ijtt');
  assert.equal(bad.grammar,false);
  assert.equal(bad.errorType,'verb_form');
+ const whole=assess(q,'Schrijft');
+ assert.equal(whole.grammar,true);
+ assert.equal(whole.spelling,true);
+ const different=assess(q,'schrijf');
+ assert.equal(different.grammar,false);
+});
+
+test('a capitalised finished verb is accepted and shown without a doubled prefix',()=>{
+ const find={...item,nl:'Ik vind de telefoon.',en:'I find the telephone.',verb:'vinden',verbIndex:1,forms:['vind','vindt','vinden']};
+ const q=makeExercise(find,'correction',content,{phase:'practice'});
+ assert.equal(q.correction.prefix,'vi');
+ assert.equal(q.answer,'nd');
+ const good=assess(q,'Vind');
+ assert.equal(good.grammar,true);
+ const feedback=correctiveFeedback(q,find,'Vind',good);
+ assert.equal(feedback.words.map(part=>part.text).join(' '),'Ik vind de telefoon');
+ assert.equal(feedback.differences.length,0);
+ const wrong=assess(q,'Vindt');
+ assert.equal(wrong.grammar,false);
+ const shown=correctiveFeedback(q,find,'Vindt',wrong);
+ assert.ok(shown.differences.some(line=>line.includes('Vindt')&&line.includes('vind')));
+ assert.equal(shown.differences.some(line=>line.includes('viVindt')),false);
 });
 
 test('correction feedback reconstructs and displays the complete sentence context',()=>{

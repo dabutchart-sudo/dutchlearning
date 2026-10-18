@@ -44,7 +44,9 @@ function completedCorrection(q,item,raw){
  if(q.kind!=='correction'||!q.correction)return raw;
  const words=displayTokens(sentenceCase(item.nl));
  const supplied=String(raw??'').replace(/\s+/g,'').replace(/[.!?]+$/,'');
- words[q.correction.wordIndex]=q.correction.prefix+supplied;
+ const prefix=q.correction.prefix;
+ const finished=normalize(prefix)&&normalize(supplied).startsWith(normalize(prefix))?supplied:prefix+supplied;
+ words[q.correction.wordIndex]=finished;
  return words.join(' ')+(item.nl.match(/[.!?]$/)?.[0]||'.');
 }
 // Compare normalized whole words so sentence case never obscures the grammatical difference.
