@@ -32,9 +32,10 @@ function journeyOf(p,status,available,practiceNeed){
  return {label:'Learning',reason:'The lesson has begun; practice and proof are still ahead.'};
 }
 export function courseOutline(state,content,{today=dayKey()}={}){
- const currentId=content.concepts.some(c=>unlocked(c,state)&&!state.progress[c.id]?.masteredAt)?activeConcept(state,content,today):null;
+ const checkpoint=a1CheckpointReadiness(state,content);
+ const currentId=content.concepts.some(c=>unlocked(c,state,content)&&!state.progress[c.id]?.masteredAt)?activeConcept(state,content,today):null;
  const topics=content.concepts.map(c=>{
-  const p=state.progress[c.id]||blankProgress(),available=unlocked(c,state);
+  const p=state.progress[c.id]||blankProgress(),available=unlocked(c,state,content);
   const untouched=!p.masteredAt&&!p.retentionDue&&!p.lessonAcknowledged&&!p.practiceAttempts&&!p.recognised&&!p.constructed&&!p.independent;
   const status=!available?'upcoming':untouched?'lesson':phase(p,today);
   const required=Math.max(1,count(c.minPractice)||40),attempts=count(p.practiceAttempts),remaining=Math.max(0,required-attempts);
@@ -52,16 +53,16 @@ export function courseOutline(state,content,{today=dayKey()}={}){
   else if(status==='reinforcement')nextStep='Revisit this retained skill in maintenance practice. Earlier retention evidence is kept.';
   else if(p.proofHistory?.at(-1)?.type==='mastery'&&p.proofHistory.at(-1).passed===false)nextStep='Your mastery retake can start from your next study day once fresh test sentences and all 20 daily questions are available. You can practise today.';
   else nextStep=[remaining?`${remaining} more practice ${remaining===1?'answer':'answers'} to reach the ${required}-answer test requirement.`:'Practice requirement reached.',p.remedial?`${p.remedial} successful practice ${p.remedial===1?'answer':'answers'} still needed after your last test.`:''].filter(Boolean).join(' ');
-  const writingNeed=status==='proof-ready'?firstMasteryReadinessNeed(state,c.id,new Date(today+'T12:00:00')):null;
+  const writingNeed=status==='proof-ready'&&!c.checkpoint?firstMasteryReadinessNeed(state,c.id,new Date(today+'T12:00:00')):null;
   const vocabulary=status==='proof-ready'?proofVocabularyNeed(state,content,c.id,'mastery'):null;
   const needsMaterial=status==='proof-ready'&&(vocabulary?.potential<vocabulary?.required||(!vocabulary?.missing&&availableProofCount(state,content,c.id)<20));
   const needsMorePractice=status==='proof-ready'&&(writingNeed||masteryPracticeNeed(state,content,c.id)||vocabulary?.missing);
   const readinessNeed=status==='proof-ready'?masteryPrerequisiteNeed(state,content,c.id)||masteryPracticeNeed(state,content,c.id)||writingNeed||(vocabulary?.missing?'More completed topic practice is needed before enough fresh test sentences use familiar words.':null):null;
   let journey=journeyOf(p,status,available,readinessNeed);
+  if(!available&&c.checkpoint){nextStep=checkpoint.summary;journey={label:'Not started',reason:checkpoint.summary};}
   if(!available&&checkpointClosed)journey={label:'Not started',reason:'A2 stays closed until the A1 checkpoint has been passed.'};
-  return {...c,status,label:!available?journey.label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,retentionDue:p.retentionDue||null,nextStep,lockReason:checkpointClosed?'Pass the A1 checkpoint first':null};
+  return {...c,status,label:!available?journey.label:needsMaterial?'Test unavailable':needsMorePractice?'More practice':statusLabels[status]||'In practice',journey,available,current:c.id===currentId,attempts,required,remaining,retained:!!p.masteredAt,retainedAt:p.masteredAt||null,retentionDue:p.retentionDue||null,nextStep,lockReason:!available&&c.checkpoint?'Every earlier topic still needs its retention check.':checkpointClosed?'Pass the A1 checkpoint first':null};
  });
- const checkpoint=a1CheckpointReadiness(state,content);
  return {topics,current:topics.find(c=>c.current)||null,retained:topics.filter(c=>c.retained).length,total:topics.length,
   planned:plannedTopics.filter(p=>!content.conceptById[p.id]).map(topic=>topic.id===checkpoint.id?{...topic,note:checkpoint.summary}:topic),levels:[...new Set(topics.map(c=>c.level))]};
 }

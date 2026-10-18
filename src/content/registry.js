@@ -16,6 +16,7 @@ import a1CapabilityExpansion7 from './a1-capability-expansion-7.js';
 import scenarioSimpleProblem from './scenario-simple-problem.js';
 import scenarioIntroductions from './scenario-introductions.js';
 import scenarioPlans from './scenario-plans.js';
+import a1Checkpoint from './a1-checkpoint.js';
 import a2PastEvent from './a2-past-event.js';
 import {completeA1Vocabulary} from './a1-vocabulary.js';
 import {fairPracticeRows} from './a1-fair-practice.js';
@@ -25,7 +26,7 @@ import {f1ProofRecoveryRows} from './f1-proof-recovery.js';
 import {normalize,tokens} from '../engine/util.js';
 export function registerPacks(packs){
  const includesMainCourse=packs.some(p=>p?.id==='foundation-a1');
- const sources=includesMainCourse?[...packs,a1CoreExpansion,a1CoreExpansion2,a1CoreExpansion3,a1ProofRetryBuffer,a1CoreExpansion4,a1CoreExpansion4ProofBuffer,a1CoreExpansion5,a1CoreExpansion5ProofBuffer,a1CapabilityExpansion1,a1CapabilityExpansion2,a1CapabilityExpansion3,a1CapabilityExpansion4,a1CapabilityExpansion5,a1CapabilityExpansion6,a1CapabilityExpansion7,scenarioSimpleProblem,scenarioIntroductions,scenarioPlans,a2PastEvent]:packs;
+ const sources=includesMainCourse?[...packs,a1CoreExpansion,a1CoreExpansion2,a1CoreExpansion3,a1ProofRetryBuffer,a1CoreExpansion4,a1CoreExpansion4ProofBuffer,a1CoreExpansion5,a1CoreExpansion5ProofBuffer,a1CapabilityExpansion1,a1CapabilityExpansion2,a1CapabilityExpansion3,a1CapabilityExpansion4,a1CapabilityExpansion5,a1CapabilityExpansion6,a1CapabilityExpansion7,scenarioSimpleProblem,scenarioIntroductions,scenarioPlans,a1Checkpoint,a2PastEvent]:packs;
  const concepts=[],sentences=[],ids=new Set();
  for(const p of sources){if(p.schemaVersion!==1)throw Error('Unsupported content pack version');for(const c of p.concepts){if(ids.has(c.id))throw Error('Duplicate concept');ids.add(c.id);concepts.push(c)}sentences.push(...p.sentences)}
  if(includesMainCourse)sentences.push(...fairPracticeRows(sentences));
