@@ -1,6 +1,6 @@
 # DAB-87 — integrated A1 checkpoint
 
-Status: the owner approved release on 18 October 2026 after checking the locked course row and confirming a native-speaker pass of the new Dutch. A1.26 stays closed until every earlier topic has passed its delayed retention check.
+Status: published in V5.1.193 and stays locked. The owner checked the locked course row and confirmed a native-speaker pass of the new Dutch on 18 October 2026. GitHub Pages serves the release. A1.26 opens only after every earlier topic has passed its delayed retention check. Confirming the locked row on the installed phone remains.
 
 ## This slice
 
