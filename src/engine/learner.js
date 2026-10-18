@@ -21,8 +21,12 @@ export function phase(p,date){
  }
  return p.status;
 }
-export function unlocked(c,s){
+export function unlocked(c,s,content){
  if(!c.prerequisites.every(id=>!!(s.progress[id]?.masteredAt||s.progress[id]?.retentionDue)))return false;
+ if(c.checkpoint){
+  const earlier=(content?.concepts||[]).filter(other=>other.id!==c.id&&!other.requiresA1Checkpoint);
+  if(!earlier.length||!earlier.every(other=>!!s.progress[other.id]?.masteredAt))return false;
+ }
  if(c.requiresA1Checkpoint&&!s.progress?.['A1.26']?.masteredAt)return false;
  return true;
 }
@@ -31,12 +35,12 @@ export function masteryPrerequisiteNeed(s,c,id){
  return waiting?`Pass ${waiting}'s delayed retention test before taking this mastery test.`:null;
 }
 export function activeConcept(s,c,date=s.daily?.date||dayKey()){
- const available=c.concepts.filter(x=>unlocked(x,s)&&!s.progress[x.id]?.masteredAt);
+ const available=c.concepts.filter(x=>unlocked(x,s,c)&&!s.progress[x.id]?.masteredAt);
  return available.find(x=>phase(s.progress[x.id]||blankProgress(),date)==='retention-ready')?.id
   ||available.find(x=>phase(s.progress[x.id]||blankProgress(),date)!=='retention-wait')?.id
   ||available[0]?.id||c.concepts.at(-1).id;
 }
-export function teachConcept(s,id,content,{acknowledge=true}={}){const c=content.conceptById[id];if(!unlocked(c,s))throw Error('Finish the previous concept first');s.progress[id].taught=true;if(acknowledge)s.progress[id].lessonAcknowledged=true;const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
+export function teachConcept(s,id,content,{acknowledge=true}={}){const c=content.conceptById[id];if(!unlocked(c,s,content))throw Error('Finish the previous concept first');s.progress[id].taught=true;if(acknowledge){s.progress[id].lessonAcknowledged=true;if(c.checkpoint)s.progress[id].status='proof-ready';}const item=content.byId[c.exampleId];if(item)expose(s,item,'teaching');}
 export function expose(s,item,reason){if(s.exposures.some(x=>x.nl===normalize(item.nl)))return;s.exposures.push({id:item.id,nl:normalize(item.nl),verb:item.verb,subject:item.subject,family:item.family,words:item.vocabulary.map(w=>w.id),reason});}
 export function markWordsTaught(s,item,date){for(const w of item.vocabulary){s.words[w.id]??={weakness:0,attempts:0,spellingErrors:0,recallErrors:0};s.words[w.id].taughtAt=date;}}
 export function prepareQuestion(s,c,now=new Date(),canListen=false,canSpeak=false){
@@ -89,7 +93,7 @@ export function dailyProofOffer(s,c,now=new Date()){
  if(prerequisite)return {id,type,needed,remaining,canStartToday:false,reason:prerequisite};
  const practice=type==='mastery'?masteryPracticeNeed(s,c,id):null;
  if(practice)return {id,type,needed,remaining,canStartToday:false,reason:practice};
- const writing=type==='mastery'?firstMasteryReadinessNeed(s,id,now):null;
+ const writing=type==='mastery'&&!c.conceptById[id]?.checkpoint?firstMasteryReadinessNeed(s,id,now):null;
  if(writing)return {id,type,needed,remaining,canStartToday:false,reason:writing};
  if(remaining<needed)return {id,type,needed,remaining,canStartToday:false,reason:`This test needs ${needed} of your daily 20 questions. Start it on your next study day.`};
  const vocabulary=proofVocabularyNeed(s,c,id,type);
@@ -134,6 +138,7 @@ export function releaseUnscoredPractice(s){
  return s;
 }
 export function masteryPracticeNeed(s,c,id){
+ if(c.conceptById[id]?.checkpoint)return null;
  const progress=s.progress[id];
  // A recorded mastery attempt has already crossed the initial practice gate.
  // Preserve next-day retakes for older histories without rewriting their counts.
@@ -154,7 +159,7 @@ export function proofEligibility(s,c,id,type,now=new Date()){
   if(prerequisite)return prerequisite;
   const practice=masteryPracticeNeed(s,c,id);
   if(practice)return practice;
-  const writing=firstMasteryReadinessNeed(s,id,now);
+  const writing=c.conceptById[id]?.checkpoint?null:firstMasteryReadinessNeed(s,id,now);
   if(writing)return writing;
  }
  if(DAY_SIZE-count<n)return `This test needs ${n} of your daily 20 questions. Start it on your next study day.`;

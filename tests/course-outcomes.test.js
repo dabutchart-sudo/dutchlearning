@@ -32,11 +32,12 @@ test('the course path states what each finished communicative block is for',()=>
  assert.equal((html.match(/Lets you/g)||[]).length,outcomes.length);
  const foundation=html.slice(html.indexOf('<span class="course-topic-code">F1'),html.indexOf('<span class="course-topic-code">F2'));
  assert.doesNotMatch(foundation,/Lets you/);
- const planned=html.slice(html.indexOf('Still to come'));
- assert.match(planned,/A1\.26/);
- assert.match(planned,/Not open yet/);
- assert.doesNotMatch(planned,/Lets you/);
- assert.doesNotMatch(html,/data-course-concept="A1\.26"/);
+ const checkpoint=html.slice(html.indexOf('<span class="course-topic-code">A1.26'),html.indexOf('</li>',html.indexOf('<span class="course-topic-code">A1.26')));
+ assert.match(checkpoint,/Checks a mix of everyday situations/);
+ assert.match(checkpoint,/Every earlier topic still needs its retention check/);
+ assert.doesNotMatch(checkpoint,/Lets you/);
+ assert.match(html,/data-course-concept="A1\.26"/);
+ assert.doesNotMatch(html,/data-course-start="A1\.26"/);
 });
 
 test('a topic page states the outcome and leaves earlier blocks and evidence unchanged',()=>{

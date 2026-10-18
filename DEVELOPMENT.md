@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.192**.
+- Current documented release: **Zin V5.1.193**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -502,3 +502,7 @@ The owner approved production release on 17 October. Again, Hard, Good and Easy 
 ## Flashcard Dutch hint — V5.1.192 release, 2026-10-17
 
 The owner approved production release on 17 October after trying the hint. The Dutch side still shows the word and its word type. A Hint button can reveal one Dutch example sentence, and Hide hint puts it away again. The English meaning stays on the other side. A varied checked example, when one exists, is used for that hint and for the sentence shown after the card is turned. Opening the hint does not rate the card. Again, Hard, Good and Easy remain the only actions that move it. Ratings, scheduling, the daily limits, learner history, schema, authentication, and services are unchanged. The local suite passed 608/608. PR #213 merged as `f45ac78` on 18 October; the post-merge test workflow passed, and GitHub Pages serves V5.1.192 with offline cache `dutch-v5.1.192-20261017-flashcard-hint`. Rollback is V5.1.191 at `921aa63`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed app and opening Hint on one Dutch card remains the phone check.
+
+## A1 checkpoint — V5.1.193 release, 2026-10-18
+
+The owner approved production release on 18 October after checking the locked course row on the development copy, and confirmed that a native speaker has accepted the new Dutch. A1.26, the integrated A1 checkpoint, is now on the course path and stays closed until every earlier topic has passed its delayed retention check. It is an unseen written check of everyday situations already studied: ten Dutch-to-English choices and ten typed English-to-Dutch sentences, then a later ten-question retention check. It does not teach a new lesson, it is not an official certificate, and it does not add a new 40-answer practice target. A2.1 stays locked until this checkpoint has been passed and retained. The daily 20, five-new-card ceiling, learner history, schema, authentication, and services are unchanged. The local suite passed 610/610. The offline cache is `dutch-v5.1.193-20261018-a1-checkpoint`. Rollback is V5.1.192 at `f9ac6b6`; preserve learner history and the standalone Flashcards fallback. Confirming the locked A1.26 row on the installed phone remains the check after release.

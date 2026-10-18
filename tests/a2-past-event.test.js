@@ -19,7 +19,7 @@ test('A2.1 follows S3 and stays closed until the A1 checkpoint is passed',()=>{
  assert.equal(concept.minPractice,40);
  const state=freshState(content);
  for(const item of content.concepts){
-  if(item.id==='A2.1')continue;
+  if(item.id==='A2.1'||item.id==='A1.26')continue;
   state.progress[item.id].masteredAt='2026-10-01';
   state.progress[item.id].retentionDue='2026-10-04';
  }

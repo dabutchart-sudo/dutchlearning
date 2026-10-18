@@ -22,6 +22,7 @@ const focus={
  'S1':['Say the problem in one reusable chunk: ik begrijp het niet, ik ben te laat, or mijn telefoon werkt niet.','Ask for help with ik heb hulp nodig. Add the reason with want.'],
  'S2':['Say your name with ik heet, and ask politely with hoe heet u?','Say where you come from with ik kom uit, and where you live with ik woon in.'],
  'S3':['Say the appointment with ik heb een afspraak, and the time with om.','Say you are coming with ik kom om. A second idea can join with en.'],
+ 'A1.26':['This check mixes situations you already know. It does not teach a new rule.','Read the Dutch and choose the meaning, or write the Dutch from English. The result is not an official certificate.'],
  'A2.1':['A finished event uses hebben or zijn plus the participle at the end: ik heb gewerkt. Use zijn for going: ik ben gegaan.','In a short story the past verb stands alone: ik werkte. was and had are already past. \'t kofschip chooses the other endings: a stem ending in t, k, f, s, ch or p takes -te (werkte); other stems take -de (speelde).']
 };
 const worked={
