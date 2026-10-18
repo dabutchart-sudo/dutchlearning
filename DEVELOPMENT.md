@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.193**.
+- Current documented release: **Zin V5.1.194**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -506,3 +506,7 @@ The owner approved production release on 17 October after trying the hint. The D
 ## A1 checkpoint — V5.1.193 release, 2026-10-18
 
 The owner approved production release on 18 October after checking the locked course row on the development copy, and confirmed that a native speaker has accepted the new Dutch. A1.26, the integrated A1 checkpoint, is now on the course path and stays closed until every earlier topic has passed its delayed retention check. It is an unseen written check of everyday situations already studied: ten Dutch-to-English choices and ten typed English-to-Dutch sentences, then a later ten-question retention check. It does not teach a new lesson, it is not an official certificate, and it does not add a new 40-answer practice target. A2.1 stays locked until this checkpoint has been passed and retained. The daily 20, five-new-card ceiling, learner history, schema, authentication, and services are unchanged. The local suite passed 610/610. PR #215 merged as `91a4044`; the post-merge test workflow passed, and GitHub Pages serves V5.1.193 with offline cache `dutch-v5.1.193-20261018-a1-checkpoint`. Rollback is V5.1.192 at `f9ac6b6`; preserve learner history and the standalone Flashcards fallback. Confirming the locked A1.26 row on the installed phone remains the check after release.
+
+## Clearer answers — V5.1.194 release, 2026-10-18
+
+The owner asked for both changes on the live app on 18 October. A missing-letters question now says “Type the missing letters” and “Type one letter for each blank,” and that answer box no longer capitalizes the first letter. Typing the finished word, such as Vind, counts as correct. A different verb still does not. A Flashcard example is chosen before the card is shown, so the English side no longer replaces one example with another after the flip. Ratings, scheduling, the daily 20, the five-new-card ceiling, learner history, schema, authentication, and services are unchanged. The local suite passed 611/611. Rollback is V5.1.193 at `83d2fb4`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed app, then checking one missing-letters question and one flipped Flashcard, remains the phone check.

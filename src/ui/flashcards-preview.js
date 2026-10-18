@@ -3,6 +3,7 @@ import {STORAGE_KEY} from '../engine/persistence.js';
 import {paintDailyChrome} from './daily-chrome.js';
 import {registerPacks} from '../content/registry.js';
 import {courseNewCardPriority} from '../engine/course-flashcard-intake.js';
+import {shownReviewSentence} from '../engine/sentence-bank.js';
 const tab=document.getElementById('flashcards-preview-tab'),contentEl=document.getElementById('content'),message=document.getElementById('system-message');
 let loaded=null,session=null,production=null,courseContent=null;
 // The course word list for DAB-182. If it cannot load, Flashcards keep card-ID order.
@@ -51,8 +52,9 @@ function toggleSentenceFlag(card){const q=sentenceQueue(),id=Number(card.id),i=q
 function cardToolRow(flagged,suffix=''){return `<div class="flashcard-tool-row"><button id="speak-card${suffix}" class="secondary flashcard-listen" type="button">Listen</button><div class="flashcard-tool-end"><button id="flag-sentence${suffix}" class="text-link ${flagged?'flagged':''}" type="button">${flagged?'Sentence flagged':'Flag sentence'}</button><button id="edit-card${suffix}" class="text-link" type="button">Edit card</button></div></div>`;}
 function spokenDutch(c){return String(c.dutch||'').replace(/\s*\(.*?\)/g,'').trim();}
 function reviewPart(c){return c.partofword?`<span class="flashcard-part">${esc(c.partofword)}</span>`:'';}
-function answerSentences(c){return `${c.dutch_sentence?`<div class="flashcard-sentence" lang="nl">${esc(c.dutch_sentence)}</div>`:''}${c.english_sentence?`<div class="flashcard-sentence">${esc(c.english_sentence)}</div>`:''}`;}
-function dutchHint(c){const sentence=c.dutch_sentence?esc(c.dutch_sentence):'';return `<button type="button" class="text-link flashcard-hint" aria-expanded="false"${sentence?'':' hidden'}>Hint</button><div class="flashcard-hint-sentence" lang="nl" hidden>${sentence}</div>`;}
+function reviewExample(c){const chosen=shownReviewSentence(c,localStorage);return chosen||{nl:c.dutch_sentence||'',en:c.english_sentence||''};}
+function answerSentences(c){const pair=reviewExample(c);return `${pair.nl?`<div class="flashcard-sentence" lang="nl">${esc(pair.nl)}</div>`:''}${pair.en?`<div class="flashcard-sentence">${esc(pair.en)}</div>`:''}`;}
+function dutchHint(c){const sentence=esc(reviewExample(c).nl||'');return `<button type="button" class="text-link flashcard-hint" aria-expanded="false"${sentence?'':' hidden'}>Hint</button><div class="flashcard-hint-sentence" lang="nl" hidden>${sentence}</div>`;}
 function revealCardHint(button){const sentence=button.closest('.flashcard-face')?.querySelector('.flashcard-hint-sentence');if(!sentence?.textContent.trim())return;const open=sentence.hidden;sentence.hidden=!open;button.setAttribute('aria-expanded',open?'true':'false');button.textContent=open?'Hide hint':'Hint';}
 function dutchFace(c,part,flagged){return `<div class="card flashcard-review-card flashcard-face flashcard-face-front"><div class="eyebrow">Dutch</div><div class="flashcard-word" lang="nl">${esc(c.dutch)}${part}</div>${dutchHint(c)}${cardToolRow(flagged)}</div>`;}
 function englishFace(c,flagged){return `<div class="card flashcard-review-card flashcard-face flashcard-face-back"><div class="eyebrow">English</div><div class="flashcard-word">${esc(c.english)}</div>${answerSentences(c)}${cardToolRow(flagged,'-back')}</div>`;}

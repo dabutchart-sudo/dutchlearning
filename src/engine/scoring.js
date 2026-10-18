@@ -33,7 +33,8 @@ export function assess(q,raw,{assisted=false,knownWords=new Set()}={}){
  if(q.kind==='correction'){
   const got=normalize(String(raw)).replace(/\s+/g,'');
   const expected=normalize(String(q.answer)).replace(/\s+/g,'');
-  const correct=got===expected;
+  const whole=normalize(`${q.correction?.prefix||''}${q.answer}`).replace(/\s+/g,'');
+  const correct=got===expected||whole!==expected&&got===whole;
   return result(correct,correct,correct?null:'verb_form');
  }
  let expected=tokens(q.answer),got=alignAliases(tokens(raw),expected);

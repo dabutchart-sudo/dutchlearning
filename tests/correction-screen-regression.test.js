@@ -12,4 +12,8 @@ test('correction-screen refinement does not rewrite an already-refined label fro
  const source=readFileSync(new URL('../src/ui/learning-session-refinements.js',import.meta.url),'utf8');
  assert.match(source,/if\(qType\.textContent\.trim\(\)!=='Type the missing letters'\)qType\.textContent='Type the missing letters';/);
  assert.doesNotMatch(source,/\n qType\.textContent='Type the missing letters';\n/,'an unconditional textContent rewrite would retrigger the child-list MutationObserver indefinitely');
+ const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8');
+ assert.match(app,/correction:'Type the missing letters'/);
+ assert.match(app,/Type one letter for each blank/);
+ assert.match(app,/autocapitalize="\$\{correction\?'off':'sentences'\}"/);
 });

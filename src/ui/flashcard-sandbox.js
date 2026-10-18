@@ -1,4 +1,5 @@
 import {remainingNewCards,buildFlashcardQueue,applyFlashcardRating} from '../engine/flashcards.js';
+import {shownReviewSentence} from '../engine/sentence-bank.js';
 
 const tab=document.getElementById('flashcards-preview-tab');
 const content=document.getElementById('content');
@@ -29,8 +30,9 @@ function toggleSandboxFlag(card){const id=String(card.id);if(sandbox.flags.has(i
 function sandboxToolRow(flagged,suffix=''){return `<div class="flashcard-tool-row"><button id="sandbox-speak${suffix}" class="secondary flashcard-listen" type="button">Listen</button><div class="flashcard-tool-end"><button id="sandbox-flag${suffix}" class="text-link ${flagged?'flagged':''}" type="button">${flagged?'Sentence flagged':'Flag sentence'}</button><button id="sandbox-edit${suffix}" class="text-link" type="button">Edit card</button></div></div>`;}
 function spokenDutch(c){return String(c.dutch||'').replace(/\s*\(.*?\)/g,'').trim();}
 function sandboxPart(c){return c.partofword?`<span class="flashcard-part">${esc(c.partofword)}</span>`:'';}
-function sandboxAnswerSentences(c){return `${c.dutch_sentence?`<div class="flashcard-sentence" lang="nl">${esc(c.dutch_sentence)}</div>`:''}${c.english_sentence?`<div class="flashcard-sentence">${esc(c.english_sentence)}</div>`:''}`;}
-function sandboxDutchHint(c){const sentence=c.dutch_sentence?esc(c.dutch_sentence):'';return `<button type="button" class="text-link flashcard-hint" aria-expanded="false"${sentence?'':' hidden'}>Hint</button><div class="flashcard-hint-sentence" lang="nl" hidden>${sentence}</div>`;}
+function sandboxExample(c){const chosen=shownReviewSentence(c,localStorage);return chosen||{nl:c.dutch_sentence||'',en:c.english_sentence||''};}
+function sandboxAnswerSentences(c){const pair=sandboxExample(c);return `${pair.nl?`<div class="flashcard-sentence" lang="nl">${esc(pair.nl)}</div>`:''}${pair.en?`<div class="flashcard-sentence">${esc(pair.en)}</div>`:''}`;}
+function sandboxDutchHint(c){const sentence=esc(sandboxExample(c).nl||'');return `<button type="button" class="text-link flashcard-hint" aria-expanded="false"${sentence?'':' hidden'}>Hint</button><div class="flashcard-hint-sentence" lang="nl" hidden>${sentence}</div>`;}
 function revealSandboxHint(button){const sentence=button.closest('.flashcard-face')?.querySelector('.flashcard-hint-sentence');if(!sentence?.textContent.trim())return;const open=sentence.hidden;sentence.hidden=!open;button.setAttribute('aria-expanded',open?'true':'false');button.textContent=open?'Hide hint':'Hint';}
 function sandboxDutchFace(c,part,flagged){return `<div class="card flashcard-review-card flashcard-face flashcard-face-front"><div class="eyebrow">Dutch</div><div class="flashcard-word" lang="nl">${esc(c.dutch)}${part}</div>${sandboxDutchHint(c)}${sandboxToolRow(flagged)}</div>`;}
 function sandboxEnglishFace(c,flagged){return `<div class="card flashcard-review-card flashcard-face flashcard-face-back"><div class="eyebrow">English</div><div class="flashcard-word">${esc(c.english)}</div>${sandboxAnswerSentences(c)}${sandboxToolRow(flagged,'-back')}</div>`;}
