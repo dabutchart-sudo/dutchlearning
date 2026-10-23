@@ -20,8 +20,11 @@ test('the Dutch face asks for the word and the example waits on the English face
  const hint=preview.match(/function dutchHint\(c\)\{const sentence=esc\(reviewExample\(c\)\.nl\|\|''\);return `([\s\S]*?)`;\}/);
  assert.ok(hint);
  assert.match(hint[1],/flashcard-hint/);
+ assert.match(hint[1],/class="secondary flashcard-hint"/);
+ assert.match(hint[1],/>Show hint<\/button>/);
  assert.match(hint[1],/flashcard-hint-sentence" lang="nl" hidden/);
  assert.match(preview,/function revealCardHint\(/);
+ assert.match(preview,/e\.stopPropagation\(\);revealCardHint\(b\)/);
  assert.doesNotMatch(preview.slice(preview.indexOf('function revealCardHint'),preview.indexOf('function dutchFace')),/saveRating/);
  assert.match(english[1],/answerSentences\(c\)/);
  assert.match(preview,/function reviewExample\(c\)/);
@@ -99,8 +102,17 @@ test('sandbox review cards use the same horizontal flip and rating dock',()=>{
  assert.match(sandbox,/class="flashcard-settled"/);
  assert.match(sandbox,/flashcard-rating-dock/);
  assert.match(sandbox,/sandboxToolRow\(flagged,'-back'\)/);
+ assert.match(sandbox,/class="secondary flashcard-hint"/);
+ assert.match(sandbox,/e\.stopPropagation\(\);revealSandboxHint\(b\)/);
  assert.doesNotMatch(sandbox,/ratingUnderCard/);
  assert.doesNotMatch(sandbox,/is-flat/);
+});
+
+test('Hint is a prominent mobile control instead of a text link',()=>{
+ assert.match(css,/\.flashcard-hint\.secondary\{[^}]*width:min\(220px,80%\)/);
+ assert.match(css,/\.flashcard-hint\.secondary\{[^}]*min-height:52px/);
+ assert.match(css,/\.flashcard-hint\.secondary\{[^}]*background:var\(--accent-soft\)/);
+ assert.match(css,/\.flashcard-hint\.secondary\{[^}]*touch-action:manipulation/);
 });
 
 test('card tool refinements decorate both faces',()=>{

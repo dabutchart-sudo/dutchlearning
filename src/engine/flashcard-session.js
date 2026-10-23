@@ -26,6 +26,24 @@ export function reviewLoadAllowance(raw,due,target){
  return ceiling;
 }
 
+export function adjustedNewCardCap({
+ history=[],
+ previousDate,
+ configuredMax=5,
+ reviewLoad=0,
+ reviewTarget=60,
+ retentionThreshold=0
+}={}){
+ const ceiling=Math.max(0,Math.trunc(finite(configuredMax,5)));
+ const threshold=Math.max(0,finite(retentionThreshold));
+ if(previousDate&&threshold>0){
+  const previousReviews=history.filter(row=>row?.timestamp&&String(row.timestamp).slice(0,10)===previousDate);
+  const retained=previousReviews.filter(row=>String(row.rating??'').toLowerCase()!=='again').length;
+  if(previousReviews.length&&retained/previousReviews.length*100<threshold)return 0;
+ }
+ return Math.min(ceiling,reviewLoadAllowance(ceiling,reviewLoad,reviewTarget));
+}
+
 /**
  * Infer that a study day was completed in another client when there are no due
  * reviews left and the shared evidence shows the user reached a sensible end point.

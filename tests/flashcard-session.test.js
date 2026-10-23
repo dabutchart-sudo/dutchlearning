@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {inferExternalStudyDayComplete,reviewLoadAllowance,reviewLoadAtStart} from '../src/engine/flashcard-session.js';
+import {adjustedNewCardCap,inferExternalStudyDayComplete,reviewLoadAllowance,reviewLoadAtStart} from '../src/engine/flashcard-session.js';
 
 test('does not infer completion from zero due reviews alone',()=>{
  assert.equal(inferExternalStudyDayComplete({dueReview:0,todayReviews:0,introducedToday:0,configuredMax:5,effectiveNewCap:5,reviewTarget:60}),false);
@@ -36,4 +36,30 @@ test('keeps a reduced cross-device allowance closed after the phone finishes the
  const effectiveNewCap=reviewLoadAllowance(5,openingLoad,60);
  assert.equal(effectiveNewCap,3);
  assert.equal(inferExternalStudyDayComplete({dueReview:0,todayReviews:history.length,introducedToday:3,configuredMax:5,effectiveNewCap,reviewTarget:60}),true);
+});
+
+test('keeps a retention-reduced zero allowance closed on another device',()=>{
+ const previousDate='2026-10-21',today='2026-10-22';
+ const previous=[
+  {cardid:'old-1',rating:'again',review_type:'review',timestamp:`${previousDate}T08:00:00Z`},
+  {cardid:'old-2',rating:'hard',review_type:'review',timestamp:`${previousDate}T08:01:00Z`}
+ ];
+ const todayReviews=Array.from({length:58},(_,i)=>({cardid:String(i+1),rating:'good',review_type:'review',timestamp:`${today}T08:00:00Z`}));
+ const history=[...previous,...todayReviews];
+ const effectiveNewCap=adjustedNewCardCap({history,previousDate,configuredMax:5,reviewLoad:58,reviewTarget:60,retentionThreshold:80});
+ assert.equal(effectiveNewCap,0);
+ assert.equal(inferExternalStudyDayComplete({dueReview:0,todayReviews:todayReviews.length,introducedToday:0,configuredMax:5,effectiveNewCap,reviewTarget:60}),true);
+});
+
+test('does not close an inactive zero-allowance day without review activity',()=>{
+ const effectiveNewCap=adjustedNewCardCap({
+  history:[{cardid:'old-1',rating:'again',review_type:'review',timestamp:'2026-10-21T08:00:00Z'}],
+  previousDate:'2026-10-21',
+  configuredMax:5,
+  reviewLoad:0,
+  reviewTarget:60,
+  retentionThreshold:80
+ });
+ assert.equal(effectiveNewCap,0);
+ assert.equal(inferExternalStudyDayComplete({dueReview:0,todayReviews:0,introducedToday:0,configuredMax:5,effectiveNewCap,reviewTarget:60}),false);
 });
