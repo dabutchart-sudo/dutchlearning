@@ -1,4 +1,4 @@
-import {inferExternalStudyDayComplete,reviewLoadAllowance,reviewLoadAtStart} from '../engine/flashcard-session.js';
+import {adjustedNewCardCap,inferExternalStudyDayComplete,reviewLoadAtStart} from '../engine/flashcard-session.js';
 import {paintDailyChrome} from './daily-chrome.js';
 
 const tab=document.getElementById('flashcards-preview-tab');
@@ -26,14 +26,15 @@ async function reconcile(){
   const today=dayKey(),lockKey=`dutch_flashcards_completed_v1:${c.SUPABASE_URL}:${today}`;
   if(localStorage.getItem(lockKey)==='complete')return;
   const [cards,history]=await Promise.all([fetchAll(c.SUPABASE_URL,c.SUPABASE_ANON_KEY,'cards'),fetchAll(c.SUPABASE_URL,c.SUPABASE_ANON_KEY,'reviewhistory')]);
-  const configuredMax=numberSetting('dfc_max_new',5),reviewTarget=numberSetting('dutch_flashcards_review_target',60);
+  const configuredMax=numberSetting('dfc_max_new',5),reviewTarget=numberSetting('dutch_flashcards_review_target',60),retentionThreshold=numberSetting('dutch_flashcards_ret_threshold',0);
   const dueReview=cards.filter(card=>!card.suspended&&card.type!=='new'&&card.due_date&&String(card.due_date).slice(0,10)<=today).length;
   const introducedToday=cards.filter(card=>!card.suspended&&card.first_seen&&String(card.first_seen).slice(0,10)===today).length;
   const todayReviews=history.filter(row=>row.timestamp&&String(row.timestamp).slice(0,10)===today).length;
   // Reconstruct the workload seen when today's batch began. Using only the
   // remaining due count would restore capacity after another device cleared it.
   const startingReviewLoad=reviewLoadAtStart({cards,history,today});
-  const effectiveNewCap=reviewLoadAllowance(configuredMax,startingReviewLoad,reviewTarget);
+  const previousDate=new Date();previousDate.setDate(previousDate.getDate()-1);
+  const effectiveNewCap=adjustedNewCardCap({history,previousDate:dayKey(previousDate),configuredMax,reviewLoad:startingReviewLoad,reviewTarget,retentionThreshold});
   const complete=inferExternalStudyDayComplete({dueReview,todayReviews,introducedToday,configuredMax,effectiveNewCap,reviewTarget});
   if(!complete)return;
   localStorage.setItem(lockKey,'complete');

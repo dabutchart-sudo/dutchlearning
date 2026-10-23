@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.194**.
+- Current documented release: **Zin V5.1.195**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -510,3 +510,11 @@ The owner approved production release on 18 October after checking the locked co
 ## Clearer answers — V5.1.194 release, 2026-10-18
 
 The owner asked for both changes on the live app on 18 October. A missing-letters question now says “Type the missing letters” and “Type one letter for each blank,” and that answer box no longer capitalizes the first letter. Typing the finished word, such as Vind, counts as correct. A different verb still does not. A Flashcard example is chosen before the card is shown, so the English side no longer replaces one example with another after the flip. Ratings, scheduling, the daily 20, the five-new-card ceiling, learner history, schema, authentication, and services are unchanged. The local suite passed 611/611. PR #217 merged as `66c0f8b`; the post-merge test workflow passed, and GitHub Pages serves V5.1.194 with offline cache `dutch-v5.1.194-20261018-clearer-answers`. Rollback is V5.1.193 at `83d2fb4`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed app, then checking one missing-letters question and one flipped Flashcard, remains the phone check.
+
+## Prominent Flashcard hint and cross-device completion — V5.1.195 release, 2026-10-23
+
+The owner accepted the combined phone development preview and approved production release on 23 October. The Dutch face now uses a wide 52-pixel **Show hint** button, changes it to **Hide hint** while the example is visible, and isolates its tap from the surrounding card so it cannot accidentally turn to English. The safe sandbox mirrors the live card.
+
+Cross-device completion now applies the existing previous-day retention setting when reconstructing the effective new-card allowance. If another device has completed the shared review batch and the established retention rule reduced new cards to zero, the dashboard and top-right status both close the day. Zero due cards alone still cannot imply completion: shared review activity is required, and any remaining due review keeps the batch open.
+
+The 17 focused Hint and completion tests and all 614 local tests pass. A 390×844 check against the shared collection reproduced 0 reviews due, 0 new cards, and 58 ratings, then showed **Flashcards complete** consistently without writing shared data. Ratings, scheduling rules, the retention threshold, the daily limits, learner history, Supabase schema/data/authentication, services, and costs are unchanged. The offline cache is `dutch-v5.1.195-20261023-flashcard-hint-completion`. Rollback is the V5.1.194 main source at `66c0f8b`; preserve learner history and the standalone Flashcards fallback. Refreshing the installed iPhone PWA, checking the version and Hint button, and confirming the next eligible cross-device completion remain the post-release checks.
