@@ -31,4 +31,4 @@ Owner acceptance: on 25 October 2026 the owner confirmed these checks passed on 
 
 ## Safety and rollback
 
-Daily contract, mastery/retention, learner data, database schema, authentication, providers, protected functions, cost limits and production deployment are unchanged. Production study and standalone Flashcards remain available. Remove the gallery entry script/style and offline assets, or revert only gallery files to roll back. No merge/deployment performed. Linear DAB-88 was consulted for the quality-review context; no issue was reopened or status changed.
+Daily contract, mastery/retention, learner data, database schema, authentication, providers, protected functions, cost limits and production deployment are unchanged. Production study and standalone Flashcards remain available. Remove the gallery entry script/style and offline assets, or revert only gallery files to roll back. The owner approved merge and deployment on 25 October 2026 after acceptance. Merge/deployment evidence is recorded in the release handoff. Linear DAB-88 was consulted for the quality-review context; no issue was reopened or status changed.
