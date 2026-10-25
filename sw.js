@@ -17,6 +17,7 @@ ASSETS.push('./src/engine/listening-discrimination.js','./src/engine/listening-m
 ASSETS.push('./src/engine/speaking-practice.js','./src/engine/speaking-transcription.js','./src/engine/speaking-budget.js','./src/engine/listen-speak-preview.js');
 ASSETS.push('./src/engine/controlled-dialogue.js','./src/content/controlled-dialogues.js');
 ASSETS.push('./src/engine/a1-checkpoint.js');
+ASSETS.push('./src/engine/question-type-gallery.js','./src/ui/question-type-gallery.js','./src/ui/question-type-gallery.css');
 const LISTEN_FUNCTION='https://dntitlrtvkgisxwqjxch.supabase.co/functions/v1/listen-tts';
 const FLASHCARD_CONSTANTS='https://dabutchart-sudo.github.io/flashcards/constants.js';
 let listenAnonKey='';

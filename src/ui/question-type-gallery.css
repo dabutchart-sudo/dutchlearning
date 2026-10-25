@@ -1,0 +1,14 @@
+.question-gallery{display:grid;gap:12px;padding-bottom:24px;min-width:0}
+.question-gallery .question-card{min-width:0;overflow-wrap:anywhere;padding:16px}
+.question-gallery .q-type{margin-top:8px}
+.question-gallery .prompt{margin:8px 0 14px;font-size:1.65rem}
+.question-gallery .direction{margin:0 0 8px}
+.question-gallery .transcript{min-height:0;padding:8px}
+.question-gallery .actions{position:sticky;bottom:0;background:var(--surface,#fff);padding:8px 0;z-index:2}
+.question-gallery .actions button{width:100%;min-height:48px}
+.question-gallery select{width:100%;min-height:48px}
+.question-gallery .answers{display:grid;gap:8px}
+.question-gallery .choice{white-space:normal;min-height:44px}
+.question-gallery .wordbank,.question-gallery .built{display:flex;flex-wrap:wrap;gap:8px}
+.question-gallery .word{min-height:44px}
+.question-gallery .feedback .correct,.question-gallery .feedback .meaning{display:block}
