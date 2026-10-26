@@ -67,7 +67,8 @@ export function testTiming(state,content,id,today,offer=dailyProofOffer(state,co
 
 function testTimingCard(state,content,id,today,offer){
  const timing=testTiming(state,content,id,today,offer);
- return `<section class="course-test-timing" aria-label="Mastery and retention test timing"><h3>When can I take a test?</h3>${[timing.mastery,timing.retention].map(row=>`<div class="course-test-timing-row"><span>${esc(row.name)}</span><strong>${esc(row.when)}</strong><p>${esc(row.detail)}</p></div>`).join('')}</section>`;
+ const outline=courseOutline(state,content,{today});
+ return `${id===outline.current?.id?retentionPriorityCard(outline,{done:remainingToday(state,today)===0},offer):''}<section class="course-test-timing" aria-label="Mastery and retention test timing"><h3>When can I take a test?</h3>${[timing.mastery,timing.retention].map(row=>`<div class="course-test-timing-row"><span>${esc(row.name)}</span><strong>${esc(row.when)}</strong><p>${esc(row.detail)}</p></div>`).join('')}</section>`;
 }
 const button=(id,label,extra='')=>`<button type="button" id="${id}" class="secondary" ${extra}>${label}</button>`;
 function paneName(pane){if(pane==='syllabus'||pane==='path')return 'path';if(pane==='progress'||pane==='evidence')return 'evidence';return 'path';}
@@ -146,10 +147,22 @@ function recapCard(recap){
  if(!recap)return '';
  return `<article class="card course-daily-recap"><div class="eyebrow">TODAY'S LEARNING</div><h3>Your daily recap</h3><p>You finished all ${recap.answered} questions. ${recap.independent} answers showed independent Dutch writing${recap.supported?`; ${recap.supported} used help`:''}.</p>${recap.revisit.length?`<h4>Useful patterns to revisit</h4><ul>${recap.revisit.map(item=>`<li><strong>${esc(item.concept)} · ${esc(item.title)}</strong><span lang="nl">${esc(item.sentence)}</span><small>${esc(item.meaning)}</small></li>`).join('')}</ul>`:'<p>Your last 20 answers had no grammar or spelling misses to revisit.</p>'}<p class="course-caption">This recap reflects recorded answers. It does not change your course evidence or add questions.</p></article>`;
 }
+function retentionPriorityCard(outline,daily,offer){
+ const current=outline.current;
+ if(daily.done||current?.status!=='retention-ready')return '';
+ const next=outline.topics.find(topic=>topic.prerequisites.includes(current.id)&&topic.available&&!topic.retained);
+ const history=`You passed ${current.id} mastery${next?` and could study ${next.id} during the three-day wait`:''}. `;
+ const priority=next?`It comes before ${next.id} practice so we can check what has stuck after the wait.`:'It comes before ordinary practice so we can check what has stuck after the wait.';
+ const saved=next?.attempts?` Your ${next.attempts} ${next.id} practice answers are saved. You do not need to repeat them.`:'';
+ const resume=next?` After passing, you can continue ${next.id} with any questions left in today’s 20.`:'';
+ const availability=offer?.id===current.id&&!offer.canStartToday?`<p>${esc(offer.reason)}</p>`:'';
+ return `<article class="card course-panel course-retention-priority"><div class="eyebrow">WHY ${esc(current.id)} TODAY?</div><h3>A delayed check before moving on</h3><p>${esc(history)}${esc(current.id)}’s retention check is due from ${esc(dateLabel(current.retentionDue))}. ${esc(priority)}</p><p>The written check uses 10 of today’s 20 questions.${esc(saved)}${esc(resume)}</p>${availability}</article>`;
+}
 function pathView(outline,daily,offer,recap){
  const waiting=outline.topics.find(c=>c.status==='retention-wait'&&!c.current);
  return `<section class="course-path" data-course-path>
   ${courseCompleteNotice(outline)}
+  ${retentionPriorityCard(outline,daily,offer)}
   ${waiting?`<article class="card course-panel course-waiting-path"><strong>${esc(waiting.id)} retention is still due</strong><p>You can study ${esc(outline.current?.id||'the next topic')} while you wait. The delayed test can open from ${esc(waiting.retentionDue)} when ten fresh sentences and ten daily questions are available. This topic is not retained yet.</p><button type="button" data-course-concept="${esc(waiting.id)}">See retention timing</button></article>`:''}
   ${recapCard(recap)}
   ${outline.levels.map(level=>{const topics=outline.topics.filter(c=>c.level===level),copy=unitCopy(level);return `<section class="course-unit"><header class="course-unit-banner ${level==='Foundation'?'is-foundation':'is-a1'}"><span>${esc(copy.eyebrow)}</span><h3>${esc(copy.title)}</h3><small>${topics.filter(c=>c.retained).length} / ${topics.length} retained</small></header><ol class="course-path-list">${topics.map(c=>pathNode(c,daily,offer)).join('')}</ol></section>`;}).join('')}
