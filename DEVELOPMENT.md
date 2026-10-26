@@ -15,6 +15,16 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
+## F2 proof reserve and retention explanation — development candidate, 26 October 2026
+
+Branch `codex/f2-retention-recovery` starts from V5.1.195 `26272d5` in an isolated managed checkout and is reconciled with `origin/main` at `a54413d`, including the subsequent development question gallery. The existing question-gallery checkout is untouched. A live-page read confirms V5.1.195. The owner approved restoring F2 test material and explaining why an earlier due retention check takes priority over later-topic practice.
+
+The candidate adds 108 distinct F2 written proof sentences and four practice introductions, using existing subject/verb/object combinations with `nu`. New proof rows require completed practice of every word; the original 110 F2 proof rows retain their eligibility. F2 reuses the existing F1 vocabulary recovery mechanism, including a 30-sentence mastery-and-retention reserve and practice preference when the original reserve is low. Mastery still uses 20 questions, retention 10, and all pass thresholds and daily limits are unchanged.
+
+Course and the current topic explain the three-day wait, the earlier retention priority, the saved later-topic practice and continuation with the remaining daily questions after passing. The explanation is absent during the wait and after daily completion. A private read-only simulation confirms that the new reserve makes retention available and that a successful check returns to the later topic without changing its progress. No production learner state was written or exported into the repository.
+
+Validation: 24 focused tests pass; `npm run audit:proof` passes. The full-suite result after baseline reconciliation is recorded in `docs/f2-retention-recovery-review.md`. Synthetic 390×844 phone and 1280×800 Mac rendering checks cover Course and topic details, no horizontal overflow and a reachable Course action. Dutch/English human review and installed-iPhone/PWA checks remain outstanding. The offline asset list includes the new module; no release version or cache identifier is changed. Nothing merged or deployed. No schema, authentication, sync, protected function, provider or running-cost change. Tracked as [DAB-207](https://linear.app/dabutchart/issue/DAB-207/add-an-f2-proof-reserve-and-explain-delayed-retention-priority), without personal learning results. See `docs/f2-retention-recovery-review.md` for capacity findings, acceptance and rollback.
+
 ## A2 syllabus target — 2026-10-16
 
 The owner agreed a finite Zin A2 stage after A1. The map and the quality bar are in `docs/a2-completion-target.md`. A2.1, report a simple past event, is published in V5.1.188 and stays locked until A1.26 has been passed. The owner reviewed the locked course page and the revised sentences, then approved release on 17 October 2026. A2.2–A2.8 are not in the app. This release does not build A1.26. Daily limits, proofs, learner history, schema, authentication, and services are unchanged. Confirming V5.1.188 on the installed phone remains the check after release.

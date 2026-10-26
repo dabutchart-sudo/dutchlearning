@@ -11,6 +11,7 @@ ASSETS.push('./src/content/a1-teaching-practice.js');
 ASSETS.push('./src/engine/mastery-recovery.js');
 ASSETS.push('./src/engine/capability-progress.js');
 ASSETS.push('./src/content/f1-proof-recovery.js');
+ASSETS.push('./src/content/f2-proof-recovery.js');
 ASSETS.push('./src/engine/mastery-readiness.js');
 ASSETS.push('./src/engine/course-flashcard-intake.js');
 ASSETS.push('./src/engine/listening-discrimination.js','./src/engine/listening-missing-word.js','./src/engine/listening-dictation.js','./src/engine/listening-exchange.js','./src/content/listening-exchanges.js');

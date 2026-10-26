@@ -1,6 +1,7 @@
 import {normalize,tokens} from './util.js';
 
 export const needsPersonalVocabulary=id=>/^A1\.(?:[7-9]|1\d|2[01])$/.test(id);
+const recoveryConcept=id=>id==='F1'||id==='F2';
 
 export function practisedWords(state,content){
  const words=new Set();
@@ -15,13 +16,13 @@ export function practisedWords(state,content){
 
 export function eligibleProof(state,content,concept){
  const seen=new Set((state.exposures||[]).map(x=>x.nl));
- const familiar=needsPersonalVocabulary(concept)||concept==='F1'?practisedWords(state,content):null;
+ const familiar=needsPersonalVocabulary(concept)||recoveryConcept(concept)?practisedWords(state,content):null;
  return content.sentences.filter(item=>item.concept===concept&&item.pool==='proof'&&
-  !seen.has(normalize(item.nl))&&(!familiar||concept==='F1'&&!item.requiresPractice||tokens(item.nl).every(word=>familiar.has(word))));
+  !seen.has(normalize(item.nl))&&(!familiar||recoveryConcept(concept)&&!item.requiresPractice||tokens(item.nl).every(word=>familiar.has(word))));
 }
 
 export function proofVocabularyNeed(state,content,concept,type){
- if(!needsPersonalVocabulary(concept)&&concept!=='F1')return null;
+ if(!needsPersonalVocabulary(concept)&&!recoveryConcept(concept))return null;
  const seen=new Set((state.exposures||[]).map(x=>x.nl));
  const potential=content.sentences.filter(item=>item.concept===concept&&item.pool==='proof'&&!seen.has(normalize(item.nl))).length;
  const available=eligibleProof(state,content,concept).length;
@@ -30,15 +31,15 @@ export function proofVocabularyNeed(state,content,concept,type){
 }
 
 export function practiceVocabularyGain(item,state,content,concept){
- if(!needsPersonalVocabulary(concept)&&concept!=='F1')return 0;
+ if(!needsPersonalVocabulary(concept)&&!recoveryConcept(concept))return 0;
  const seen=new Set((state.exposures||[]).map(x=>x.nl));
- if(concept==='F1'){
-  const familiarProof=content.sentences.filter(row=>row.concept==='F1'&&row.pool==='proof'&&!row.requiresPractice&&!seen.has(normalize(row.nl))).length;
+ if(recoveryConcept(concept)){
+  const familiarProof=content.sentences.filter(row=>row.concept===concept&&row.pool==='proof'&&!row.requiresPractice&&!seen.has(normalize(row.nl))).length;
   if(familiarProof>=30)return 0;
  }
  const familiar=practisedWords(state,content),introduced=new Set(tokens(item.nl));
  const unseen=content.sentences.filter(row=>row.concept===concept&&row.pool==='proof'&&
-  (concept!=='F1'||row.requiresPractice)&&!seen.has(normalize(row.nl)));
+  (!recoveryConcept(concept)||row.requiresPractice)&&!seen.has(normalize(row.nl)));
  let newlyEligible=0;
  for(const row of unseen){
   const missing=tokens(row.nl).filter(word=>!familiar.has(word));

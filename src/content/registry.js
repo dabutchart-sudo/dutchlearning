@@ -23,6 +23,7 @@ import {fairPracticeRows} from './a1-fair-practice.js';
 import {teachingPracticeRows} from './a1-teaching-practice.js';
 import a1ProofCapacity from './a1-proof-capacity.js';
 import {f1ProofRecoveryRows} from './f1-proof-recovery.js';
+import {f2ProofRecoveryRows} from './f2-proof-recovery.js';
 import {normalize,tokens} from '../engine/util.js';
 export function registerPacks(packs){
  const includesMainCourse=packs.some(p=>p?.id==='foundation-a1');
@@ -32,6 +33,7 @@ export function registerPacks(packs){
  if(includesMainCourse)sentences.push(...fairPracticeRows(sentences));
  if(includesMainCourse)sentences.push(...teachingPracticeRows(sentences));
  if(includesMainCourse)sentences.push(...f1ProofRecoveryRows(sentences));
+ if(includesMainCourse)sentences.push(...f2ProofRecoveryRows(sentences));
  for(let i=0;i<sentences.length;i++)if(/^A1\.(?:[7-9]|1\d|2[01])$/.test(sentences[i].concept))sentences[i]=completeA1Vocabulary(sentences[i]);
  const knownWords=new Map(sentences.flatMap(item=>(item.vocabulary||[])
   .filter(word=>tokens(word.nl).length===1&&word.en)
