@@ -39,3 +39,7 @@ Changed files: `src/content/f2-proof-recovery.js`, `src/content/registry.js`, `s
 No learner-data rewrite, reset, scoring shortcut, schema/authentication change, sync change, AI request, protected function change or new cost. Proof questions still use deterministic scoring and written formats. The offline list gains the module; offline update/install behaviour awaits the release checks.
 
 Rollback before release: discard or revert the candidate files together (new F2 module, registry import, vocabulary extension, Course explanation, offline asset entry, tests and notes). After release, revert that release while retaining learner history; never clear exposure records. Production study and integrated/standalone Flashcards remain available. If new rows have already been answered, retain the released content definitions during rollback planning so history source IDs remain resolvable.
+
+## Owner-approved release preparation — 26 October 2026
+
+The owner explicitly requested production deployment. V5.1.196 uses cache `dutch-v5.1.196-20261026-f2-retention`. The release changes version references in index.html, package.json and sw.js; no additional runtime scope. The release proceeds on that explicit instruction with installed-iPhone/PWA and independent language acceptance still unconfirmed. Previous production source is `a54413d` (V5.1.195). Merge, CI and live-source evidence will be recorded after verification.

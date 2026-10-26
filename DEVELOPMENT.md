@@ -15,7 +15,7 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
-## F2 proof reserve and retention explanation — development candidate, 26 October 2026
+## F2 proof reserve and retention explanation — V5.1.196 release preparation, 26 October 2026
 
 Branch `codex/f2-retention-recovery` starts from V5.1.195 `26272d5` in an isolated managed checkout and is reconciled with `origin/main` at `a54413d`, including the subsequent development question gallery. The existing question-gallery checkout is untouched. A live-page read confirms V5.1.195. The owner approved restoring F2 test material and explaining why an earlier due retention check takes priority over later-topic practice.
 
@@ -23,7 +23,7 @@ The candidate adds 108 distinct F2 written proof sentences and four practice int
 
 Course and the current topic explain the three-day wait, the earlier retention priority, the saved later-topic practice and continuation with the remaining daily questions after passing. The explanation is absent during the wait and after daily completion. A private read-only simulation confirms that the new reserve makes retention available and that a successful check returns to the later topic without changing its progress. No production learner state was written or exported into the repository.
 
-Validation: 24 focused tests pass; `npm run audit:proof` passes. The full-suite result after baseline reconciliation is recorded in `docs/f2-retention-recovery-review.md`. Synthetic 390×844 phone and 1280×800 Mac rendering checks cover Course and topic details, no horizontal overflow and a reachable Course action. Dutch/English human review and installed-iPhone/PWA checks remain outstanding. The offline asset list includes the new module; no release version or cache identifier is changed. Nothing merged or deployed. No schema, authentication, sync, protected function, provider or running-cost change. Tracked as [DAB-207](https://linear.app/dabutchart/issue/DAB-207/add-an-f2-proof-reserve-and-explain-delayed-retention-priority), without personal learning results. See `docs/f2-retention-recovery-review.md` for capacity findings, acceptance and rollback.
+Validation: 24 focused tests pass; `npm run audit:proof` passes. The full-suite result after baseline reconciliation is recorded in `docs/f2-retention-recovery-review.md`. Synthetic 390×844 phone and 1280×800 Mac rendering checks cover Course and topic details, no horizontal overflow and a reachable Course action. Dutch/English human review and installed-iPhone/PWA checks remain outstanding. The owner explicitly approved production deployment on 26 October. Release preparation sets V5.1.196 and cache `dutch-v5.1.196-20261026-f2-retention`, including the new module. Merge and deployment verification are recorded below once confirmed. Independent language and installed-device acceptance are not claimed. No schema, authentication, sync, protected function, provider or running-cost change. Tracked as [DAB-207](https://linear.app/dabutchart/issue/DAB-207/add-an-f2-proof-reserve-and-explain-delayed-retention-priority), without personal learning results. See `docs/f2-retention-recovery-review.md` for capacity findings, acceptance and rollback.
 
 ## A2 syllabus target — 2026-10-16
 
