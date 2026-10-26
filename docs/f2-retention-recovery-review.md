@@ -2,7 +2,7 @@
 
 ## Scope and baseline
 
-Owner-approved content recovery and explanatory UI only. Isolated `codex/f2-retention-recovery` starts at V5.1.195 `26272d5` and is rebased onto refreshed `origin/main` `a54413d`, including the subsequently merged development gallery. A live-page read confirms V5.1.195. The question-gallery checkout and its uncommitted work remain untouched. This is a local candidate, with no merge or deployment. [DAB-207](https://linear.app/dabutchart/issue/DAB-207/add-an-f2-proof-reserve-and-explain-delayed-retention-priority) records generic scope and acceptance without personal learning results.
+Owner-approved content recovery and explanatory UI only. Isolated `codex/f2-retention-recovery` starts at V5.1.195 `26272d5` and is rebased onto refreshed `origin/main` `a54413d`, including the subsequently merged development gallery. A live-page read confirms V5.1.195. The question-gallery checkout and its uncommitted work remain untouched. The owner subsequently approved production deployment; release evidence is recorded below. [DAB-207](https://linear.app/dabutchart/issue/DAB-207/add-an-f2-proof-reserve-and-explain-delayed-retention-priority) records generic scope and acceptance without personal learning results.
 
 ## Behaviour
 
@@ -26,13 +26,15 @@ A read-only scan across all 36 topics counted unique proof wording after excludi
 
 The scan also confirms that finite pools elsewhere can still run out: F4/F5 have 80 each, A1.3 has 56, A1.5 has 59, A1.6 has 72, and A1.22–A1.25/S1–S3 have 40 each. Those are structural content counts, not learner-specific remaining capacity or language-quality guarantees. A1.7–A1.21 retain at least 90 effective rows after existing exposure collisions. No unrelated content expansion, new policy or speculative issues were added. No finite reserve guarantees unlimited retakes.
 
-## Before release
+## Acceptance checks
 
 1. Review Dutch/English phrasing and ambiguity in `src/content/f2-proof-recovery.js`. No native-speaker acceptance is claimed.
 2. Confirm Course’s “Why … today?” wording and test/practice choice on an iPhone preview. Do not use a development origin for a genuine session.
-3. Obtain explicit release approval, assign a release version/cache identifier, then validate the installed PWA’s updated version, explanation and retention availability. These steps are outstanding.
+3. Release approval was given on 26 October; V5.1.196 and a new cache identifier are assigned. Confirming the installed PWA’s updated version, explanation and retention availability remains outstanding.
 
 ## Data, costs and rollback
+
+After deployment, a fresh anonymous phone-width browser installed `dutch-v5.1.196-20261026-f2-retention`, cached the new content module, reloaded offline as V5.1.196 and imported that module offline successfully. No sign-in or study answers were submitted. This verifies a browser installation, not the owner's installed iPhone PWA.
 
 Changed files: `src/content/f2-proof-recovery.js`, `src/content/registry.js`, `src/engine/proof-vocabulary.js`, `src/ui/course-overview.js`, `sw.js`, `tests/f2-proof-recovery.test.js`, `DEVELOPMENT.md` and this review note. `DESIGN.md` and README are unchanged because intended study rules and the current public product summary are unchanged.
 
@@ -42,4 +44,4 @@ Rollback before release: discard or revert the candidate files together (new F2 
 
 ## Owner-approved release preparation — 26 October 2026
 
-The owner explicitly requested production deployment. V5.1.196 uses cache `dutch-v5.1.196-20261026-f2-retention`. The release changes version references in index.html, package.json and sw.js; no additional runtime scope. The release proceeds on that explicit instruction with installed-iPhone/PWA and independent language acceptance still unconfirmed. Previous production source is `a54413d` (V5.1.195). Merge, CI and live-source evidence will be recorded after verification.
+The owner explicitly requested production deployment. V5.1.196 uses cache `dutch-v5.1.196-20261026-f2-retention`. The release changes version references in index.html, package.json and sw.js; no additional runtime scope. The release proceeds on that explicit instruction with installed-iPhone/PWA and independent language acceptance still unconfirmed. Previous production source is `a54413d` (V5.1.195). PR #225 merged as `b5e8aaba8bd2b1ada2fa33bd8fdcb25a04966cca`. Both PR test checks passed, as did [post-merge tests](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/40372507220) and [GitHub Pages deployment](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/40372505348). Live index.html, sw.js, package.json, F2 recovery content, registry, vocabulary eligibility and Course UI were compared byte for byte with the tested source and all match. Production serves V5.1.196. Release validation reran 35 focused tests, all 625 tests and the proof-capacity audit successfully. The speaking-practice test retains its cache assertion, updated to the new release identifier.
