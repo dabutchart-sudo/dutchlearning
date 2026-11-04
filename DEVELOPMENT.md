@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.196**.
+- Current documented release: **Zin V5.1.197**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -540,7 +540,7 @@ The PR is based on current production/source `26272d5` (V5.1.195). The original 
 
 Validation and remaining acceptance are recorded in `docs/question-gallery-review.md`. No change to daily limits, scheduler, proofs, learner data, schema, authentication, provider strategy, protected functions or production services. At preparation, merge/deployment evidence was pending; the release handoff records the final outcome. Rollback: remove the gallery script/style entry and asset entries, or revert only the gallery files; production study and standalone Flashcards remain available.
 
-## Study reliability fixes — V5.1.197 release preparation, 4 November 2026
+## Study reliability fixes — V5.1.197 release, 4 November 2026
 
 `codex/study-reliability-fixes` isolates two owner-reported fixes on fetched production V5.1.196 (`32895cc`). The older question-gallery checkout and its unfinished changes remain untouched. Only the listening helper/UI, warning presentation, focused tests and this note are included.
 
@@ -553,3 +553,10 @@ Real-device acceptance is pending: on a development copy, convert listening to t
 Validation: the production-based candidate passes all 629 tests (`npm test`), modified UI JavaScript syntax checks and diff whitespace checks. Regression coverage includes correct/incorrect fallback, save/resume, daily completion, warning recovery, later errors and a separate warning arriving during a Flashcard save. Browser/device acceptance remains outstanding.
 
 Owner acceptance and explicit merge/deploy approval received on 4 November 2026. Device used for acceptance was not specified; installed iPhone/PWA post-release confirmation remains pending. Release metadata is V5.1.197 with cache `dutch-v5.1.197-20261104-study-reliability`. Production remains V5.1.196 until deployment verification.
+
+
+### Verified V5.1.197 release
+
+The owner accepted both fixes and explicitly approved merge and deployment. PR #228 merged as `b952b8d1e5961a2108523148aac1546d2cd10ae2`. Both PR test checks, the post-merge Tests run `41899953925`, and GitHub Pages deployment `41899952936` succeeded. The local release suite passes 629/629. Live `index.html`, `sw.js`, `src/engine/learner.js`, `src/ui/app.js`, `src/ui/flashcards-preview.js` and `src/ui/v51.js` match tested release source byte for byte. Production now serves V5.1.197 and cache `dutch-v5.1.197-20261104-study-reliability`.
+
+Linear DAB-208 records release scope, acceptance, checks and safeguards. No learner data was changed by release operations, and no schema, authentication, service or cost change occurred. Installed iPhone/PWA refresh and a normal session confirming recovery remain pending; no exact acceptance device or cross-device verification is claimed. Rollback is V5.1.196 at `32895cc`; preserve learner history and the standalone Flashcards fallback. The earlier candidate/pending statements above describe the pre-release sequence and are superseded by this verified release record.
