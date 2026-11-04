@@ -540,7 +540,7 @@ The PR is based on current production/source `26272d5` (V5.1.195). The original 
 
 Validation and remaining acceptance are recorded in `docs/question-gallery-review.md`. No change to daily limits, scheduler, proofs, learner data, schema, authentication, provider strategy, protected functions or production services. At preparation, merge/deployment evidence was pending; the release handoff records the final outcome. Rollback: remove the gallery script/style entry and asset entries, or revert only the gallery files; production study and standalone Flashcards remain available.
 
-## Study reliability fixes — production-based candidate, 4 November 2026
+## Study reliability fixes — V5.1.197 release preparation, 4 November 2026
 
 `codex/study-reliability-fixes` isolates two owner-reported fixes on fetched production V5.1.196 (`32895cc`). The older question-gallery checkout and its unfinished changes remain untouched. Only the listening helper/UI, warning presentation, focused tests and this note are included.
 
@@ -551,3 +551,5 @@ Runtime files: `src/engine/learner.js`, `src/ui/app.js`, `src/ui/flashcards-prev
 Real-device acceptance is pending: on a development copy, convert listening to text, answer, pause/resume and finish without replacement audio; then simulate a failed save, successful retry and a later failure, verifying current warning text. The original audio playback failure is undiagnosed. Nothing merged or deployed; release version/cache changes await release approval. Rollback is production `32895cc`, preserving all learner history and the standalone Flashcards fallback. No Linear update was made; DAB-168 supplies historical fallback context.
 
 Validation: the production-based candidate passes all 629 tests (`npm test`), modified UI JavaScript syntax checks and diff whitespace checks. Regression coverage includes correct/incorrect fallback, save/resume, daily completion, warning recovery, later errors and a separate warning arriving during a Flashcard save. Browser/device acceptance remains outstanding.
+
+Owner acceptance and explicit merge/deploy approval received on 4 November 2026. Device used for acceptance was not specified; installed iPhone/PWA post-release confirmation remains pending. Release metadata is V5.1.197 with cache `dutch-v5.1.197-20261104-study-reliability`. Production remains V5.1.196 until deployment verification.
