@@ -240,6 +240,15 @@ export function submit(s,c,questionId,raw,now=new Date()){
  if(s.proof){s.proof.attemptIds.push(rec.id);s.proof.index++;if(s.proof.index===s.proof.questions.length)finishProof(s,now);}
  s.revision++;return rec;
 }
+export function useListeningText(s,c){
+ if(!s.pending||s.pending.kind!=='listening')throw Error('This is not a listening question.');
+ const item=c.byId[s.pending.sourceId];
+ s.pending={...s.pending,kind:'choice',prompt:item.nl};
+ // The fallback uses this daily slot, but remains reading evidence.
+ if(s.pending.phase!=='extra')s.daily.listeningBeat=true;
+ s.revision++;
+ return s.pending;
+}
 export function skipSpeaking(s){
  if(!s.pending||s.pending.kind!=='speaking')throw Error('This is not a spoken question.');
  s.pending={...s.pending,kind:'typed'};

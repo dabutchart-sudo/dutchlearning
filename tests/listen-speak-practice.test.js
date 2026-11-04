@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {registerPacks} from '../src/content/registry.js';
 import {makeExercise} from '../src/engine/exercises.js';
 import {assess} from '../src/engine/scoring.js';
-import {freshState,prepareQuestion,prepareExtraQuestion,skipSpeaking,startExtraPractice,startProof,submit,teachConcept} from '../src/engine/learner.js';
+import {freshState,prepareQuestion,prepareExtraQuestion,skipSpeaking,startExtraPractice,startProof,submit,useListeningText,teachConcept} from '../src/engine/learner.js';
 import {practiceKind} from '../src/engine/scheduler.js';
 import {validateState} from '../src/engine/persistence.js';
 import {seedTypedReadiness} from './helpers/practice-evidence.js';
@@ -154,4 +154,32 @@ test('the isolated preview exposes skip-to-type and skip-speaking controls',()=>
  assert.match(app,/Skip speaking — type instead/);
  assert.match(app,/canUseServerListen/);
  assert.match(app,/Include one listening question in today’s 20/);
+});
+
+for(const correct of [true,false])test(`listening text fallback consumes one daily slot after ${correct?'correct':'incorrect'} answer and resume`,()=>{
+ let {state}=practised(true,false);
+ while(state.daily.count<6){const q=prepareQuestion(state,content,now,true,false);submit(state,content,q.id,q.answer,now);}
+ const q=prepareQuestion(state,content,now,true,false);
+ assert.equal(q.kind,'listening');
+ const revision=state.revision;
+ const fallback=useListeningText(state,content);
+ assert.equal(fallback.id,q.id);
+ assert.equal(fallback.sourceId,q.sourceId);
+ assert.equal(fallback.kind,'choice');
+ assert.equal(fallback.prompt,content.byId[q.sourceId].nl);
+ assert.equal(state.daily.count,6);
+ assert.equal(state.revision,revision+1);
+ state=validateState(JSON.parse(JSON.stringify(state)),content);
+ assert.equal(state.daily.listeningBeat,true);
+ const resumed=prepareQuestion(state,content,now,true,false);
+ assert.equal(resumed.id,q.id);
+ assert.equal(resumed.kind,'choice');
+ const rec=submit(state,content,resumed.id,correct?resumed.answer:'wrong answer',now);
+ assert.equal(rec.kind,'choice');
+ assert.equal(rec.grammar,correct);
+ state=validateState(JSON.parse(JSON.stringify(state)),content);
+ while(state.daily.count<20){const next=prepareQuestion(state,content,now,true,false);assert.notEqual(next.kind,'listening');submit(state,content,next.id,next.answer,now);}
+ assert.equal(state.attempts.length,20);
+ assert.equal(prepareQuestion(state,content,now,true,false),null);
+ assert.throws(()=>useListeningText(state,content),/not a listening question/);
 });

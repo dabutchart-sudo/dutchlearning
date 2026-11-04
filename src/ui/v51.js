@@ -104,8 +104,9 @@ async function syncNow(manual=false){
      return;
    }
    lastRevision=Number(localState()?.revision||0);setStatus('Learning synced','synced');
-   if(manual){const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Synced just now.';renderSyncPanel();}
- }catch(e){setStatus(navigator.onLine?'Learning saved locally · sync failed':'Offline · Learning saved locally',navigator.onLine?'error':'offline');console.warn('Trainer sync:',e);const msg=document.querySelector('#sync-message');if(manual&&msg)msg.textContent='Sync failed: '+e.message}
+   const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Synced just now.';
+   if(manual)renderSyncPanel();
+ }catch(e){setStatus(navigator.onLine?'Learning saved locally · sync failed':'Offline · Learning saved locally',navigator.onLine?'error':'offline');console.warn('Trainer sync:',e);const msg=document.querySelector('#sync-message');if(msg)msg.textContent='Sync failed: '+e.message}
  finally{syncing=false}
 }
 
