@@ -1,5 +1,5 @@
 import {registerPacks} from '../content/registry.js';
-import {freshState,ensureDay,unlocked,phase,teachConcept,prepareQuestion,prepareExtraQuestion,startExtraPractice,releaseExtraPractice,markWordsTaught,startProof,dailyProofOffer,releaseUnscoredPractice,submit,skipSpeaking,useHelp,EXTRA_PRACTICE_SIZE} from '../engine/learner.js';
+import {freshState,ensureDay,unlocked,phase,teachConcept,prepareQuestion,prepareExtraQuestion,startExtraPractice,releaseExtraPractice,markWordsTaught,startProof,dailyProofOffer,releaseUnscoredPractice,submit,useListeningText,skipSpeaking,useHelp,EXTRA_PRACTICE_SIZE} from '../engine/learner.js';
 import {createRepository,STORAGE_KEY} from '../engine/persistence.js';
 import {dayKey,addDays,normalize} from '../engine/util.js';
 import {labels} from '../engine/scoring.js';
@@ -626,8 +626,8 @@ function renderQuestion(q){
    onError:e=>notify(e.message)
   });
  }
- async function check(){if(locked)return;if(!raw.trim()){notify('Enter or choose an answer first.');return;}locked=true;disposePeek();
-  try{const rec=await transaction(s=>submit(s,content,q.id,raw,now()));lastFeedback=rec;refreshChrome({extra:q.phase==='extra'});const feedback=correctiveFeedback(q,item,raw,rec);
+ async function check(){if(locked)return;if(!raw.trim()){notify('Enter or choose an answer first.');return;}locked=true;disposePeek();const previousMessage=message.innerHTML;
+  try{const rec=await transaction(s=>submit(s,content,q.id,raw,now()));if(message.innerHTML===previousMessage)notify('');lastFeedback=rec;refreshChrome({extra:q.phase==='extra'});const feedback=correctiveFeedback(q,item,raw,rec);
    if(rec.grammar===false&&['practice','maintenance'].includes(q.phase))feedback.patternTip=patternTipFor(q.concept,item.nl,content.conceptById[q.concept]);
    el.querySelectorAll('input,button').forEach(b=>b.disabled=true);setAnsweredState(raw,{lang:q.direction==='en-nl'?'nl':''});document.getElementById('feedback').innerHTML=answerFeedback(rec,feedback);
    const extraDone=q.phase==='extra'&&!state.extra;
@@ -642,7 +642,7 @@ function renderQuestion(q){
  on('check',check);on('pause',()=>{
   if(q.phase==='extra'){transaction(s=>releaseExtraPractice(s)).then(()=>{selectedConcept=q.concept;view='curriculum';render();});return;}
   show('curriculum');
- });on('play',()=>speak(item.nl,notify));on('text-fallback',async()=>{await transaction(s=>{if(s.pending?.id===q.id){s.pending.kind='choice';s.pending.prompt=item.nl}});renderQuestion(state.pending)});
+ });on('play',()=>speak(item.nl,notify));on('text-fallback',async()=>{const next=await transaction(s=>{if(s.pending?.id!==q.id)throw Error('This question has already changed.');return useListeningText(s,content)});renderQuestion(next)});
 }
 function renderCourse(){
  const today=dayKey(now());

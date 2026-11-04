@@ -539,3 +539,17 @@ Speaking is explicitly a no-cost sample-transcript simulation: no recording, bro
 The PR is based on current production/source `26272d5` (V5.1.195). The original development workspace and unrelated edits are preserved separately. The owner confirmed the gallery checks passed on Mac and mobile on 25 October 2026; the owner subsequently approved merge and deployment on 25 October 2026.
 
 Validation and remaining acceptance are recorded in `docs/question-gallery-review.md`. No change to daily limits, scheduler, proofs, learner data, schema, authentication, provider strategy, protected functions or production services. At preparation, merge/deployment evidence was pending; the release handoff records the final outcome. Rollback: remove the gallery script/style entry and asset entries, or revert only the gallery files; production study and standalone Flashcards remain available.
+
+## Study reliability fixes — V5.1.197 release preparation, 4 November 2026
+
+`codex/study-reliability-fixes` isolates two owner-reported fixes on fetched production V5.1.196 (`32895cc`). The older question-gallery checkout and its unfinished changes remain untouched. Only the listening helper/UI, warning presentation, focused tests and this note are included.
+
+Choosing the daily listening text fallback consumes the existing listening beat while preserving the same item, recognition-only evidence and the 20-question limit. Successful Learning-answer and complete Flashcard-rating/history saves clear their preceding warning while preserving a different warning arriving during the save. Automatic and manual Learning sync panel messages now reflect confirmed success or failure. Connectivity returning alone does not clear an unconfirmed save error.
+
+Runtime files: `src/engine/learner.js`, `src/ui/app.js`, `src/ui/flashcards-preview.js`, `src/ui/v51.js`. Tests: `tests/listen-speak-practice.test.js`, `tests/save-warning-recovery.test.js`. No scheduler policy, proof rule, learner-history rewrite, schema, authentication, services, provider or cost change. Existing save requests and retry behaviour are unchanged; this does not address duplicate-history risks from ambiguous network failures. No production data was accessed or changed.
+
+Real-device acceptance is pending: on a development copy, convert listening to text, answer, pause/resume and finish without replacement audio; then simulate a failed save, successful retry and a later failure, verifying current warning text. The original audio playback failure is undiagnosed. Nothing merged or deployed; release version/cache changes await release approval. Rollback is production `32895cc`, preserving all learner history and the standalone Flashcards fallback. No Linear update was made; DAB-168 supplies historical fallback context.
+
+Validation: the production-based candidate passes all 629 tests (`npm test`), modified UI JavaScript syntax checks and diff whitespace checks. Regression coverage includes correct/incorrect fallback, save/resume, daily completion, warning recovery, later errors and a separate warning arriving during a Flashcard save. Browser/device acceptance remains outstanding.
+
+Owner acceptance and explicit merge/deploy approval received on 4 November 2026. Device used for acceptance was not specified; installed iPhone/PWA post-release confirmation remains pending. Release metadata is V5.1.197 with cache `dutch-v5.1.197-20261104-study-reliability`. Production remains V5.1.196 until deployment verification.
