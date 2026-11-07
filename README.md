@@ -30,7 +30,7 @@ Production is Zin V5.1.184 on GitHub Pages:
 - From A1.2, topics that teach questions offer optional two-line exchange listening: hear a question and its reply, then choose what was said. It is listening only, not conversation evidence, and it does not use the daily 20.
 - Sentence discrimination, missing-word and dictation listening offer an optional slower replay. An answer given after it counts as supported listening.
 - Words taught in Learning that match an existing Flashcard can take up to 3 of the day's 5 new cards, from the next study day. Nothing is created and card history is unchanged.
-- Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting.
+- Integrated Flashcards provide a separate batch with Again / Hard / Good / Easy ratings and retention reporting. The daily review target caps answers including retries; overdue cards carry forward, with today’s allowance shown separately from the backlog. Optional extra review stays separate.
 - On phones, the four Flashcards summary figures share one row.
 - The configured new-card limit is a hard ceiling; the current required maximum is 5 per day.
 - Retained grammar review follows a 3/7/14/30-day interval ladder within the existing 20-question daily session.

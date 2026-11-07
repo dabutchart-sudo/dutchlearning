@@ -582,3 +582,8 @@ Final validation: 634/634 tests pass after the final copy and midnight rollover 
 DAB-209 display clarification: owner requested the full due count be labelled **Total backlog**, with **Today’s reviews** shown prominently in the heading and first metric. It shows the smaller of due reviews and remaining daily answer allowance, or zero after completion; retries are explicitly included. The four summary metrics are Today’s reviews, Total backlog, New available and Done today. The configured new ceiling remains in Settings and allowance copy. External completion reconciliation also clears Today’s reviews to zero. This is presentation only; batch limits, scheduling, learner history and services are unchanged.
 
 Display clarification validation: focused catch-up suite 6/6 and full `npm test` 635/635 pass; syntax and diff checks pass. Visual acceptance of the clarified normal-interface display remains pending. No merge or deployment.
+
+
+## DAB-209 V5.1.198 release preparation
+
+Owner reviewed the normal Zin interface with an actual-card read-only snapshot, accepted the clearer Today’s reviews / Total backlog display, and explicitly requested production deployment. Exact acceptance device was not specified; real installed-iPhone/PWA and sequential cross-device confirmation remain post-release checks. Release metadata is V5.1.198 with offline cache `dutch-v5.1.198-20261107-bounded-catchup`. Test previews and snapshot data remain outside the repository and are not part of the release. No production data rewrite, schema, authentication, service or cost change. Rollback is V5.1.197 `a808204`; standalone Flashcards remains the fallback. Production is V5.1.197 until deployment is verified.
