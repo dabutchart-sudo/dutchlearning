@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.197**.
+- Current documented release: **Zin V5.1.198**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -587,3 +587,12 @@ Display clarification validation: focused catch-up suite 6/6 and full `npm test`
 ## DAB-209 V5.1.198 release preparation
 
 Owner reviewed the normal Zin interface with an actual-card read-only snapshot, accepted the clearer Today’s reviews / Total backlog display, and explicitly requested production deployment. Exact acceptance device was not specified; real installed-iPhone/PWA and sequential cross-device confirmation remain post-release checks. Release metadata is V5.1.198 with offline cache `dutch-v5.1.198-20261107-bounded-catchup`. Test previews and snapshot data remain outside the repository and are not part of the release. No production data rewrite, schema, authentication, service or cost change. Rollback is V5.1.197 `a808204`; standalone Flashcards remains the fallback. Production is V5.1.197 until deployment is verified.
+
+
+## Verified V5.1.198 production release
+
+Owner accepted the normal Zin preview with a read-only actual-card snapshot and explicitly requested production release. PR #231 merged as `83cd2c334d78e4423a610a28be25c2cb1d8edeb0`. Both PR checks passed, post-merge Tests `42426497294` succeeded and Pages deployment `42426497230` succeeded. All 635 local tests pass. Live `index.html`, `sw.js` and the five changed runtime modules match tested release source byte for byte. Production serves V5.1.198 with cache `dutch-v5.1.198-20261107-bounded-catchup`.
+
+DAB-209 records scope, owner acceptance and verified deployment. Earlier candidate/pending-release notes describe the pre-release sequence and are superseded by this record. The actual-card snapshot was read only for the local acceptance preview; test ratings were simulated locally. No snapshot/test-server files are committed or deployed, and no production learner state, due dates or history were rewritten by release operations. Database schema, authentication, protected functions, services and costs are unchanged.
+
+Installed-iPhone/PWA refresh, normal daily completion and sequential Mac/iPhone confirmation remain post-release checks; exact acceptance device was not specified. Concurrent stale sessions and the standalone fallback retain the limitations documented above. Rollback is V5.1.197 at `a808204`, preserving learner history and the standalone Flashcards fallback. DESIGN.md and README describe the approved policy.
