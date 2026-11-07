@@ -577,3 +577,8 @@ Remaining acceptance: real iPhone/PWA layout and normal batch; pause/reopen; seq
 Rollback: revert the DAB-209 source/docs/tests to V5.1.197 without changing learner data; retain the standalone fallback. Deployment requires owner acceptance and explicit release approval. Linear DAB-209 remains In Progress pending device acceptance.
 
 Final validation: 634/634 tests pass after the final copy and midnight rollover safeguard. A batch left open across midnight reloads before another rating is written, avoiding use of yesterday’s budget. Updated regression assertions preserve course intake and mobile flip controls under the approved policy. JavaScript syntax and `git diff --check` pass. README’s public description remains accurate and was not changed. Exact source diff reviewed; real-device acceptance remains pending.
+
+
+DAB-209 display clarification: owner requested the full due count be labelled **Total backlog**, with **Today’s reviews** shown prominently in the heading and first metric. It shows the smaller of due reviews and remaining daily answer allowance, or zero after completion; retries are explicitly included. The four summary metrics are Today’s reviews, Total backlog, New available and Done today. The configured new ceiling remains in Settings and allowance copy. External completion reconciliation also clears Today’s reviews to zero. This is presentation only; batch limits, scheduling, learner history and services are unchanged.
+
+Display clarification validation: focused catch-up suite 6/6 and full `npm test` 635/635 pass; syntax and diff checks pass. Visual acceptance of the clarified normal-interface display remains pending. No merge or deployment.

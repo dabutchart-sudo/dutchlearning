@@ -42,6 +42,7 @@ async function reconcile(){
   if(!hero)return;
   const heading=hero.querySelector('h2');if(heading)heading.textContent='Today’s batch complete';
   const metrics=[...hero.querySelectorAll('.metric')];
+  const todayMetric=metrics.find(m=>m.querySelector('.eyebrow')?.textContent.trim()==='Today’s reviews');if(todayMetric)todayMetric.querySelector('.n').textContent='0';
   const newMetric=metrics.find(m=>m.querySelector('.eyebrow')?.textContent.trim().toLowerCase()==='new available');if(newMetric)newMetric.querySelector('.n').textContent='0';
   const button=hero.querySelector('#start-flashcard-review');if(button){button.disabled=true;button.textContent='Done for today';}
   const allowance=hero.querySelector('.flashcard-allowance-note');if(allowance)allowance.textContent=`Today’s batch is complete. ${dueReview} reviews remain due and carry forward. No more new cards will be introduced today.`;
