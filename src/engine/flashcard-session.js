@@ -45,10 +45,10 @@ export function adjustedNewCardCap({
 }
 
 /**
- * Infer that a study day was completed in another client when there are no due
- * reviews left and the shared evidence shows the user reached a sensible end point.
+ * Infer that a study day was completed in another client when its answer budget
+ * is reached, or when no reviews remain and the new allowance is satisfied.
  *
- * This is intentionally conservative. It never infers completion from "0 due"
+ * It never infers completion from "0 due"
  * alone: there must be review activity today, plus either the configured new-card
  * allowance has been satisfied or the completed workload reached the review target.
  */
@@ -66,8 +66,22 @@ export function inferExternalStudyDayComplete({
  const configured=Math.max(0,Math.trunc(finite(configuredMax,5)));
  const effective=effectiveNewCap===null||effectiveNewCap===undefined?configured:Math.min(configured,Math.max(0,Math.trunc(finite(effectiveNewCap))));
  const target=Math.max(0,Math.trunc(finite(reviewTarget,60)));
+ if(target>0&&done>=target)return true;
  if(due>0||done===0)return false;
  const newAllowanceSatisfied=introduced>=effective;
  const substantialReviewDay=target>0&&done>=target;
  return newAllowanceSatisfied||substantialReviewDay;
+}
+
+
+// Shared saved history is the daily budget; retries consume another answer.
+export function flashcardDailyBudget({history=[],today,reviewTarget=60}={}){
+ const target=Math.max(0,Math.trunc(finite(reviewTarget,60)));
+ const answers=history.filter(row=>{
+  const d=new Date(row?.timestamp);
+  if(Number.isNaN(d.getTime()))return false;
+  const day=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return day===today;
+ }).length;
+ return {answers,remaining:target?Math.max(0,target-answers):Infinity,complete:target>0&&answers>=target};
 }

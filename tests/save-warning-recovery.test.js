@@ -9,7 +9,7 @@ const sync=readFileSync(new URL('../src/ui/v51.js',import.meta.url),'utf8');
 test('Flashcard failure, successful retry, and later failure show current save status',async()=>{
  const message={innerHTML:''},card={id:1},statuses=[];
  let failure='Connection lost',calls=0,newerWarning=false;
- const context={message,session:{busy:false,flipped:true,day:'2026-11-04',queue:[card],completed:0},loaded:{supabaseUrl:'test',key:'test',cards:[card],history:[]},document:{querySelectorAll:()=>[]},current:()=>card,applyFlashcardRating:()=>({card:{id:1},history:{},requeue:false}),flashcardsStatus:(kind)=>statuses.push(kind),esc:x=>x,renderCard:()=>{},request:async()=>{calls++;if(failure)throw Error(failure);if(newerWarning)message.innerHTML='A separate audio error';}};
+ const context={dayKey:()=>'2026-11-04',message,session:{busy:false,flipped:true,day:'2026-11-04',queue:[card],completed:0},loaded:{supabaseUrl:'test',key:'test',cards:[card],history:[]},document:{querySelectorAll:()=>[]},current:()=>card,applyFlashcardRating:()=>({card:{id:1},history:{},requeue:false}),flashcardsStatus:(kind)=>statuses.push(kind),esc:x=>x,renderCard:()=>{},request:async()=>{calls++;if(failure)throw Error(failure);if(newerWarning)message.innerHTML='A separate audio error';}};
  const save=vm.runInNewContext(`(${preview.slice(preview.indexOf('async function saveRating('),preview.indexOf('async function openPreview('))})`,context);
  await save('good');
  assert.match(message.innerHTML,/Connection lost/);

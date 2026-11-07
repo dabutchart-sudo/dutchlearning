@@ -14,8 +14,8 @@ test('infers completion when the effective new-card allowance is satisfied',()=>
  assert.equal(inferExternalStudyDayComplete({dueReview:0,todayReviews:12,introducedToday:5,configuredMax:5,effectiveNewCap:5,reviewTarget:60}),true);
 });
 
-test('does not infer completion while reviews remain due',()=>{
- assert.equal(inferExternalStudyDayComplete({dueReview:1,todayReviews:62,introducedToday:5,configuredMax:5,effectiveNewCap:5,reviewTarget:60}),false);
+test('the daily target completes the batch even while reviews remain due',()=>{
+ assert.equal(inferExternalStudyDayComplete({dueReview:1,todayReviews:62,introducedToday:5,configuredMax:5,effectiveNewCap:5,reviewTarget:60}),true);
 });
 
 test('reconstructs the opening review load without counting retries or new cards',()=>{
