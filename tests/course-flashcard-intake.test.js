@@ -136,7 +136,7 @@ test('the switch turns course priority off',()=>{
 
 test('the Flashcards screen passes the course priority into the same allowance and writes nothing new',()=>{
  const ui=readFileSync(new URL('../src/ui/flashcards-preview.js',import.meta.url),'utf8');
- assert.match(ui,/buildFlashcardQueue\(loaded\.cards,\{today:c\.today,newLimit:c\.dueNew,priorityNewIds:p\.cardIds,priorityLimit:p\.share\}\)/);
+ assert.match(ui,/buildFlashcardQueue\(loaded\.cards,\{today:c\.today,newLimit:extra\?0:c\.dueNew,priorityNewIds:p\.cardIds,priorityLimit:p\.share,reviewLimit:extra\?20:c\.budget\.remaining\}\)/);
  assert.match(ui,/within the same daily limit/);
  assert.match(ui,/No cards are created automatically/);
  assert.match(ui,/0 course words are ready for Flashcards/);

@@ -45,6 +45,10 @@ The configured maximum number of new Flashcards is a hard adjustable ceiling. Th
 
 Due reviews take priority. Flashcards remain a separate, satisfying batch with meaningful retention reporting and Again / Hard / Good / Easy decisions.
 
+Owner-approved catch-up policy, 7 November 2026: the configured daily review target (currently 60) caps saved Flashcard answers, including retries and new-card answers, rather than requiring every overdue card in one day. The existing Disabled setting leaves this cap off. Saved review history determines the remaining allowance on reopening and when another device loads the shared history. Due cards are selected oldest due first, with a stable identity tie-break. Unselected cards keep their identities, due dates, intervals and history; they carry forward without a pretend review or bulk reschedule. The reconstructed opening review load keeps new cards paused while the backlog meets or exceeds the target, so clearing part of it cannot replenish new cards.
+
+The normal batch ends when its answer allowance is used or its queue is finished. Today’s batch completion is shown separately from the remaining due backlog. Leaving via the main navigation pauses study; reopening uses saved answers to calculate the remaining allowance. After completion, optional extra review offers at most 20 answers per explicitly chosen batch, introduces no new cards, and cannot reopen normal daily completion. Normal Learning, proofs and optional active recall retain their separate contracts.
+
 ### Listening and speaking beats
 
 The normal session may contain a short, finite listening beat and speaking beat drawn from the current topic. They count within the daily 20; they are not extra work.
