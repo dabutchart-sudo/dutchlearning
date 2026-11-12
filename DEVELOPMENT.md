@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.198**.
+- Current documented release: **Zin V5.1.199**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -611,3 +611,10 @@ Owner-approved secondary action tidy: Start reviews remains primary; Session det
 
 
 Release authorised by owner on 12 November 2026. Preparing V5.1.199 and cache dutch-v5.1.199-20261112-compact-flashcards. Reviewed screenshot acceptance covers the compact summary and secondary actions; real installed-PWA refresh remains a post-release check. No data/schema/auth/service/cost changes. Rollback source is V5.1.198 d194603; preserve learner history and standalone fallback. Full suite before release metadata: 639/639.
+
+
+## V5.1.199 verified production release — 12 November 2026
+
+Owner explicitly authorised production deployment after reviewing the compact layout. PR #233 merged as 7e553b6c41e52917b4ab9e8d0e10cf7260112f63 after both PR checks passed. Full local suite passed 639/639, including the release cache assertion. GitHub Pages deployment 43259979542 succeeded. Live index.html, sw.js, summary JS and CSS match tested source byte for byte. Cache is dutch-v5.1.199-20261112-compact-flashcards. Four metrics remain visible, Live data is removed, explanatory text is under Session details, and View report shares its secondary row. Sentence Queue implementation is unchanged; temporary synthetic preview files were not deployed.
+
+No learner-data rewrite, schema, authentication, service, scheduling or cost changes. Rollback is V5.1.198 d194603, preserving learner history and standalone Flashcards. Installed-iPhone/PWA refresh and layout confirmation remain outstanding; screenshot review is not claimed as installed-device verification. Related Linear DAB-209 records release progress.
