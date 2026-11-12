@@ -64,7 +64,7 @@ test('an open batch from yesterday reloads before writing another rating',async(
 test('dashboard clearly separates the remaining daily reviews from total backlog',()=>{
  const source=readFileSync(new URL('../src/ui/flashcards-preview.js',import.meta.url),'utf8');
  assert.match(source,/todayReviewCount=complete\?0:Math.min\(dueReview,c.budget.remaining\)/);
- assert.ok(source.includes('Today’s reviews: ${todayReviewCount}'));
+ assert.ok(source.includes('Today’s reviews</span><span class="n">${todayReviewCount}'));
  assert.ok(source.includes('Total backlog</span><span class="n">${dueReview}'));
  assert.ok(source.includes('Today’s allowance includes retries.'));
  assert.ok(!source.includes('>Reviews due</span>'));
