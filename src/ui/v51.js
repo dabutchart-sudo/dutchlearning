@@ -1,4 +1,4 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient, isAuthSessionMissingError } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {registerPacks} from '../content/registry.js';
 import {applyLearningSync,attemptMergeBase,mergeRemoteAttempts} from '../engine/learning-sync.js';
 
@@ -24,7 +24,7 @@ function injectSyncPanel(){
 async function renderSyncPanel(){
  const body=document.querySelector('#v51-sync-body');if(!body)return;
  const {data:{user},error}=await supabase.auth.getUser();
- if(error){console.warn('Supabase auth:',error);body.innerHTML='<p class="muted small">Sign-in could not be checked. Your Learning answers remain on this device; try again when connected.</p>';return;}
+ if(error&&!isAuthSessionMissingError(error)){console.warn('Supabase auth:',error);body.innerHTML='<p class="muted small">Sign-in could not be checked. Your Learning answers remain on this device; try again when connected.</p>';return;}
  if(user){
    body.innerHTML=`<p class="small sync-good">✓ Signed in as <strong>${escapeHtml(user.email||'your account')}</strong></p><p class="muted small">Progress is saved locally immediately and synced after answers, when the app opens, and when it comes back online.</p><div class="assist-row"><button class="secondary" id="sync-now">Sync now</button><button class="secondary" id="sync-out">Sign out</button></div><p id="sync-message" class="muted small"></p>`;
    document.querySelector('#sync-now').onclick=()=>syncNow(true);
@@ -75,7 +75,7 @@ async function syncNow(manual=false){
  if(syncing)return;syncing=true;
  try{
    const {data:{user},error:authError}=await supabase.auth.getUser();
-   if(authError)throw authError;
+   if(authError&&!isAuthSessionMissingError(authError))throw authError;
    if(!user){setStatus('Learning saved on this device · sign in to sync','local');return;}
    setStatus('Syncing Learning progress','syncing');
    const local=localState();
