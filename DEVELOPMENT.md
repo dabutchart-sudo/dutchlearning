@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.199**.
+- Current documented release: **Zin V5.1.200**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -15,13 +15,13 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
-## New-device email sign-in — V5.1.200 release preparation, 22 November 2026
+## New-device email sign-in — V5.1.200 release, 22 November 2026
 
 [DAB-210](https://linear.app/dabutchart/issue/DAB-210/show-the-email-sign-in-form-when-a-new-device-has-no-session) fixes a reproduced V5.1.199 first-sign-in block. A fresh anonymous browser receives `AuthSessionMissingError` from the SDK’s `getUser()`. The existing UI treated that normal signed-out state as a connection error and hid the email form; automatic Learning sync also showed an error. Branch `codex/new-device-sign-in` starts from production source `23fcbf5` in the reused isolated recovery checkout, leaving the primary checkout’s unrelated edits untouched.
 
 The fix changes `src/ui/v51.js`, adds `tests/new-device-sign-in.test.js` and updates this note. Release preparation also updates index.html, package.json, sw.js and the existing cache assertion in tests/speaking-practice.test.js. The SDK’s `isAuthSessionMissingError` discriminator routes only a missing session through the existing email form and local-only sync path. Genuine network/API errors remain errors. Authenticated syncing, empty-local/populated-remote recovery, email-link handling, learner data, schema, authentication configuration, policies, Flashcards, scheduling, services and costs are unchanged. No new runtime asset is introduced. The owner approved production release on 22 November: V5.1.200 uses cache `dutch-v5.1.200-20261122-device-sign-in`.
 
-Validation: 20 focused tests and all 643 tests pass. A fresh anonymous browser reproduced the production error with the actual SDK; a browser-only source override then showed the working email form at 390×844 and 1280×800, without horizontal overflow on the phone. No real sign-in email, account change, study answer or learner-data write occurred. Actual restored progress and the installed iPhone/PWA remain unverified until release and owner sign-in. Merge and deployment verification will be recorded once confirmed. Rollback baseline is production `23fcbf5` (V5.1.199); preserve learner data and both Flashcards paths.
+Validation: 31 focused release tests and all 643 tests pass. A fresh anonymous browser reproduced the production error with the actual SDK; a browser-only source override then showed the working email form at 390×844 and 1280×800, without horizontal overflow on the phone. PR #236 merged as `21b2b206cedbcde655433281bea987eb7d5633b5`. Both PR test checks, [post-merge tests](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45035385909) and [GitHub Pages deployment](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45035385373) passed. Live index.html, package.json, sw.js and src/ui/v51.js match the tested source byte for byte. A fresh anonymous production browser confirmed the email form at phone and Mac widths, the new cache with the fixed sync script, and a successful offline reload with the form still available. Zero backend writes and zero emails were sent during this check. No account change or study answer occurred. Actual restored progress and the owner’s installed iPhone/PWA remain unverified until owner sign-in. Rollback baseline is production `23fcbf5` (V5.1.199); preserve learner data and both Flashcards paths.
 
 ## F2 proof reserve and retention explanation — V5.1.196 release, 26 October 2026
 
