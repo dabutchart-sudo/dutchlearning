@@ -15,6 +15,14 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
+## New-device email sign-in — local candidate, 22 November 2026
+
+[DAB-210](https://linear.app/dabutchart/issue/DAB-210/show-the-email-sign-in-form-when-a-new-device-has-no-session) fixes a reproduced V5.1.199 first-sign-in block. A fresh anonymous browser receives `AuthSessionMissingError` from the SDK’s `getUser()`. The existing UI treated that normal signed-out state as a connection error and hid the email form; automatic Learning sync also showed an error. Branch `codex/new-device-sign-in` starts from production source `23fcbf5` in the reused isolated recovery checkout, leaving the primary checkout’s unrelated edits untouched.
+
+Only `src/ui/v51.js`, `tests/new-device-sign-in.test.js` and this note change. The SDK’s `isAuthSessionMissingError` discriminator routes only a missing session through the existing email form and local-only sync path. Genuine network/API errors remain errors. Authenticated syncing, empty-local/populated-remote recovery, email-link handling, learner data, schema, authentication configuration, policies, Flashcards, scheduling, services and costs are unchanged. No new runtime asset, version or cache identifier is introduced in this candidate.
+
+Validation: 20 focused tests and all 643 tests pass. A fresh anonymous browser reproduced the production error with the actual SDK; a browser-only source override then showed the working email form at 390×844 and 1280×800, without horizontal overflow on the phone. No real sign-in email, account change, study answer or learner-data write occurred. Actual restored progress and the installed iPhone/PWA remain unverified until release and owner sign-in. Nothing merged or deployed. Rollback is reverting this three-file candidate; production and both Flashcards paths remain available. Production deployment needs the owner’s explicit release approval.
+
 ## F2 proof reserve and retention explanation — V5.1.196 release, 26 October 2026
 
 Branch `codex/f2-retention-recovery` starts from V5.1.195 `26272d5` in an isolated managed checkout and is reconciled with `origin/main` at `a54413d`, including the subsequent development question gallery. The existing question-gallery checkout is untouched. A live-page read confirms V5.1.195. The owner approved restoring F2 test material and explaining why an earlier due retention check takes priority over later-topic practice.
