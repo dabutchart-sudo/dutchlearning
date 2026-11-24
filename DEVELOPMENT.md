@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.200**.
+- Current documented release: **Zin V5.1.201**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -15,7 +15,7 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
-## Practice start and constrained recovery backup — V5.1.201 release preparation, 24 November 2026
+## Practice start and constrained recovery backup — V5.1.201 release, 24 November 2026
 
 [DAB-212](https://linear.app/dabutchart/issue/DAB-212/continue-practice-reliably-after-the-daily-vocabulary-briefing) addresses two V5.1.200 practice-start failures. After **Start practice**, the briefing navigated to Course, waited two animation frames and searched for its start button; a delayed save/render could finish after that search. Synthetic F5 checks reproduced that timing failure. The owner reported that reloading did not help and the vocabulary list remained visible. A read-only simulation using a private saved-state copy then reproduced `QuotaExceededError` in WebKit while refreshing the local recovery backup. That storage failure was not reproduced by the small synthetic fixtures and could leave the button unresponsive.
 
@@ -23,9 +23,9 @@ Branch `codex/practice-briefing-start` starts from production `f107e85`. The own
 
 Briefing completion replays the original detached start or lesson control, as Practice anyway already does, without waiting for a Course redraw. Briefing-save errors are visible and retryable; asynchronous Course and proof-gate practice-start failures are reported. The once-per-day briefing, taught-word acknowledgement, existing proof-choice gate, daily limit, proofs, scheduler and scoring remain. No history reset, schema, authentication, sync-policy, audio/speech, protected function, provider or cost change. The separate unreleased `codex/direct-course-actions` candidate remains intact and must incorporate this fix before its future release.
 
-Files: src/engine/persistence.js, src/ui/learning-session-refinements.js, src/ui/app.js, tests/persistence-quota.test.js, tests/practice-briefing-start.test.js and this note. Release preparation updates index.html, package.json, sw.js and the existing cache assertion in tests/speaking-practice.test.js to V5.1.201 with cache `dutch-v5.1.201-20261124-practice-start`. No new runtime asset is added.
+Files: src/engine/persistence.js, src/ui/learning-session-refinements.js, src/ui/app.js, tests/persistence-quota.test.js, tests/practice-briefing-start.test.js and this note. The release updates index.html, package.json, sw.js and the existing cache assertion in tests/speaking-practice.test.js to V5.1.201 with cache `dutch-v5.1.201-20261124-practice-start`. No new runtime asset is added.
 
-Validation: 64 focused release tests and all 659 tests pass. Phone/Mac synthetic checks cover existing/new F5 study, Course/topic entry, normal/delayed saves and the existing proof-choice → Practice anyway → briefing path. WebKit touch checks with a private saved-history copy confirm F5 opens, one simulated answer saves, every prior attempt remains unchanged, a valid backup remains, and reload continues. An injected current-save failure is visible, consumes no question and retries after storage recovers. Zero backend write requests occurred; live learner progress was not changed and no private state is committed. Installed-iPhone/PWA acceptance remains outstanding. Merge and deployment verification will be recorded once confirmed. Rollback source is V5.1.200 `f107e85`; retain learner data and both Flashcards paths, and do not clear recovery storage during rollback.
+Validation: 64 focused release tests and all 659 tests pass. Phone/Mac synthetic checks cover existing/new F5 study, Course/topic entry, normal/delayed saves and the existing proof-choice → Practice anyway → briefing path. WebKit touch checks with a private saved-history copy confirm F5 opens, one simulated answer saves, every prior attempt remains unchanged, a valid backup remains, and reload continues. An injected current-save failure is visible, consumes no question and retries after storage recovers. Zero backend write requests occurred; live learner progress was not changed and no private state is committed. Installed-iPhone/PWA acceptance remains outstanding. PR #240 merged as `31fb361b46d23bcfec229aaf7cb4666afbdce69e`; both PR checks, [post-merge tests](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45503165031) and [Pages deployment](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45503163216) passed. Live index.html, package.json, sw.js, persistence, app and briefing code match the tested source byte for byte. Live WebKit touch verification repeated the F5 start, simulated answer save, complete earlier-history preservation, retained backup and reload checks with backend access blocked. A separate anonymous browser installed the new cache and reloaded offline successfully. The temporary private test copy was removed after verification. Rollback source is V5.1.200 `f107e85`; retain learner data and both Flashcards paths, and do not clear recovery storage during rollback.
 
 ## New-device email sign-in — V5.1.200 release, 22 November 2026
 
