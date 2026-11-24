@@ -35,13 +35,22 @@ function showBriefing(conceptId,{onContinue}){
  document.body.classList.add('session-active');
  document.querySelector('footer')?.setAttribute('aria-hidden','true');
  const host=document.getElementById('content');if(!host)return;
- host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions. Today’s 20 includes one listening question from this topic. Speaking, if switched on, is one spoken sentence you can skip and type.</p>${vocabularyHTML(words)}<div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
- document.getElementById('session-briefing-continue')?.addEventListener('click',()=>{
-  const state=repo.load();
-  markWordsTaught(state,{vocabulary:words},date);
-  repo.save(state);
-  rememberBriefing(localStorage,date,conceptId);
-  onContinue();
+ host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions. Today’s 20 includes one listening question from this topic. Speaking, if switched on, is one spoken sentence you can skip and type.</p>${vocabularyHTML(words)}<p id="session-briefing-error" class="error-message" role="alert" hidden></p><div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
+ document.getElementById('session-briefing-continue')?.addEventListener('click',async()=>{
+  const errorBox=document.getElementById('session-briefing-error');
+  if(errorBox){errorBox.hidden=true;errorBox.textContent='';}
+  try{
+   const state=repo.load();
+   markWordsTaught(state,{vocabulary:words},date);
+   repo.save(state);
+   rememberBriefing(localStorage,date,conceptId);
+   await onContinue();
+  }catch(error){
+   if(errorBox){
+    errorBox.textContent=error?.name==='QuotaExceededError'?'This browser is out of storage, so practice could not start. Your existing progress has not been cleared. Export a backup in Settings before clearing any browser data.':`Practice could not start: ${error?.message||String(error)}`;
+    errorBox.hidden=false;
+   }
+  }
  });
 }
 

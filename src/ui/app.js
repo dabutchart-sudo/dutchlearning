@@ -161,7 +161,7 @@ function renderProofGate(offer){
   start.disabled=true;start.textContent='Starting test…';
   try{await proofPreparation(offer.id)}catch(error){start.disabled=false;start.textContent='Start '+title;throw error;}
  });
- on('gate-practice',()=>{skipProofGate=true;openQuestion()});
+ on('gate-practice',()=>{skipProofGate=true;return openQuestion()});
  refreshChrome();
 }
 async function beginDaily({skipGate=false}={}){
@@ -665,7 +665,7 @@ function renderCourse(){
  el.querySelectorAll('[data-course-pane]').forEach(b=>b.onclick=()=>{coursePane=b.dataset.coursePane;renderCourse();el.querySelector(`[data-course-pane="${coursePane}"]`)?.focus()});
  el.querySelectorAll('[data-course-cohort]').forEach(b=>b.onclick=()=>{courseCohortTouched=true;courseCohort=b.dataset.courseCohort;renderCourse();el.querySelector(`[data-course-cohort="${courseCohort}"]`)?.focus()});
  el.querySelectorAll('[data-course-concept]').forEach(b=>b.onclick=()=>{selectedConcept=b.dataset.courseConcept;renderCourse();el.querySelector('h2')?.focus()});
- el.querySelectorAll('[data-course-start]').forEach(b=>b.onclick=()=>beginDaily({skipGate:false}));
+ el.querySelectorAll('[data-course-start]').forEach(b=>b.onclick=()=>beginDaily({skipGate:false}).catch(error=>notify(error.message)));
  const period=document.getElementById('course-period');if(period)period.onchange=()=>{courseDays=period.value==='all'?null:Number(period.value);renderCourse();document.getElementById('course-period')?.focus()};
  const topic=document.getElementById('course-topic-filter');if(topic)topic.onchange=()=>{courseConcept=topic.value||null;renderCourse();document.getElementById('course-topic-filter')?.focus()};
 }

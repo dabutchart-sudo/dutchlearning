@@ -50,3 +50,28 @@ test('an already acknowledged briefing does not intercept the next start or less
  const start=intercept('[data-course-start]',{needed:false});assert.equal(start.stopped,0);
  const lesson=intercept('#learned',{shown:true});assert.equal(lesson.stopped,0);assert.equal(lesson.saved,0);
 });
+
+test('briefing save and continuation failures become visible and can be retried',async()=>{
+ for(const stage of ['progress','marker','continuation']){
+  let handler,failed=true,continued=0;
+  const errorBox={hidden:true,textContent:''},state={daily:{count:0},words:{}};
+  const fail=()=>{throw Object.assign(new Error('Storage full'),{name:'QuotaExceededError'});};
+  const context={content:{},sessionVocabulary:()=>[],dayKey:()=>today,vocabularyHTML:()=>'',
+   document:{body:{classList:{add:()=>{}}},querySelector:()=>null,getElementById:id=>id==='content'?{innerHTML:''}:id==='session-briefing-error'?errorBox:{addEventListener:(_event,fn)=>handler=fn}},
+   repo:{load:()=>state,save:()=>{if(stage==='progress'&&failed)fail();}},markWordsTaught:()=>{},
+   rememberBriefing:()=>{if(stage==='marker'&&failed)fail();},localStorage:{}};
+  vm.createContext(context);vm.runInContext(source.slice(source.indexOf('function showBriefing('),source.indexOf('function currentState(')),context);
+  context.showBriefing('F5',{onContinue:async()=>{if(stage==='continuation'&&failed)throw Error('Could not open question');continued++;}});
+  await handler();assert.equal(continued,0);assert.equal(errorBox.hidden,false);
+  assert.match(errorBox.textContent,stage==='continuation'?/Could not open question/:/out of storage/);
+  assert.equal(state.daily.count,0);
+  failed=false;await handler();assert.equal(continued,1);assert.equal(errorBox.hidden,true);assert.equal(errorBox.textContent,'');
+ }
+});
+
+test('Course start reports an asynchronous save failure instead of leaving an unhandled rejection',async()=>{
+ const app=readFileSync(new URL('../src/ui/app.js',import.meta.url),'utf8'),button={},messages=[];
+ const line=app.split('\n').find(line=>line.includes("el.querySelectorAll('[data-course-start]')"));
+ const context={el:{querySelectorAll:()=>[button]},beginDaily:async()=>{throw Error('Storage full');},notify:message=>messages.push(message)};
+ vm.createContext(context);vm.runInContext(line,context);await button.onclick();assert.deepEqual(messages,['Storage full']);
+});

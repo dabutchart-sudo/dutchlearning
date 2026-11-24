@@ -256,7 +256,7 @@ test('the topic page offers speaking practice without putting it on Course home 
  assert.match(app,/skipSpeaking\(s\)/);
  assert.match(app,/SpeechRecognition/);
  const worker=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
- assert.match(worker,/dutch-v5\.1\.200-20261122-device-sign-in/);
+ assert.match(worker,/dutch-v5\.1\.201-20261124-practice-start/);
  assert.match(worker,/speaking-practice\.js/);
  assert.match(worker,/speaking-transcription\.js/);
  assert.match(worker,/listen-speak-preview\.js/);

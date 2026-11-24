@@ -66,7 +66,18 @@ export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Da
    validateState(state,content);restoreCountFromAttempts(state);
    const next=JSON.stringify(state),current=storage.getItem(key);
    if(current===next)return;
-   if(current){const validCurrent=read(key);if(validCurrent)storage.setItem(backupKey,current);}
+   if(current){
+    const validCurrent=read(key);
+    if(validCurrent){
+     try{storage.setItem(backupKey,current);}catch(error){
+      if(error?.name!=='QuotaExceededError')throw error;
+      // Keep the last valid checkpoint if refreshing it cannot fit. Never delete it.
+      const recovery=read(backupKey);
+      if(!recovery||recovery.learnerId!==validCurrent.learnerId)throw error;
+     }
+    }
+   }
+   // Saving current progress must still succeed; propagate any failure to the UI.
    storage.setItem(key,next);
    if(state.attempts.length||state.daily.count)storage.removeItem?.(resetKey);
   },
