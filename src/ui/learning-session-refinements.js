@@ -4,7 +4,7 @@ import {createRepository} from '../engine/persistence.js';
 import {dayKey} from '../engine/util.js';
 import {sessionVocabulary,briefingDone,rememberBriefing,shouldShowSessionBriefing} from '../engine/session-briefing.js';
 
-let content=null,repo=null,bypassStart=false,autoSkipping=false;
+let content=null,repo=null,autoSkipping=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inSandbox=()=>!!document.querySelector('.debug-banner');
 
@@ -30,27 +30,27 @@ async function loadContent(){
 
 function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(w=>`<div class="row"><strong lang="nl">${esc(w.nl)}</strong><span>${esc(w.en)}${w.mature?' <span class="pill">Mature card</span>':''}</span></div>`).join('')}</div>`;}
 
-function restoreTodayAndStart(){
- bypassStart=true;
- document.querySelector('[data-view="curriculum"]')?.click();
- requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  document.querySelector('[data-course-start], #start-course')?.click();
-  bypassStart=false;
- }));
-}
-
-function showBriefing(conceptId,{onContinue=restoreTodayAndStart}={}){
+function showBriefing(conceptId,{onContinue}){
  const words=sessionVocabulary(content,conceptId),date=dayKey(new Date());
  document.body.classList.add('session-active');
  document.querySelector('footer')?.setAttribute('aria-hidden','true');
  const host=document.getElementById('content');if(!host)return;
- host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions. Today’s 20 includes one listening question from this topic. Speaking, if switched on, is one spoken sentence you can skip and type.</p>${vocabularyHTML(words)}<div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
- document.getElementById('session-briefing-continue')?.addEventListener('click',()=>{
-  const state=repo.load();
-  markWordsTaught(state,{vocabulary:words},date);
-  repo.save(state);
-  rememberBriefing(localStorage,date,conceptId);
-  onContinue();
+ host.innerHTML=`<section class="session stack"><article class="card question-card session-briefing"><span class="direction">Vocabulary briefing · not scored</span><h2>Words for today’s practice</h2><p>Review these once now. Their translations will not be shown immediately before individual questions. Today’s 20 includes one listening question from this topic. Speaking, if switched on, is one spoken sentence you can skip and type.</p>${vocabularyHTML(words)}<p id="session-briefing-error" class="error-message" role="alert" hidden></p><div class="actions"><button id="session-briefing-continue" class="primary">Start practice</button></div></article></section>`;
+ document.getElementById('session-briefing-continue')?.addEventListener('click',async()=>{
+  const errorBox=document.getElementById('session-briefing-error');
+  if(errorBox){errorBox.hidden=true;errorBox.textContent='';}
+  try{
+   const state=repo.load();
+   markWordsTaught(state,{vocabulary:words},date);
+   repo.save(state);
+   rememberBriefing(localStorage,date,conceptId);
+   await onContinue();
+  }catch(error){
+   if(errorBox){
+    errorBox.textContent=error?.name==='QuotaExceededError'?'This browser is out of storage, so practice could not start. Your existing progress has not been cleared. Export a backup in Settings before clearing any browser data.':`Practice could not start: ${error?.message||String(error)}`;
+    errorBox.hidden=false;
+   }
+  }
  });
 }
 
@@ -106,12 +106,12 @@ function interceptClicks(){
    return;
   }
   const start=event.target.closest?.('#start,#start-course,[data-course-start]');
-  if(start&&!bypassStart){
+  if(start){
    const state=currentState();if(!state)return;
    const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    const proofReady=!!dailyProofOffer(state,content,new Date())?.canStartToday;
    if(briefingNeeded(state,date,conceptId,{proofReady})){
-    event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId);
+    event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId,{onContinue:()=>start.click()});
    }
    return;
   }
@@ -121,7 +121,7 @@ function interceptClicks(){
    const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    if(briefingDone(localStorage,date,conceptId))return;
    event.preventDefault();event.stopImmediatePropagation();
-   teachConcept(state,conceptId,content,{acknowledge:true});repo.save(state);showBriefing(conceptId);
+   teachConcept(state,conceptId,content,{acknowledge:true});repo.save(state);showBriefing(conceptId,{onContinue:()=>learned.click()});
   }
  },true);
 }
