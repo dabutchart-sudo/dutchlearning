@@ -4,7 +4,7 @@ import {createRepository} from '../engine/persistence.js';
 import {dayKey} from '../engine/util.js';
 import {sessionVocabulary,briefingDone,rememberBriefing,shouldShowSessionBriefing} from '../engine/session-briefing.js';
 
-let content=null,repo=null,bypassStart=false,autoSkipping=false;
+let content=null,repo=null,autoSkipping=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inSandbox=()=>!!document.querySelector('.debug-banner');
 
@@ -30,16 +30,7 @@ async function loadContent(){
 
 function vocabularyHTML(words){return `<div class="vocabulary-list">${words.map(w=>`<div class="row"><strong lang="nl">${esc(w.nl)}</strong><span>${esc(w.en)}${w.mature?' <span class="pill">Mature card</span>':''}</span></div>`).join('')}</div>`;}
 
-function restoreTodayAndStart(){
- bypassStart=true;
- document.querySelector('[data-view="curriculum"]')?.click();
- requestAnimationFrame(()=>requestAnimationFrame(()=>{
-  document.querySelector('[data-course-start], #start-course')?.click();
-  bypassStart=false;
- }));
-}
-
-function showBriefing(conceptId,{onContinue=restoreTodayAndStart}={}){
+function showBriefing(conceptId,{onContinue}){
  const words=sessionVocabulary(content,conceptId),date=dayKey(new Date());
  document.body.classList.add('session-active');
  document.querySelector('footer')?.setAttribute('aria-hidden','true');
@@ -106,12 +97,12 @@ function interceptClicks(){
    return;
   }
   const start=event.target.closest?.('#start,#start-course,[data-course-start]');
-  if(start&&!bypassStart){
+  if(start){
    const state=currentState();if(!state)return;
    const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    const proofReady=!!dailyProofOffer(state,content,new Date())?.canStartToday;
    if(briefingNeeded(state,date,conceptId,{proofReady})){
-    event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId);
+    event.preventDefault();event.stopImmediatePropagation();showBriefing(conceptId,{onContinue:()=>start.click()});
    }
    return;
   }
@@ -121,7 +112,7 @@ function interceptClicks(){
    const date=dayKey(new Date()),conceptId=activeConcept(state,content,date);
    if(briefingDone(localStorage,date,conceptId))return;
    event.preventDefault();event.stopImmediatePropagation();
-   teachConcept(state,conceptId,content,{acknowledge:true});repo.save(state);showBriefing(conceptId);
+   teachConcept(state,conceptId,content,{acknowledge:true});repo.save(state);showBriefing(conceptId,{onContinue:()=>learned.click()});
   }
  },true);
 }
