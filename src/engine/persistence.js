@@ -1,5 +1,6 @@
 import {freshState,blankProgress} from './learner.js';
 import {dayKey,addDays,normalize} from './util.js';
+import {encodeRecovery,decodeRecovery} from './recovery-storage.js';
 export const STORAGE_KEY='dutch_sentence_trainer_v5';
 export function validateState(s,content){
  if(!s||s.schemaVersion!==5||!Array.isArray(s.attempts)||!Array.isArray(s.exposures)||!s.progress||!s.daily||!/^\d{4}-\d{2}-\d{2}$/.test(s.daily.date)||!Number.isInteger(s.daily.count)||s.daily.count<0||s.daily.count>20)throw Error('This is not a valid V5 progress backup.');
@@ -50,7 +51,7 @@ function moreAdvancedSameSession(candidate,current){
 export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Date()}={}){
  const backupKey=key+'-recovery';
  const resetKey=key+'-intentional-reset';
- const read=storedKey=>{try{return parseStored(storage.getItem(storedKey),content)}catch{return null}};
+ const read=storedKey=>{try{const raw=storage.getItem(storedKey);return parseStored(storedKey===backupKey?decodeRecovery(raw):raw,content)}catch{return null}};
  return {
   load(){
    let state=read(key),backup=read(backupKey);
@@ -69,11 +70,17 @@ export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Da
    if(current){
     const validCurrent=read(key);
     if(validCurrent){
-     try{storage.setItem(backupKey,current);}catch(error){
+     try{storage.setItem(backupKey,encodeRecovery(current));}catch(error){
       if(error?.name!=='QuotaExceededError')throw error;
       // Keep the last valid checkpoint if refreshing it cannot fit. Never delete it.
       const recovery=read(backupKey);
       if(!recovery||recovery.learnerId!==validCurrent.learnerId)throw error;
+      // An older raw checkpoint may also be taking up the remaining space.
+      // Replace it atomically only after verifying its lossless compact form.
+      const previous=storage.getItem(backupKey),compact=encodeRecovery(decodeRecovery(previous));
+      if(compact.length<previous.length){
+       try{storage.setItem(backupKey,compact);}catch(compactError){if(compactError?.name!=='QuotaExceededError')throw compactError;}
+      }
      }
     }
    }
