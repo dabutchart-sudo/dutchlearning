@@ -1,9 +1,13 @@
-// Only the local recovery copy uses this lossless envelope. Main state, exports
-// and cloud state remain ordinary V5 JSON. Keep accepting older JSON backups.
+// Lossless local representation only. Exports/cloud state remain ordinary V5
+// JSON. Keep accepting existing raw browser state and exported backups.
+export const STORAGE_KEY='dutch_sentence_trainer_v5';
+// Build-time rollback: retain the decoder/readers if compact writes are disabled.
+export const COMPACT_LOCAL_WRITES=true;
 const PREFIX='zin-recovery-dictionary-v1\n';
+export const isCompactState=raw=>typeof raw==='string'&&raw.startsWith(PREFIX);
 
 export function decodeRecovery(raw){
- if(!raw?.startsWith(PREFIX))return raw;
+ if(!isCompactState(raw))return raw;
  const envelope=JSON.parse(raw.slice(PREFIX.length));
  if(!Array.isArray(envelope)||envelope.length!==2||!Array.isArray(envelope[0])||!envelope[0].every(s=>typeof s==='string'))throw Error('Invalid recovery dictionary.');
  const [strings,packed]=envelope;
@@ -27,7 +31,7 @@ export function decodeRecovery(raw){
 
 export function encodeRecovery(raw){
  // Small checkpoints do not need a dictionary or a new representation.
- if(raw.length<16384)return raw;
+ if(!COMPACT_LOCAL_WRITES||raw.length<16384)return raw;
  const strings=[],indices=new Map();
  const intern=value=>{
   if(!indices.has(value)){indices.set(value,strings.length.toString(36));strings.push(value);}
@@ -46,4 +50,13 @@ export function encodeRecovery(raw){
  // Verify the full round trip before replacing any existing recovery copy.
  if(decodeRecovery(encoded)!==JSON.stringify(original))throw Error('Recovery checkpoint could not be verified.');
  return encoded;
+}
+
+export function readLocalState(storage,key=STORAGE_KEY){
+ const raw=storage?.getItem(key);
+ return raw?JSON.parse(decodeRecovery(raw)):null;
+}
+
+export function writeLocalState(storage,state,key=STORAGE_KEY){
+ storage.setItem(key,encodeRecovery(JSON.stringify(state)));
 }

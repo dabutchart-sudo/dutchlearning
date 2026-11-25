@@ -1,15 +1,15 @@
 import { createClient, isAuthSessionMissingError } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import {registerPacks} from '../content/registry.js';
 import {applyLearningSync,attemptMergeBase,mergeRemoteAttempts} from '../engine/learning-sync.js';
+import {readLocalState,writeLocalState} from '../engine/recovery-storage.js';
 
 const SUPABASE_URL='https://dntitlrtvkgisxwqjxch.supabase.co';
 const SUPABASE_KEY='sb_publishable_0QmYB4lwmjfJLkY3pH5dCQ_EVKC47Lb';
-const STORAGE_KEY='dutch_sentence_trainer_v5';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let syncing=false,lastRevision=-1;
 
 const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const localState=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch{return null}};
+const localState=()=>{try{return readLocalState(localStorage)}catch{return null}};
 const setStatus=(text,kind='checking')=>{
  const footer=document.querySelector('#offline-status');if(footer)footer.textContent=text;
  document.dispatchEvent(new CustomEvent('zin:sync-status',{detail:{kind,text}}));
@@ -92,7 +92,7 @@ async function syncNow(manual=false){
     if(merged.added){next=merged.state;result.writeLocal=true;}
    }catch(e){console.warn('Trainer history merge:',e);}
    if(result.action==='download'||(result.writeLocal&&next)){
-     localStorage.setItem(STORAGE_KEY,JSON.stringify(next));setStatus('Learning history updated — reloading…','syncing');setTimeout(()=>location.reload(),250);return;
+     writeLocalState(localStorage,next);setStatus('Learning history updated — reloading…','syncing');setTimeout(()=>location.reload(),250);return;
    }
    if(result.action==='upload'){
      const {error:e}=await supabase.from('trainer_state').upsert({user_id:user.id,state:next||local,updated_at:new Date().toISOString()});if(e)throw e;await pushAttempts(user,next||local);

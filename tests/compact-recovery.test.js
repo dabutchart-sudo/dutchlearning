@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {freshState} from '../src/engine/learner.js';
 import {createRepository} from '../src/engine/persistence.js';
-import {encodeRecovery,decodeRecovery} from '../src/engine/recovery-storage.js';
+import {encodeRecovery,decodeRecovery,readLocalState,writeLocalState} from '../src/engine/recovery-storage.js';
 
 const content={concepts:[{id:'F5'}],byId:{p1:{id:'p1'}},sentences:[]};
 const stamp=new Date('2026-11-25T12:00:00Z'),key='learning',backup=key+'-recovery';
@@ -41,7 +41,8 @@ test('a completely full store can save, resume and export without deleting eithe
  const current=history(),f=constrained(current),next=structuredClone(current);
  next.attempts.push({...next.attempts[0],id:'today',date:'2026-11-25'});next.daily.count=1;next.revision++;
  f.repo.save(next);
- assert.equal(f.values.get(key),JSON.stringify(next),'main format remains ordinary JSON');
+ assert.equal(decodeRecovery(f.values.get(key)),JSON.stringify(next),'main data remains exactly reproducible');
+ assert.ok(f.values.get(key).length<JSON.stringify(next).length*.7);
  assert.equal(decodeRecovery(f.values.get(backup)),JSON.stringify(current));
  assert.deepEqual(f.repo.load(),next);
  assert.deepEqual(JSON.parse(f.repo.export(f.repo.load())),next);
@@ -68,15 +69,46 @@ test('genuine save failure stays visible while both complete copies remain reada
  f.denyCurrent=false;f.repo.save({...current,revision:1});assert.equal(f.repo.load().revision,1);
 });
 
-test('failed backup replacements retain the existing valid checkpoint; corruption cannot authorise fallback',()=>{
+test('failed backup replacements retain the existing valid checkpoint while the compact main save succeeds',()=>{
  const current=history(),f=constrained(current);f.denyBackup=true;
  const before=f.values.get(backup);
- // With both copies full and all backup writes denied, no progress is claimed saved.
- assert.throws(()=>f.repo.save({...current,revision:100}),{name:'QuotaExceededError'});
- assert.equal(f.values.get(backup),before);assert.equal(f.values.get(key),JSON.stringify(current));
+ f.repo.save({...current,revision:100});
+ assert.equal(f.values.get(backup),before);assert.equal(f.repo.load().revision,100);
+});
+
+test('a corrupt checkpoint cannot authorise skipping a failed backup refresh',()=>{
+ const current=history(),f=constrained(current);f.denyBackup=true;
  f.values.set(backup,'zin-recovery-dictionary-v1\n[["schemaVersion"],{"zz":5}]');
  assert.throws(()=>f.repo.save({...current,revision:1}),{name:'QuotaExceededError'});
  assert.equal(f.values.get(key),JSON.stringify(current));
+});
+
+test('shared local-state readers and writers keep cloud payloads as plain objects',()=>{
+ const current=history(),f=constrained(current);
+ writeLocalState(f.storage,current,key);
+ assert.deepEqual(readLocalState(f.storage,key),current);
+ const cloudPayload=JSON.parse(JSON.stringify(readLocalState(f.storage,key)));
+ assert.deepEqual(cloudPayload,current);assert.equal(cloudPayload.schemaVersion,5);
+ const revision=cloudPayload.revision+1;
+ writeLocalState(f.storage,{...cloudPayload,revision},key);
+ assert.equal(f.repo.load().revision,revision);
+ assert.equal(f.repo.load().attempts.length,current.attempts.length);
+});
+
+test('unchanged compact state makes no redundant writes and remains import/export compatible',()=>{
+ const current=history(),f=constrained(current);f.repo.save({...current,revision:1});
+ const before=f.values.get(key),checkpoint=f.values.get(backup);
+ f.denyCurrent=true;f.denyBackup=true;f.repo.save(f.repo.load());
+ assert.equal(f.values.get(key),before);assert.equal(f.values.get(backup),checkpoint);
+});
+
+test('unchanged raw history frees space for a previously blocked briefing marker without adding an answer',()=>{
+ const current=history(),f=constrained(current);
+ f.repo.save(current);
+ f.storage.setItem('dutch_learning_vocab_briefing_v1','{"2026-11-25:F5":true}');
+ assert.deepEqual(f.repo.load(),current);
+ assert.equal(decodeRecovery(f.values.get(backup)),JSON.stringify(current));
+ assert.ok(f.values.get(key).length<JSON.stringify(current).length);
 });
 
 test('malformed compact data is rejected, and import/export stays portable V5 JSON',()=>{
@@ -84,4 +116,11 @@ test('malformed compact data is rejected, and import/export stays portable V5 JS
  const current=history(),f=constrained(current);f.repo.save({...current,revision:1});
  const exported=f.repo.export(f.repo.load());assert.equal(JSON.parse(exported).schemaVersion,5);
  f.repo.import(exported);assert.equal(f.repo.load().revision,1);
+});
+
+test('unreadable compact copies never silently become a fresh learner',()=>{
+ const f=constrained(history()),bad='zin-recovery-dictionary-v1\n[["missing"],"x"]';
+ f.values.set(key,bad);f.values.set(backup,bad);
+ assert.throws(()=>f.repo.load(),/could not be decoded safely/);
+ assert.equal(f.values.get(key),bad);assert.equal(f.values.get(backup),bad);
 });

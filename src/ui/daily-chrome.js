@@ -1,4 +1,4 @@
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState} from '../engine/recovery-storage.js';
 import {dayKey} from '../engine/util.js';
 
 export function flashcardsChromeState(storage=globalThis.localStorage,today=dayKey()){
@@ -22,7 +22,7 @@ export function flashcardsChromeLabel(state='ready'){
 
 export function learningChromeFromStorage(storage=globalThis.localStorage,today=dayKey()){
  try{
-  const state=JSON.parse(storage?.getItem(STORAGE_KEY)||'{}')||{};
+  const state=readLocalState(storage)||{};
   const count=state.daily?.date===today?Number(state.daily.count)||0:0;
   return {count,done:count>=20,extra:state.pending?.phase==='extra'||!!state.extra};
  }catch{

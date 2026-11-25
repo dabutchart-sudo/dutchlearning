@@ -1,4 +1,4 @@
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState} from '../engine/recovery-storage.js';
 import {PRODUCTION_STAGE} from '../engine/flashcards.js';
 import {productionProgress} from '../engine/production-progress.js';
 import {adaptiveSupportSummary,adaptiveSupportOutcomes} from '../engine/adaptive-support.js';
@@ -12,7 +12,7 @@ let cardsCache=null,scheduled=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const pct=v=>v==null?'—':`${Math.round(v*100)}%`;
-function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
+function state(){try{return readLocalState(localStorage)||{};}catch{return{};}}
 async function cards(){if(cardsCache)return cardsCache;const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;for(let from=0;;from+=size){const res=await fetch(`${c.SUPABASE_URL}/rest/v1/cards?select=*`,{headers:{apikey:c.SUPABASE_ANON_KEY,Authorization:`Bearer ${c.SUPABASE_ANON_KEY}`,Range:`${from}-${from+size-1}`,'Range-Unit':'items'}});if(!res.ok)throw new Error(`Could not read cards (${res.status}).`);const page=await res.json();rows.push(...page);if(page.length<size)break;}cardsCache=rows;return rows;}
 function stageLabel(stage){return stage===PRODUCTION_STAGE.SUPPORTED?'Supported':stage===PRODUCTION_STAGE.GUIDED?'Guided':stage===PRODUCTION_STAGE.INDEPENDENT?'Independent':'Contextual';}
 function errorLabel(type){return type==='spelling'?'Spelling':'Recall';}

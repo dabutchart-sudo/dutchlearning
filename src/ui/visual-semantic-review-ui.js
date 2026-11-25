@@ -1,4 +1,4 @@
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState,writeLocalState} from '../engine/recovery-storage.js';
 import {visualSemanticReviewQueue,recordVisualSemanticDecision} from '../engine/visual-semantic-review.js';
 
 const content=document.getElementById('content');
@@ -7,8 +7,8 @@ let cardsCache=null,scheduled=false;
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
-function save(value){localStorage.setItem(STORAGE_KEY,JSON.stringify(value));}
+function state(){try{return readLocalState(localStorage)||{};}catch{return{};}}
+function save(value){writeLocalState(localStorage,value);}
 async function cards(){
  if(cardsCache)return cardsCache;
  const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;
