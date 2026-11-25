@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.201**.
+- Current documented release: **Zin V5.1.202**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -15,9 +15,9 @@
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
 
-## Chrome storage reduction — V5.1.202 candidate, 25 November 2026
+## Chrome storage reduction — V5.1.202 released, 25 November 2026
 
-The owner reports the V5.1.201 storage error still blocks practice in Chrome. Safari sign-in has not completed; switching the iPhone default browser still opens the emailed link in Chrome. The owner requested resolving Chrome storage directly. Production remains V5.1.201 `a2fa22b`; no learner-data or authentication changes have been made.
+The owner reported that V5.1.201's storage error still blocked practice in Chrome. Safari sign-in had not completed; switching the iPhone default browser still opened the emailed link in Chrome. The owner requested resolving Chrome storage directly. V5.1.202 was developed from V5.1.201 `a2fa22b`; the owner separately approved the expanded local storage change and its release. No live learner-data or authentication changes were made during verification.
 
 The owner explicitly approved extending lossless compaction to both local Learning copies after the recovery-only checkpoint still failed at the main save in WebKit. Branch `codex/compact-storage-recovery` now keeps large main/recovery snapshots in a versioned dictionary envelope. Repeated keys/strings are stored once; every field and answer is reconstructed, including unknown fields and Unicode. Complete round-trip verification precedes each atomic replacement. Small/non-beneficial snapshots stay raw, and all existing raw V5 snapshots remain readable. No history, recovery copy, unrelated browser key or recovery platform is deleted. A genuine save failure remains a failure. Unreadable compact copies cannot silently initialise a new learner.
 
@@ -27,7 +27,9 @@ Validation: all **672 automated tests pass**, covering complete history/Unicode/
 
 The candidate service worker installs the new codec. Chrome reopens compact history and completed daily status with the browser offline. WebKit's automation offline-toggle produces an internal navigation error; its cached reopen instead passes with the local test origin unavailable. That test changes only the preview response identifying localhost as genuine so the existing PWA install path runs; production origin code remains unchanged. Installed iPhone/Chrome/PWA acceptance, actual device storage inventory and real signed-in device synchronisation remain outstanding. The synthetic tests establish a reproduced failure and working candidate, not a claim that the owner's phone is already repaired. Local storage remains finite.
 
-Rollout: close older Zin tabs before opening V5.1.202, so an older reader cannot mistake compact state for missing data. Verify F5, an answer save/reopen and Settings sync on the actual iPhone. If the initially full store prevented the authentication library's storage probe, reopen after compaction before evaluating signed-in sync; authentication storage is never removed or changed by this fix. Export a current backup after upgrade. **Rollback must retain the codec and every shared reader. Do not simply redeploy V5.1.201**, which cannot decode compact main state. `COMPACT_LOCAL_WRITES=false` disables new compaction while continuing to read both representations; raw writes may hit the original quota and must fail visibly. That reader-preserving rollback is tested. Never clear browser history/progress as part of rollback. DAB-212 remains In Progress for release/device acceptance. No merge, deployment or live-data rewrite has occurred; deployment requires owner approval. The separate direct-course-actions candidate remains unreleased and excluded.
+Rollout: close older Zin tabs before opening V5.1.202, so an older reader cannot mistake compact state for missing data. Verify F5, an answer save/reopen and Settings sync on the actual iPhone. If the initially full store prevented the authentication library's storage probe, reopen after compaction before evaluating signed-in sync; authentication storage is never removed or changed by this fix. Export a current backup after upgrade. **Rollback must retain the codec and every shared reader. Do not simply redeploy V5.1.201**, which cannot decode compact main state. `COMPACT_LOCAL_WRITES=false` disables new compaction while continuing to read both representations; raw writes may hit the original quota and must fail visibly. That reader-preserving rollback is tested. Never clear browser history/progress as part of rollback. DAB-212 remains In Progress for owner-device acceptance. The separate direct-course-actions candidate remains unreleased and excluded.
+
+Release: [PR #242](https://github.com/dabutchart-sudo/dutchlearning/pull/242) merged as `7552f10d9697f7b45c6220e951d076ad964fff02`. Both PR checks, [post-merge tests](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45686166133) and [Pages deployment](https://github.com/dabutchart-sudo/dutchlearning/actions/runs/45686164088) passed. All 13 changed published runtime/version files match the tested source byte for byte. The actual published release repeated the native-quota F5 start, simulated answer save, preservation of all 3,500 earlier synthetic attempts, reload, Progress and portable export checks in isolated Chrome and WebKit profiles with no page errors and all backend access blocked. A separate anonymous Chrome profile installed the published V5.1.202 codec/cache, reopened 2,500 synthetic attempts offline and preserved daily completion without offering question 21. Zero backend writes occurred and no real learner history was used or rewritten. These release checks do not replace the remaining actual iPhone/Chrome/PWA and signed-in-device acceptance.
 
 ## Practice start and constrained recovery backup — V5.1.201 release, 24 November 2026
 
