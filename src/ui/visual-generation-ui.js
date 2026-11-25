@@ -1,4 +1,4 @@
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState} from '../engine/recovery-storage.js';
 import {visualGenerationQueue} from '../engine/visual-generation-plan.js';
 import {visualGenerationStatusSummary} from '../engine/visual-generation-status.js';
 import {visualSemanticReviewQueue} from '../engine/visual-semantic-review.js';
@@ -10,7 +10,7 @@ let cardsCache=null,scheduled=false,rendering=false,busy=false,confirmCardId=nul
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
+function state(){try{return readLocalState(localStorage)||{};}catch{return{};}}
 async function cards(){
  if(cardsCache)return cardsCache;
  const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;

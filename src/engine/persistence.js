@@ -1,6 +1,7 @@
 import {freshState,blankProgress} from './learner.js';
 import {dayKey,addDays,normalize} from './util.js';
-export const STORAGE_KEY='dutch_sentence_trainer_v5';
+import {encodeRecovery,decodeRecovery,isCompactState,STORAGE_KEY} from './recovery-storage.js';
+export {STORAGE_KEY} from './recovery-storage.js';
 export function validateState(s,content){
  if(!s||s.schemaVersion!==5||!Array.isArray(s.attempts)||!Array.isArray(s.exposures)||!s.progress||!s.daily||!/^\d{4}-\d{2}-\d{2}$/.test(s.daily.date)||!Number.isInteger(s.daily.count)||s.daily.count<0||s.daily.count>20)throw Error('This is not a valid V5 progress backup.');
  for(const c of content.concepts)if(!s.progress[c.id])s.progress[c.id]=blankProgress();
@@ -38,7 +39,7 @@ export function migrateLegacy(old,content,now=new Date()){
  s.daily.count=Math.min(20,Math.max(s.attempts.filter(a=>a.date===dayKey(now)).length,old.daily?.date===dayKey(now)?old.daily.answers?.length||0:0));
  return s;
 }
-function parseStored(raw,content){return raw?validateState(JSON.parse(raw),content):null;}
+function parseStored(raw,content){return raw?validateState(JSON.parse(decodeRecovery(raw)),content):null;}
 function restoreCountFromAttempts(state){
  const attemptsToday=state.attempts.filter(a=>a.date===state.daily.date&&a.phase!=='extra').length;
  if(attemptsToday>state.daily.count)state.daily.count=Math.min(20,attemptsToday);
@@ -55,34 +56,54 @@ export function createRepository(storage,content,{key=STORAGE_KEY,now=()=>new Da
   load(){
    let state=read(key),backup=read(backupKey);
    if(state){
-    if(!storage.getItem(resetKey)&&moreAdvancedSameSession(backup,state)){state=backup;storage.setItem(key,JSON.stringify(state));}
+    if(!storage.getItem(resetKey)&&moreAdvancedSameSession(backup,state)){state=backup;storage.setItem(key,encodeRecovery(JSON.stringify(state)));}
     return restoreCountFromAttempts(state);
    }
-   if(backup){storage.setItem(key,JSON.stringify(backup));return restoreCountFromAttempts(backup);}
-   if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){state=migrateLegacy(JSON.parse(legacy),content,now());storage.setItem(key,JSON.stringify(state));storage.setItem(backupKey,JSON.stringify(state));return state}}}
+   if(backup){storage.setItem(key,encodeRecovery(JSON.stringify(backup)));return restoreCountFromAttempts(backup);}
+   if(isCompactState(storage.getItem(key))||isCompactState(storage.getItem(backupKey)))throw Error('Stored Learning progress could not be decoded safely. Your existing copies have been kept.');
+   if(key===STORAGE_KEY){for(const prior of ['dutch_sentence_trainer_v4b','dutch_sentence_trainer_v4a']){const legacy=storage.getItem(prior);if(legacy){state=migrateLegacy(JSON.parse(legacy),content,now());const raw=encodeRecovery(JSON.stringify(state));storage.setItem(key,raw);storage.setItem(backupKey,raw);return state}}}
    return freshState(content,now());
   },
   save(state){
    validateState(state,content);restoreCountFromAttempts(state);
    const next=JSON.stringify(state),current=storage.getItem(key);
-   if(current===next)return;
+   if(current&&decodeRecovery(current)===next){
+    // A previous build may have saved the vocabulary acknowledgement but failed
+    // to fit its small briefing marker. Free space even when progress is unchanged.
+    const recovery=read(backupKey),rawBackup=storage.getItem(backupKey);
+    if(recovery?.learnerId===state.learnerId){
+     const compactBackup=encodeRecovery(decodeRecovery(rawBackup));
+     if(compactBackup!==rawBackup){
+      try{storage.setItem(backupKey,compactBackup);}catch(error){if(error?.name!=='QuotaExceededError')throw error;}
+     }
+    }
+    const compact=encodeRecovery(next);
+    if(compact!==current)storage.setItem(key,compact);
+    return;
+   }
    if(current){
     const validCurrent=read(key);
     if(validCurrent){
-     try{storage.setItem(backupKey,current);}catch(error){
+     try{storage.setItem(backupKey,encodeRecovery(decodeRecovery(current)));}catch(error){
       if(error?.name!=='QuotaExceededError')throw error;
       // Keep the last valid checkpoint if refreshing it cannot fit. Never delete it.
       const recovery=read(backupKey);
       if(!recovery||recovery.learnerId!==validCurrent.learnerId)throw error;
+      // An older raw checkpoint may also be taking up the remaining space.
+      // Replace it atomically only after verifying its lossless compact form.
+      const previous=storage.getItem(backupKey),compact=encodeRecovery(decodeRecovery(previous));
+      if(compact.length<previous.length){
+       try{storage.setItem(backupKey,compact);}catch(compactError){if(compactError?.name!=='QuotaExceededError')throw compactError;}
+      }
      }
     }
    }
    // Saving current progress must still succeed; propagate any failure to the UI.
-   storage.setItem(key,next);
+   storage.setItem(key,encodeRecovery(next));
    if(state.attempts.length||state.daily.count)storage.removeItem?.(resetKey);
   },
   resetLearning(){
-   const state=resetLearningState(this.load(),content,now()),raw=JSON.stringify(state);
+   const state=resetLearningState(this.load(),content,now()),raw=encodeRecovery(JSON.stringify(state));
    validateState(state,content);
    storage.setItem(key,raw);storage.setItem(backupKey,raw);storage.setItem(resetKey,now().toISOString());
    return state;

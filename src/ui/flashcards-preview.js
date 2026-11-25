@@ -1,6 +1,6 @@
 import {flashcardDailyBudget,reviewLoadAtStart} from '../engine/flashcard-session.js';
 import {flashcardSummary,remainingNewCards,buildFlashcardQueue,applyFlashcardRating,productionReadiness,PRODUCTION_STAGE,productionPracticeQueue,productionExercise,recordProductionAttempt,productionAttemptsToday,PRODUCTION_DAILY_LIMIT} from '../engine/flashcards.js';
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState,writeLocalState} from '../engine/recovery-storage.js';
 import {paintDailyChrome} from './daily-chrome.js';
 import {registerPacks} from '../content/registry.js';
 import {courseNewCardPriority} from '../engine/course-flashcard-intake.js';
@@ -28,8 +28,8 @@ const SENTENCE_QUEUE_KEY='dutch_flashcards_sentence_queue';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;},percent=v=>v==null?'—':`${Math.round(v*100)}%`;
 function settings(){const number=(k,f)=>{const n=parseInt(localStorage.getItem(k)??'',10);return Number.isFinite(n)?n:f;};return{maxNew:number('dfc_max_new',5),retentionThreshold:number('dutch_flashcards_ret_threshold',0),reviewTarget:number('dutch_flashcards_review_target',60)};}
-function learnerState(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
-function saveLearnerState(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}
+function learnerState(){try{return readLocalState(localStorage)||{};}catch{return{};}}
+function saveLearnerState(s){writeLocalState(localStorage,s);}
 function reviewLoadAllowance(raw,due,target){if(!target||target<=0)return raw;const ratio=Math.max(0,Number(due||0))/target;if(ratio>=1)return 0;if(ratio>=.9)return Math.min(raw,Math.max(1,Math.floor(raw*.2)));if(ratio>=.7)return Math.min(raw,Math.max(1,Math.ceil(raw*.5)));return raw;}
 function adjustedMaxNew(history,date,due,cfg){const raw=Math.max(0,cfg.maxNew);if(cfg.retentionThreshold>0){const rs=history.filter(r=>r.timestamp&&String(r.timestamp).slice(0,10)===date);if(rs.length&&rs.filter(r=>String(r.rating).toLowerCase()!=='again').length/rs.length*100<cfg.retentionThreshold)return 0;}return Math.min(raw,reviewLoadAllowance(raw,due,cfg.reviewTarget));}
 async function fetchAll(base,key,table){const rows=[],size=1000;for(let from=0;;from+=size){const res=await fetch(`${base}/rest/v1/${table}?select=*`,{headers:{apikey:key,Authorization:`Bearer ${key}`,Range:`${from}-${from+size-1}`,'Range-Unit':'items'}});if(!res.ok)throw Error(`Could not read ${table} (${res.status}).`);const page=await res.json();rows.push(...page);if(page.length<size)break;}return rows;}

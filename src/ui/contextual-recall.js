@@ -1,4 +1,4 @@
-import {STORAGE_KEY} from '../engine/persistence.js';
+import {readLocalState,writeLocalState} from '../engine/recovery-storage.js';
 import {PRODUCTION_DAILY_LIMIT,productionAttemptsToday,recordProductionAttempt,PRODUCTION_STAGE} from '../engine/flashcards.js';
 import {CONTEXTUAL_DAILY_LIMIT,contextualAttemptsToday,contextualRecallCandidates,contextualExercise} from '../engine/contextual-recall.js';
 import {chooseSentence} from '../engine/sentence-bank.js';
@@ -10,8 +10,8 @@ let cardsCache=null,scheduled=false,busy=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clean=s=>String(s??'').trim().toLocaleLowerCase('nl-NL').replace(/[.!?]+$/,'').replace(/\s+/g,' ');
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-function state(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch{return{};}}
-function saveState(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}
+function state(){try{return readLocalState(localStorage)||{};}catch{return{};}}
+function saveState(s){writeLocalState(localStorage,s);}
 async function cards(){if(cardsCache)return cardsCache;const c=await import('https://dabutchart-sudo.github.io/flashcards/constants.js'),rows=[],size=1000;for(let from=0;;from+=size){const res=await fetch(`${c.SUPABASE_URL}/rest/v1/cards?select=*`,{headers:{apikey:c.SUPABASE_ANON_KEY,Authorization:`Bearer ${c.SUPABASE_ANON_KEY}`,Range:`${from}-${from+size-1}`,'Range-Unit':'items'}});if(!res.ok)throw new Error(`Could not read cards (${res.status}).`);const page=await res.json();rows.push(...page);if(page.length<size)break;}cardsCache=rows;return rows;}
 
 async function status(){const s=state(),today=dayKey(),overallLeft=Math.max(0,PRODUCTION_DAILY_LIMIT-productionAttemptsToday(s,today)),done=contextualAttemptsToday(s,today);try{const all=await cards(),candidates=contextualRecallCandidates(all,s,{today});return{candidate:candidates[0]||null,done,overallLeft};}catch{return{candidate:null,done,overallLeft};}}
