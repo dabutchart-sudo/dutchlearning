@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.203**.
+- Current documented release: **Zin V5.1.204**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -664,3 +664,18 @@ Release authorised by owner on 12 November 2026. Preparing V5.1.199 and cache du
 Owner explicitly authorised production deployment after reviewing the compact layout. PR #233 merged as 7e553b6c41e52917b4ab9e8d0e10cf7260112f63 after both PR checks passed. Full local suite passed 639/639, including the release cache assertion. GitHub Pages deployment 43259979542 succeeded. Live index.html, sw.js, summary JS and CSS match tested source byte for byte. Cache is dutch-v5.1.199-20261112-compact-flashcards. Four metrics remain visible, Live data is removed, explanatory text is under Session details, and View report shares its secondary row. Sentence Queue implementation is unchanged; temporary synthetic preview files were not deployed.
 
 No learner-data rewrite, schema, authentication, service, scheduling or cost changes. Rollback is V5.1.198 d194603, preserving learner history and standalone Flashcards. Installed-iPhone/PWA refresh and layout confirmation remain outstanding; screenshot review is not claimed as installed-device verification. Related Linear DAB-209 records release progress.
+
+
+## Keyboard clipping follow-up — V5.1.204 candidate, 26 November 2026
+
+The owner supplied another screenshot with the input and Check Answer still hidden. A subsequent Course screenshot confirms V5.1.203 on the phone. Public main still reports V5.1.203, and its shell files match the first released fix. The original fix has failed device acceptance.
+
+A newly added regression reproduces a missed detection case: when the browser resizes both the layout and visual viewports to 400px, their height difference is zero and the previous keyboard layout never activates. This is a confirmed code gap, not a claim that the screenshot proves the phone's viewport measurements. The candidate adds a constrained surface fallback (visual width below 760px and height below 520px) for focused study text inputs, preserving zoom exclusion, blur/button-tap stability and restoration when full height returns. Focused question cards also allow vertical scrolling, prevent direct children from flex-shrinking the answer away, expose the answer area's contents and keep the primary action sticky even if keyboard detection is unavailable. Desktop short/wide surfaces do not activate the phone fallback.
+
+Files: `src/ui/shell.js`, `src/ui/shell.css`, `tests/study-viewport.test.js`, this note. Pre-edit checkpoint: `/tmp/zin-keyboard-followup-checkpoint/`. Isolated V5.1.203 candidate: `/tmp/zin-keyboard-followup-candidate/`, excluding the separate Flashcard example guard and all unrelated local work. The pre-fix short-phone regression fails; the corrected focused viewport/mobile/shell suite passes 20/20. Full-suite results are recorded below. No runtime dependency or new asset. Existing Git metadata restrictions prevent a local branch. Release preparation adds index.html, package.json, sw.js, README and the existing cache assertion in tests/speaking-practice.test.js. Cache: `dutch-v5.1.204-20261126-keyboard-fallback`. The owner’s prior textbox production-release request remains the release authority.
+
+No learning, daily limit, proof/readiness, scoring, persistence, data, schema, authentication, audio/speech implementation or cost change. Production V5.1.203 and standalone Flashcards remain available. Rollback only this follow-up's shell/test/doc changes to their checkpoint; preserve the original V5.1.203 fix, learner history, storage codec/readers, Flashcard candidate and other local edits.
+
+Real iPhone Chrome/SwiftKey and installed-PWA validation remains required. Load V5.1.204 and confirm the version after pausing; do not clear browser data. Check focused input/Check Answer visibility, help press/release, scrolling, keyboard dismiss/reopen and normal layout restoration. Browser rendering has not been verified under this session's existing preview restrictions. Do not infer device success from mocked viewport tests.
+
+Validation: 678/678 tests pass on the isolated release source; 633/633 pass in the preserved primary checkout. Focused checks pass 20/20. Syntax and whitespace checks pass. Exact follow-up diff reviewed; browser/device rendering remains unverified. Release status will be confirmed after commit/CI/deployment. DAB-215 tracks the follow-up and remains In Progress until device acceptance.
