@@ -70,9 +70,9 @@ Do not continue broadening this branch with unrelated main-learning features. Re
 After the V5.1.92 verification checklist passes, begin the main learning-side development as a fresh bounded milestone centred on one complete learner-visible session loop rather than isolated widgets.
 
 
-## Example-word safeguard — candidate, 26 November 2026
+## Example-word safeguard — V5.1.205, 26 November 2026
 
-[DAB-213](https://linear.app/dabutchart/issue/DAB-213) adds a display-time guard for varied review examples: require the target headword or a recognised form, including common conjugations and separated verbs. The reported ophouden/stoppen substitution is rejected. When uncertain, selection falls back to the existing saved original; if neither a usable generated pair nor original exists, no generated hint is supplied. Hint and flipped answer share the same selected pair. This candidate is not yet deployed.
+[DAB-213](https://linear.app/dabutchart/issue/DAB-213) adds a display-time guard for varied review examples: require the target headword or a recognised form, including common conjugations and separated verbs. The reported ophouden/stoppen substitution is rejected. When uncertain, selection falls back to the existing saved original; if neither a usable generated pair nor original exists, no generated hint is supplied. Hint and flipped answer share the same selected pair. The owner authorised release on 26 November; live deployment is verified separately.
 
 The guard checks lexical presence; it does not certify grammar, naturalness, intended word sense or translation. Existing originals remain fallbacks, not automatically reviewed examples. Cached entries are not deleted or rewritten, generation coverage is unchanged, and filtering cannot itself trigger extra paid generation. Ratings, scheduling, progress and both Flashcards platforms are unchanged. The protected generator is unchanged.
 
