@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.202**.
+- Current documented release: **Zin V5.1.203**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -14,6 +14,16 @@
 - Automated regression tests run with `npm test`.
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
+
+## Keyboard-aware study layout — V5.1.203, 26 November 2026
+
+The owner reported that iPhone Chrome with SwiftKey hides the typed answer and explicitly requested implementation, then production release with device checks outstanding. The fix is isolated on V5.1.202 main `8fd017f`, preserving all storage codec/readers and excluding unrelated local candidates. A focused question input plus a visual viewport reduction greater than 120 CSS pixels activates a compact study shell using the actual visible height and offset. The card scrolls instead of clipping; Check Answer is sticky within the card and the four navigation destinations stay available. The focused input scrolls above the action. Blur before a button click keeps the layout steady until the keyboard closes. Leaving study or zooming restores normal layout; missing VisualViewport retains the previous shell.
+
+Files: `src/ui/shell.js`, `src/ui/shell.css`, `tests/study-viewport.test.js`, version/cache references in `index.html`, `package.json`, `sw.js`, `tests/speaking-practice.test.js`, README and this record. No new dependencies/assets. Cache: `dutch-v5.1.203-20261126-keyboard-layout`. No change to daily limits, proofs/readiness, teaching, scoring/evidence, learner data, scheduler, persistence/codec, schema, authentication, protected functions, audio/speech implementation, provider or costs. No production learner-data access. Both Flashcards platforms remain available.
+
+Validation: focused viewport/mobile/shell checks pass 18/18; all 676 release-source tests pass. JavaScript syntax and exact release diff checks pass. Browser rendering could not be verified: execution policy denied a local preview HTTP server, and browser policy rejected the local diagnostic file. Real iPhone Chrome/SwiftKey, Safari and installed-PWA checks remain outstanding: type/check, hold/release help, long prompt/missing letters, toolbar movement, keyboard dismiss/reopen, navigation, ordinary layout restoration and audio/speech controls. Owner requested release despite these explicitly disclosed limitations. Related DAB-194 was reviewed; no completed milestone status was changed.
+
+Rollback: revert this release's shell changes and version/cache bump to the V5.1.202 source `8fd017f`; preserve the V5.1.202 storage codec and all readers, all learner history and the standalone Flashcards fallback. Never clear browsing data or roll back to an older codec-unaware release.
 
 ## Chrome storage reduction — V5.1.202 released, 25 November 2026
 

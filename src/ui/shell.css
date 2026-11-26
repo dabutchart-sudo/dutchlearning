@@ -40,3 +40,15 @@ body.session-active .app{grid-template-rows:minmax(0,1fr);padding-bottom:calc(64
 body.session-active .tabs{min-height:calc(58px + env(safe-area-inset-bottom));padding-top:4px;padding-bottom:calc(5px + env(safe-area-inset-bottom))}
 body.session-active .tabs>.tab{height:44px;min-height:44px;max-width:64px}
 body.session-active .tabs .nav-icon{width:25px;height:25px}
+
+/* Keep the typing surface inside the actual space above an iOS keyboard. */
+body.session-active.study-keyboard .app{position:fixed;top:var(--study-top);left:50%;transform:translateX(-50%);margin:0;height:var(--study-height);max-height:var(--study-height);padding-top:6px;padding-bottom:64px}
+body.session-active.study-keyboard .tabs{position:absolute;min-height:58px;padding-bottom:5px}
+body.session-active.study-keyboard .session-head{margin-bottom:2px}
+body.session-active.study-keyboard .session-progress{margin-bottom:3px}
+body.session-active.study-keyboard .session-offer summary{min-height:32px}
+body.session-active.study-keyboard .session .question-card{overflow-y:auto;scroll-padding:8px;display:block;padding-top:8px;padding-bottom:0}
+body.session-active.study-keyboard .session #answer-area,body.session-active.study-keyboard .session #speaking-answer{overflow:visible}
+body.session-active.study-keyboard .session .prompt{font-size:1.25rem;margin:6px 0}
+body.session-active.study-keyboard .session .assist-row{margin-top:4px}
+body.session-active.study-keyboard .session .question-card .actions{position:sticky;bottom:0;background:var(--card-solid);padding:7px 0 8px;margin-top:8px}
