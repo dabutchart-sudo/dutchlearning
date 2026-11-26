@@ -68,3 +68,12 @@ Local browser queue data is retained only as migration/compatibility state; shar
 Do not continue broadening this branch with unrelated main-learning features. Remaining work on the Flashcards epic should be defect fixes and verification only.
 
 After the V5.1.92 verification checklist passes, begin the main learning-side development as a fresh bounded milestone centred on one complete learner-visible session loop rather than isolated widgets.
+
+
+## Example-word safeguard — candidate, 26 November 2026
+
+[DAB-213](https://linear.app/dabutchart/issue/DAB-213) adds a display-time guard for varied review examples: require the target headword or a recognised form, including common conjugations and separated verbs. The reported ophouden/stoppen substitution is rejected. When uncertain, selection falls back to the existing saved original; if neither a usable generated pair nor original exists, no generated hint is supplied. Hint and flipped answer share the same selected pair. This candidate is not yet deployed.
+
+The guard checks lexical presence; it does not certify grammar, naturalness, intended word sense or translation. Existing originals remain fallbacks, not automatically reviewed examples. Cached entries are not deleted or rewritten, generation coverage is unchanged, and filtering cannot itself trigger extra paid generation. Ratings, scheduling, progress and both Flashcards platforms are unchanged. The protected generator is unchanged.
+
+[DAB-214](https://linear.app/dabutchart/issue/DAB-214) tracks the proposed broader quality gate and audit. Define review evidence, inspect existing originals and caches read-only, and propose uncertainty/failure fallback before runtime/data changes. Separate grammar, intended meaning and translation checks are proposed. Additional AI checking requires owner-approved daily/monthly spend limits. A reviewed-only production policy and protected-function/data-model changes need owner agreement; these are not current implemented behaviour. Device Hint/flip/rating checks remain a release gate.
