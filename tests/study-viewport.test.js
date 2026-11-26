@@ -9,7 +9,7 @@ function fixture(){
  const card={getBoundingClientRect:()=>({top:100,bottom:300}),querySelector:()=>({getBoundingClientRect:()=>({top:240})}),get scrollTop(){return scroll},set scrollTop(v){scroll=v}};
  const input={matches:()=>true,closest:()=>card,getBoundingClientRect:()=>({top:280,bottom:328})};
  const doc={...target,activeElement:input,documentElement:{clientHeight:844},body:{classList:{contains:n=>classes.has(n),toggle:(n,on)=>on?classes.add(n):classes.delete(n),remove:n=>classes.delete(n)},style:{setProperty:(n,v)=>props.set(n,v),removeProperty:n=>props.delete(n)}}};
- const viewport={...target,height:400,offsetTop:45,scale:1};
+ const viewport={...target,height:400,width:390,offsetTop:45,scale:1};
  const win={...target,visualViewport:viewport,requestAnimationFrame:f=>(queued=f,1),cancelAnimationFrame:()=>queued=null,MutationObserver:class{constructor(f){callback=f}observe(){}disconnect(){}}};
  const flush=()=>{const f=queued;queued=null;f?.()};
  return {win,doc,viewport,props,classes,card,flush,change:()=>{callback();flush()}};
@@ -36,6 +36,23 @@ test('blur before clicking Check keeps the layout steady until the keyboard clos
  const f=fixture();installStudyViewport(f.win,f.doc);f.flush();
  f.doc.activeElement=null;f.change();assert.ok(f.classes.has('study-keyboard'));
  f.viewport.height=844;f.change();assert.ok(!f.classes.has('study-keyboard'));
+});
+
+test('a short phone viewport stays usable when Chrome also shrinks the layout viewport',()=>{
+ const f=fixture();f.doc.documentElement.clientHeight=400;
+ installStudyViewport(f.win,f.doc);f.flush();
+ assert.ok(f.classes.has('study-keyboard'));
+ assert.equal(f.props.get('--study-height'),'400px');
+ assert.equal(f.card.scrollTop,96);
+ f.doc.activeElement=null;f.change();assert.ok(f.classes.has('study-keyboard'));
+ f.doc.documentElement.clientHeight=844;f.viewport.height=844;f.change();
+ assert.ok(!f.classes.has('study-keyboard'));
+});
+
+test('a short wide desktop viewport does not activate the phone fallback',()=>{
+ const f=fixture();f.doc.documentElement.clientHeight=400;f.viewport.width=1024;
+ installStudyViewport(f.win,f.doc);f.flush();
+ assert.ok(!f.classes.has('study-keyboard'));
 });
 
 test('browser chrome alone and non-question inputs do not activate keyboard layout',()=>{

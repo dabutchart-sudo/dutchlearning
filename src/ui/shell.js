@@ -50,7 +50,8 @@ function updateCurrentNav(){
 
 // iOS can shrink/pan the visual viewport without resizing CSS viewport units.
 // Activate only for a focused study input and a keyboard-sized reduction;
-// browser chrome, pinch zoom and desktop focus keep the ordinary shell.
+// A constrained phone surface also needs this layout when both viewports resize.
+// Pinch zoom and ordinary desktop focus keep the ordinary shell.
 export function installStudyViewport(win,doc){
  const viewport=win.visualViewport;
  if(!viewport)return ()=>{};
@@ -62,7 +63,9 @@ export function installStudyViewport(win,doc){
   // Keep the shell steady between input blur and a Check/help button's click.
   // The viewport returning to full height (or leaving study) restores it.
   const wasActive=doc.body.classList.contains('study-keyboard');
-  const active=doc.body.classList.contains('session-active')&&(typing||wasActive)&&Math.abs(viewport.scale-1)<0.05&&doc.documentElement.clientHeight-viewport.height>120;
+  const reduced=doc.documentElement.clientHeight-viewport.height>120;
+  const shortPhone=viewport.width<760&&viewport.height<520;
+  const active=doc.body.classList.contains('session-active')&&(typing||wasActive)&&Math.abs(viewport.scale-1)<0.05&&(reduced||shortPhone);
   if(active!==wasActive)doc.body.classList.toggle('study-keyboard',active);
   if(active){
    doc.body.style.setProperty('--study-height',`${viewport.height}px`);
