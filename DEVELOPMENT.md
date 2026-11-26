@@ -3,7 +3,7 @@
 ## Current production state
 
 - Production source: `origin/main`.
-- Current documented release: **Zin V5.1.204**.
+- Current documented release: **Zin V5.1.205**.
 - Production study origin: `https://dabutchart-sudo.github.io/dutchlearning/`.
 - Delivery: GitHub Pages / installable PWA.
 - Persistent signed-in state: Supabase.
@@ -14,6 +14,16 @@
 - Automated regression tests run with `npm test`.
 
 Production is live learning software containing genuine learner history. Documentation changes do not themselves change application behaviour, learner data, deployment, or schema.
+
+## Flashcard target-word guard — V5.1.205, 26 November 2026
+
+The owner confirmed the V5.1.204 textbox follow-up resolved the reported iPhone Chrome/SwiftKey issue; DAB-215 is accepted for that device/blocker. Other platforms are not claimed verified. The owner then explicitly authorised publishing the Flashcard example fix in PR #248. Its branch is reconciled with V5.1.204 `c0a1c85`, retaining the keyboard fix and all storage codec/readers.
+
+The target-word guard rejects cached synonym substitutions such as stoppen for ophouden at display time, accepts recognised conjugated/separated forms, and falls back to the existing saved example when uncertain. The chosen Dutch/English pair stays stable across Hint and flip. This is lexical validation, not a guarantee of grammar, translation or intended word sense. A saved original is not automatically linguistically reviewed. DAB-214's broader audit/review policy remains Backlog and is not implemented by this release.
+
+Runtime change: `src/engine/sentence-bank.js`; regression coverage: `tests/sentence-bank.test.js`; documentation: this file and `docs/flashcard-integration.md`; release/cache references: index.html, package.json, sw.js, README and the existing assertion in tests/speaking-practice.test.js. Cache: `dutch-v5.1.205-20261126-flashcard-word-guard`. No new asset/dependency, extra generation, cache rewriting, ratings/scheduling/daily-limit change, learner-data/schema/authentication change, protected-function deployment or new cost. Both Flashcards platforms remain available.
+
+Validation: all 682 release-source tests and 24 focused sentence-bank/cache/Flashcard checks pass; syntax and whitespace checks pass. The exact release diff preserves V5.1.204 keyboard and storage-codec source. No real learner data or paid services were used in the tests. Actual iPhone Flashcard Hint/flip/rating acceptance remains outstanding; deployment does not imply device acceptance. Rollback is V5.1.204 `c0a1c85`, retaining the accepted keyboard fix, all codec/readers, history, caches and both Flashcards paths. Do not clear browser data.
 
 ## Keyboard-aware study layout — V5.1.203, 26 November 2026
 
@@ -679,3 +689,8 @@ No learning, daily limit, proof/readiness, scoring, persistence, data, schema, a
 Real iPhone Chrome/SwiftKey and installed-PWA validation remains required. Load V5.1.204 and confirm the version after pausing; do not clear browser data. Check focused input/Check Answer visibility, help press/release, scrolling, keyboard dismiss/reopen and normal layout restoration. Browser rendering has not been verified under this session's existing preview restrictions. Do not infer device success from mocked viewport tests.
 
 Validation: 678/678 tests pass on the isolated release source; 633/633 pass in the preserved primary checkout. Focused checks pass 20/20. Syntax and whitespace checks pass. Exact follow-up diff reviewed; browser/device rendering remains unverified. Release status will be confirmed after commit/CI/deployment. DAB-215 tracks the follow-up and remains In Progress until device acceptance.
+
+
+## Proposed Flashcard example-quality audit — DAB-214
+
+[DAB-214](https://linear.app/dabutchart/issue/DAB-214) remains Backlog. It calls for a read-only audit and an owner-reviewed quality-gate proposal covering target-word use, grammar/naturalness, intended sense, English translation, saved originals/caches, uncertainty fallback and validation evidence. Additional AI review is a possible supplement only, with owner-approved daily/monthly caps before paid work. Reviewed-only normal examples, protected-generator changes and data/cache-model changes remain proposals, not implemented or approved policy. `DESIGN.md` is unchanged.
