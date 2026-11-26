@@ -48,7 +48,61 @@ function updateCurrentNav(){
  });
 }
 
+// iOS can shrink/pan the visual viewport without resizing CSS viewport units.
+// Activate only for a focused study input and a keyboard-sized reduction;
+// browser chrome, pinch zoom and desktop focus keep the ordinary shell.
+export function installStudyViewport(win,doc){
+ const viewport=win.visualViewport;
+ if(!viewport)return ()=>{};
+ let frame;
+ const update=()=>{
+  frame=undefined;
+  const input=doc.activeElement;
+  const typing=!!input?.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]):not([type=submit]),textarea,[contenteditable="true"]')&&!!input.closest('.question-card');
+  // Keep the shell steady between input blur and a Check/help button's click.
+  // The viewport returning to full height (or leaving study) restores it.
+  const wasActive=doc.body.classList.contains('study-keyboard');
+  const active=doc.body.classList.contains('session-active')&&(typing||wasActive)&&Math.abs(viewport.scale-1)<0.05&&doc.documentElement.clientHeight-viewport.height>120;
+  if(active!==wasActive)doc.body.classList.toggle('study-keyboard',active);
+  if(active){
+   doc.body.style.setProperty('--study-height',`${viewport.height}px`);
+   doc.body.style.setProperty('--study-top',`${viewport.offsetTop}px`);
+   // Scroll only the card, never the document (which can pan the iOS viewport).
+   if(typing){
+    const card=input.closest('.question-card');
+    const rect=input.getBoundingClientRect();
+    const bounds=card.getBoundingClientRect();
+    const action=card.querySelector('.actions');
+    const bottom=Math.min(bounds.bottom,action?.getBoundingClientRect().top??bounds.bottom)-8;
+    if(rect.bottom>bottom)card.scrollTop+=rect.bottom-bottom;
+    else if(rect.top<bounds.top+8)card.scrollTop+=rect.top-bounds.top-8;
+   }
+  }else{
+   doc.body.style.removeProperty('--study-height');
+   doc.body.style.removeProperty('--study-top');
+  }
+ };
+ const schedule=()=>{if(frame===undefined)frame=win.requestAnimationFrame(update)};
+ const observer=new win.MutationObserver(schedule);
+ observer.observe(doc.body,{attributes:true,attributeFilter:['class']});
+ for(const name of ['resize','scroll'])viewport.addEventListener(name,schedule);
+ for(const name of ['focusin','focusout'])doc.addEventListener(name,schedule);
+ win.addEventListener('resize',schedule);
+ schedule();
+ return ()=>{
+  observer.disconnect();
+  if(frame!==undefined)win.cancelAnimationFrame(frame);
+  for(const name of ['resize','scroll'])viewport.removeEventListener(name,schedule);
+  for(const name of ['focusin','focusout'])doc.removeEventListener(name,schedule);
+  win.removeEventListener('resize',schedule);
+  doc.body.classList.remove('study-keyboard');
+  doc.body.style.removeProperty('--study-height');
+  doc.body.style.removeProperty('--study-top');
+ };
+}
+
 if(globalThis.document){
+ installStudyViewport(window,document);
  const dialog=document.getElementById('sync-details');
  document.getElementById('sync-status')?.addEventListener('click',()=>dialog?.showModal());
  dialog?.querySelector('[data-close-sync]')?.addEventListener('click',()=>dialog.close());
